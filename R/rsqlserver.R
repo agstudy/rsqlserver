@@ -1,10 +1,17 @@
 library(DBI)
+
+
+.SQLserverPkgName <- "SQLServer"
+.SQLserverPkgRCS <- "$Id$"
+.SQLserver.NA.string <- "\\N"  ## on input SQLite interprets \N as NULL (NA)
+
+
 setOldClass("data.frame")      ## to appease setMethod's signature warnings...
 
 ##
 ## Class: DBIObject
 ##
-setClass("SqlServerObject", representation("DBIObject", "VIRTUAL"))
+setClass("SqlServerObject", representation("DBIObject","dbObjectId", "VIRTUAL"))
 setClass("SqlServerDriver", representation("DBIDriver", "SqlServerObject"))
 
 "SqlServer" <-
@@ -61,12 +68,12 @@ setMethod("dbDisconnect", "SqlServerConnection",
           valueClass = "logical"
 )
 
-# setMethod("dbSendQuery", 
-#           signature(conn = "MySQLConnection", statement = "character"),
-#           def = function(conn, statement,...) mysqlExecStatement(conn, statement,...),
-#           valueClass = "MySQLResult"
-# )
-# 
+setMethod("dbSendQuery", 
+          signature(conn = "SqlServerConnection", statement = "character"),
+          def = function(conn, statement,...) sqlServerExecStatement(conn, statement,...),
+          valueClass = "MySQLResult"
+)
+
 # setMethod("dbGetQuery", 
 #           signature(conn = "MySQLConnection", statement = "character"),
 #           def = function(conn, statement, ...) mysqlQuickSQL(conn, statement, ...)
@@ -176,11 +183,13 @@ setMethod("dbDisconnect", "SqlServerConnection",
 #           def = function(conn, ...) .NotYetImplemented()
 # )
 # 
+
 # ##
 # ## Class: DBIResult
 # ##
-# setClass("MySQLResult", representation("DBIResult", "MySQLObject"))
-# 
+
+setClass("SqlServerResult", representation("DBIResult", "SqlServerObject"))
+
 # setAs("MySQLResult", "MySQLConnection",
 #       def = function(from) new("MySQLConnection", Id = as(from, "integer")[1:3])
 # )
