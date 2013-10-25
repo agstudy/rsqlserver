@@ -8,8 +8,8 @@
     config.params <- as.integer(c(max.con, fetch.default.rec))
     force <- as.logical(force.reload)
     cache <- as.logical(shared.cache)
-    id <- .Call("RS_SQLite_init", config.params, force, cache, PACKAGE = .SQLitePkgName)
-    new("SqlServerDriver", Id = drvId)
+    clrLoadAssembly('System.Data')
+    new("SqlServerDriver", Id = clrGetExtPtr(clrNew('System.Object')))
   }
 
 
@@ -19,7 +19,7 @@ function(drv,  username=NULL,
    password=NULL, host=NULL,
          trusted=TRUE, timeout=30)
 {
-   if(!isIdCurrent(drv))
+  if(!isIdCurrent(drv))
       stop("expired manager")
 
 	if (!is.null(username) && !is.character(username))
@@ -37,6 +37,37 @@ function(drv,  username=NULL,
      paste0("Trusted_Connection=",ifelse(trusted,"yes","false")),
      paste0("connection timeout=",timeout),
    sep=";")
-   conId = clrNew("System.Data.SqlClient.SqlConnection",connect.string)
- 	 new("SqlServerConnection", Id = conId)
+   id = clrNew("System.Data.SqlClient.SqlConnection",connect.string)
+   clrCall(id,'Open')
+ 	 new("SqlServerConnection", Id = clrGetExtPtr(id))
 }
+
+
+"SqlServerCloseConnection" <-
+  function(conn,...)
+  {
+    if(!isIdCurrent(conn)){
+      warning(paste("expired SqlServerConnection"))
+      return(TRUE)
+    }
+    obj <- rClr:::createReturnedObject(conn@Id)
+    clrCall(obj,'Close')
+    TRUE
+  }
+
+
+"sqlServerExecStatement" <- 
+  function(conn,statement,...)
+  {
+    if(!isIdCurrent(conn)){
+      warning(paste("expired SqlServerConnection"))
+      return(TRUE)
+    }
+    connection <- rClr:::createReturnedObject(conn@Id)
+    cmd <- clrNew("System.Data.SqlClient.SqlCommand",statement,connection)
+    dataReader <- clrCall(cmd,'ExecuteReader')
+    new("SqlServerResult", Id = clrGetExtPtr(dataReader))
+    
+  }
+
+    
