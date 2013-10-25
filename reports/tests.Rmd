@@ -1,17 +1,26 @@
 Title
 ========================================================
 
+```{r,echo=FALSE,warning=FALSE,message=FALSE}
+devtools::load_all("../")
+```
+
+
 a typical use of the rsqlserver package is : 
 
-```{r}
-library(rsqlserver)
+```{r }
+
 drv <- dbDriver('SqlServer')
 con <- dbConnect(drv,user="collateral",password="collat",
                  host="localhost",trusted=TRUE, timeout=30)
-dbSendQuery(con, "select * from vitalSuite")
-
 dbDisconnect(con)
 
+con <- dbConnect('SqlServer',user="collateral",password="collat",
+                 host="localhost",trusted=TRUE, timeout=30)
+
+dbSendQuery(con, " select * from vitalSuite")
+
+dbDisconnect(con)
 
 
 
