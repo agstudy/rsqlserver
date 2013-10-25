@@ -1,74 +1,55 @@
-Title
+RSQLSERVER documentation
 ========================================================
 
-```{r,echo=FALSE,warning=FALSE,message=FALSE}
+
+
+```{r initpackage,echo=FALSE,warning=FALSE,message=FALSE}
 devtools::load_all("../")
 ```
+## Typical scenario
 
+A typical use of the rsqlserver package is :
+* Open a connection 
+* Execute a query 
+* Extract the query result
+* Close the query result pointer
+* Close the connection
 
-a typical use of the rsqlserver package is : 
-
-```{r }
+```{r  typicalUse}
 
 drv <- dbDriver('SqlServer')
 con <- dbConnect(drv,user="collateral",password="collat",
                  host="localhost",trusted=TRUE, timeout=30)
+res <- dbSendQuery(con, "select * from sys.tables")
+res.dat <- fetch(res)
+dbClearResult(res)
 dbDisconnect(con)
-
-con <- dbConnect('SqlServer',user="collateral",password="collat",
-                 host="localhost",trusted=TRUE, timeout=30)
-
-dbSendQuery(con, " select * from vitalSuite")
-
-dbDisconnect(con)
-
-
+head(res.dat)
 
 ```
 
+This can be done in a single statement 
 
-```{r,echo=FALSE}
 
-# 
-# 
-# 
-# library(rClr)
-# 
-# clrLoadAssembly('System.Data')
-# 
-# sqlserver.connection <- function(user="collateral",pwd="collat",
-#                                  server="localhost",trusted=TRUE,
-#                                  timeout=30){
-#  connect.string = paste(paste0("user id=",user),
-#                         paste0("password=",pwd),
-#                         paste0("server=",server),
-#                         paste0("Trusted_Connection=",ifelse(trusted,"yes","false")),
-#                         paste0("connection timeout=",timeout),sep=";")
-#  myConnection = clrNew("System.Data.SqlClient.SqlConnection",connect.string)
-#  myConnection                     
-# }
-# 
-# 
-# sqlserver.dbGetQuery <- function(conn,statement){
-#   clrCall(conn,'Open')
-#   myCommand = clrNew("System.Data.SqlClient.SqlCommand",statement,
-#                         conn)
-#   myReader = clrCall(myCommand,'ExecuteReader')
-#   while(clrCall(myReader,'Read'))
-#   {
-#   }
-#   clrCall(conn,'Close')
-# }
-# 
-# conn <- sqlserver.connection()
-# sqlserver.dbGetQuery(conn,'SELECT * FROM [COLLATERAL].[dbo].[API_COLLAT_CONTRAT]')
-# 
-# 
-# 
-# 
-#                   
-## TODO id is set manually 
-## maybe driver notion is just a connection pool( per data base)
+```{r  getquery}
+
+con <- dbConnect(drv,user="collateral",password="collat",
+                 host="localhost",trusted=TRUE, timeout=30)
+res.dat <- dbGetQuery(con, "select * from sys.tables")
+dbDisconnect(con)
+head(res.dat)
+
+```
+
+## Connections
+
+```{r connections,echo=FALSE}
+con <- dbConnect(drv,user="collateral",password="collat",
+                 host="localhost",trusted=TRUE, timeout=30)
+dbDisconnect(con)
+con <- dbConnect('SqlServer',user="collateral",password="collat",
+                 host="localhost",trusted=TRUE, timeout=30)
+dbDisconnect(con)
 
 ```
 
