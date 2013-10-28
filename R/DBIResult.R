@@ -143,6 +143,9 @@ sqlServerFetch <-
     as.data.frame(out)
   }
 
+
+
+
 sqlServerCloseResult <- 
   function(res,...){
     dataReader <- rClr:::createReturnedObject(res@Id)
@@ -255,35 +258,10 @@ sqlServerResultInfo <-
 # 
 setMethod("dbDataType", 
           signature(dbObj = "SqlServerObject", obj = "ANY"),
-          def = function(dbObj, obj, ...) sqlServerDataType(obj, ...),
+          def = function(dbObj, obj, ...) sqlServerDbType(obj, ...),
           valueClass = "character"
 )
 
-sqlServerDataType <-
-  function(obj, ...)
-    ## find a suitable SQL data type for the R/S object obj
-    ## TODO: Lots and lots!! (this is a very rough first draft)
-    ## need to register converters, abstract out MySQL and generalize 
-    ## to Oracle, Informix, etc.  Perhaps this should be table-driven.
-    ## NOTE: MySQL data types differ from the SQL92 (e.g., varchar truncate
-    ## trailing spaces).  MySQL enum() maps rather nicely to factors (with
-    ## up to 65535 levels)
-  {
-    rs.class <- data.class(obj)    ## this differs in R 1.4 from older vers
-    rs.mode <- storage.mode(obj)
-    if(rs.class=="numeric" || rs.class == "integer"){
-      sql.type <- if(rs.mode=="integer") "bigint" else  "double"
-    } 
-    else {
-      sql.type <- switch(rs.class,
-                         character = "text",
-                         logical = "tinyint",  ## but we need to coerce to int!!
-                         factor = "text",      ## up to 65535 characters
-                         ordered = "text",
-                         "text")
-    }
-    sql.type
-  }
 
 setMethod("make.db.names", 
           signature(dbObj="SqlServerObject", snames = "character"),

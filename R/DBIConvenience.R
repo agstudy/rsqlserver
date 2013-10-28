@@ -57,18 +57,6 @@ setMethod("dbRemoveTable",
 
 
 
-dropTable <- function(con, name,...)
-{
-  # validate name
-  name <- as.character(name)
-  if (length(name) != 1L)
-    stop("'name' must be a single string")
-  if(dbExistsTable(conn, name)){
-    rc <- try( {stmt <- sprintf('DROP TABLE "%s"', name)
-                dbGetScalar(con, stmt)})
-    !inherits(rc, "try-error")
-  }else FALSE
-}
 
 
 ## return field names (no metadata)
@@ -85,6 +73,7 @@ setMethod("dbListFields",
 
 ##############################################################
 ### implementations
+##############################################################
 
 sqlServerReadTable <- 
   function(con, name, row.names = "row_names", check.names = TRUE, ...)
@@ -131,26 +120,23 @@ sqlServerWriteTable <-
       stop("'name' must be a single string")
     
     #
-    if(!is.data.frame(value))
-      value <- as.data.frame(value)
-    
     
     if(row.names){
       value <- cbind(row.names(value), value)  ## can't use row.names= here
       names(value)[1] <- "row.names"
     }
     
+    value <- sqlServer.data.frame(value)
     if(missing(field.types) || is.null(field.types)){
       field.types <- lapply(value, sqlServerDbType)
     } 
     
     
-    i <- match("row.names", names(field.types), nomatch=0)
-    if(i>0)  ## did we add a row.names value?  
-      field.types[i] <- sqlServerDataType(dbObj=con, field.types$row.names)
+#     i <- match("row.names", names(field.types), nomatch=0)
+#     if(i>0) field.types[i] <- sqlServerDbType(obj=field.types$row.names)
     names(field.types) <- make.db.names(con, names(field.types), 
                                         allow.keywords = allow.keywords)
-    
+
     ## Do we need to clone the connection (ie., if it is in use)?
     if(length(dbListResults(con))!=0){ 
       new.con <- dbConnect(con)
@@ -177,14 +163,23 @@ sqlServerWriteTable <-
       dbCreateTable(con, name, cnames, ctypes)
     
     res <- tryCatch({
-      stmt <- sprintf('INSERT INTO "%s" VALUES (%s)', name,
-                      paste(":", seq_along(cnames), sep = "", collapse = ","))
+      ## INSERT INTO MyTable (col, col2) 
+      ##   VALUES (1, 'Bob'), (2, 'Peter'), (3, 'Joe');
+      stmt <- sprintf('INSERT INTO %s (%s)', name, 
+                          paste(cnames,collapse=','))
+      values <- paste0('VALUES (',do.call(paste, c(value, sep=",",collapse='),(')),')')
+      stmt = paste(stmt,values,sep='\n')
+      browser()      
       dbGetScalar(con, stmt, data = value)
       dbCommit(con)}, 
-            error = function(e) dbRollback(con))
+            error = function(e) {
+              browser()
+              dbRollback(con)
+            }
+    )
 
 
-TRUE
+
   }
 
 
@@ -209,11 +204,15 @@ sqlServer.data.frame <- function(obj)
       else
         obj[[i]] <- as.character(col)
     }
+    col <- obj[[i]]
+    if(inherits(col,'character')){
+      obj[[i]] <- paste0("'",gsub("'","''",col),"'")
+    }
   }
   obj
 }
 
-sqlServerDbType <- function(obj)
+sqlServerDbType <- function(obj,...)
 {
   
   switch(typeof(obj),
@@ -236,6 +235,19 @@ dbCreateTable <- function(con, name, cnames, ctypes)
   stmt <- sprintf('CREATE TABLE "%s" (%s)', name,
                   paste(cnames, ctypes, collapse = ","))
   dbGetQuery(con, stmt)
+}
+
+dropTable <- function(con, name,...)
+{
+  # validate name
+  name <- as.character(name)
+  if (length(name) != 1L)
+    stop("'name' must be a single string")
+  if(dbExistsTable(conn, name)){
+    rc <- try( {stmt <- sprintf('DROP TABLE "%s"', name)
+                dbGetScalar(con, stmt)})
+    !inherits(rc, "try-error")
+  }else FALSE
 }
 
 
