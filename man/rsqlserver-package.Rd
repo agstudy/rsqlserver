@@ -29,5 +29,5 @@ Amine Gassem (agstudy) <contact@agstudy.com>
 \keyword{ package }
 \keyword{ SQL server }
 \seealso{
-\code{\link[<pkg>:<pkg>-package]{RODBC}}
+\code{{RODBC}}
 }

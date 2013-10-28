@@ -11,12 +11,12 @@ devtools::load_all("../")
 A typical use of the rsqlserver package is :
 * Open a connection 
 * Execute a query 
-* Extract the query result
-* Close the query result pointer
+* Extract the query result in a data.frame
+* Close the query result
 * Close the connection
 
-```{r  typicalUse}
 
+```{r  typicalUse}
 drv <- dbDriver('SqlServer')
 con <- dbConnect(drv,user="collateral",password="collat",
                  host="localhost",trusted=TRUE, timeout=30)
@@ -35,15 +35,16 @@ This can be done in a single statement
 
 con <- dbConnect(drv,user="collateral",password="collat",
                  host="localhost",trusted=TRUE, timeout=30)
-res.dat <- dbGetQuery(con, "select * from sys.tables")
+resdat <- dbGetQuery(con, "select * from sys.tables")
 dbDisconnect(con)
 head(res.dat)
 
 ```
 
 ## Connections
+To create a connection, you should call dbConnect. Here some example:
 
-```{r connections,echo=FALSE}
+```{r connections}
 con <- dbConnect(drv,user="collateral",password="collat",
                  host="localhost",trusted=TRUE, timeout=30)
 dbDisconnect(con)

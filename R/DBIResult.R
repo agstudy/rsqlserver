@@ -31,22 +31,165 @@ setMethod("fetch",
 setMethod("dbSendQuery", 
           signature(conn = "SqlServerConnection", statement = "character"),
           def = function(conn, statement,...) sqlServerExecStatement(conn, statement,...),
-          valueClass = "MySQLResult"
+          valueClass = "SqlServerResult"
 )
 
 setMethod("dbGetQuery", 
           signature(conn = "SqlServerConnection", statement = "character"),
-          def = function(conn, statement, ...) sqlServerQuickSQL(conn, statement, ...)
+          def = function(conn, statement, ...) sqlServerExecRetrieve(conn, statement, ...)
+)
+
+setGeneric("dbGetScalar", function(conn, statement, ...) 
+  standardGeneric("dbGetScalar")
+)
+setMethod("dbGetScalar", 
+          signature(conn = "SqlServerConnection", statement = "character"),
+          def = function(conn, statement, ...) sqlServerExecScalar(conn, statement, ...),
+          valueClass = "character"
 )
 
 
+setMethod("dbGetInfo", "SqlServerResult",
+          def = function(dbObj, ...) sqlServerResultInfo(dbObj, ...),
+          valueClass = "list"
+)
 
 
-# 
-# setMethod("dbGetInfo", "MySQLResult",
-#           def = function(dbObj, ...) mysqlResultInfo(dbObj, ...),
-#           valueClass = "list"
-# )
+## TODO: 
+setMethod("dbHasCompleted", "SqlServerResult",
+          def = function(res, ...) {
+            nCols <- dbGetInfo(res, "FieldCount")[[1]] 
+            is.na(nCols) || (nCols == 0)
+          },
+          valueClass = "logical"
+)
+
+### internal implementations
+### helper functions
+
+
+sqlServerExecStatement <- 
+  function(conn,statement,...)
+  {
+    if(!isIdCurrent(conn)){
+      warning(paste("expired SqlServerConnection"))
+      return(TRUE)
+    }
+    clr.conn <- rClr:::createReturnedObject(conn@Id)
+    cmd <- clrNew("System.Data.SqlClient.SqlCommand",statement,clr.conn)
+    if(isTransaction(conn)){
+      trans <- rClr:::createReturnedObject(conn@trans)
+      clrCall(cmd,'set_Transaction',trans)
+    }
+    dataReader <- clrCall(cmd,'ExecuteReader')
+    new("SqlServerResult", Id = clrGetExtPtr(dataReader))
+    
+  }
+
+
+sqlServerExecScalar <- 
+  function(conn,statement,...)
+  {
+    if(!isIdCurrent(conn)){
+      warning(paste("expired SqlServerConnection"))
+      return(TRUE)
+    }
+    clr.conn <- rClr:::createReturnedObject(conn@Id)
+    cmd <- clrNew("System.Data.SqlClient.SqlCommand",statement,clr.conn)
+    if(isTransaction(conn)){
+      trans <- rClr:::createReturnedObject(conn@trans)
+      clrCall(cmd,'set_Transaction',trans)
+    }
+    value <- clrCall(cmd,'ExecuteScalar')
+    value
+    
+  }
+
+sqlServerFetch <- 
+  function(res,n){
+    n <- as(n, "integer")
+    dataReader <- rClr:::createReturnedObject(res@Id)
+    ncols <- clrGet(dataReader,"FieldCount")
+    if(ncols==0) return(NULL)
+    cnt <- 0
+    out <- data.frame()
+    if(clrGet(dataReader,'HasRows')>0) {
+      sqlDataHelper <- clrNew("rsqlserver.net.SqlDataHelper")
+      while (clrCall(dataReader,"Read"))
+      {
+        datarow <- vector(mode='list',ncols)
+        for( i in seq_len(ncols)-1)
+        {
+          datarow[i+1] <- clrCall(sqlDataHelper,"GetItem",dataReader,
+                                        as.integer(i))
+        }
+        out <- if(length(out)==0) datarow 
+               else rbind(out,datarow)
+        cnt <- cnt +1 
+        if(cnt==n) break
+      }
+     rownames(out) <- as.integer(seq_len(cnt))
+    }
+    columns = vector('list',ncols)
+    columnsTypes = vector('list',ncols)
+    for( i in seq(0,ncols-1))
+      columns[i+1] <- clrCall(dataReader,'GetName',as.integer(i))
+    for( i in seq(0,ncols-1))
+      columnsTypes[i+1] <- clrCall(dataReader,'GetDataTypeName',as.integer(i))
+    if(length(out)==0)
+      out <- do.call(cbind,as.list(rep(NA,ncols)))
+    colnames(out) <- columns
+    attr(out,'FielsType') <- columnsTypes
+    as.data.frame(out)
+  }
+
+sqlServerCloseResult <- 
+  function(res,...){
+    dataReader <- rClr:::createReturnedObject(res@Id)
+    clrCall(dataReader,"Close")
+    TRUE
+  }
+
+
+
+
+## helper function: it exec's *and* retrieves a statement. It should
+## be named somehting else.
+sqlServerExecRetrieve <-
+  function(con, statement)
+  {
+    state <- dbGetInfo(con,"State")
+    if(state==0){                   ## conn is closed
+      new.con <- dbConnect(con)     ## yep, create a clone connection
+      on.exit(dbDisconnect(new.con))
+      rs <- dbSendQuery(new.con, statement)
+    } else rs <- dbSendQuery(con, statement)
+    res <- fetch(rs, n = -1)
+    dbClearResult(rs)
+    res
+  }
+
+
+sqlServerResultInfo <- 
+  function(dbObj,what,...){
+    if(!isIdCurrent(dbObj))
+      stop(paste("expired", class(dbObj), deparse(substitute(dbObj))))
+    res <- rClr:::createReturnedObject(dbObj@Id)
+    info <- vector("list", length = length(clrGetProperties(res)))
+    ## TODO : choose a list of information instead of using all propertied
+    ## some propetry here return a CLR/SEXP conversion excpetion 
+    
+    clrNew()
+    for (prop in clrGetProperties(res))
+      info[[prop]] <- tryCatch(clrGet(res,prop),error=function(e)NA)
+    info <- as.list(unlist(info))
+    if(!missing(what))
+      info[what]
+    else
+      info
+  }
+
+
 # 
 # setMethod("dbGetStatement", "MySQLResult",
 #           def = function(res, ...){
@@ -96,10 +239,7 @@ setMethod("dbGetQuery",
 #           valueClass = "numeric"
 # )
 # 
-# setMethod("dbHasCompleted", "MySQLResult",
-#           def = function(res, ...) dbGetInfo(res, "completed")[[1]] == 1,
-#           valueClass = "logical"
-# )
+
 # 
 # setMethod("dbGetException", "MySQLResult",
 #           def = function(conn, ...){
@@ -113,48 +253,74 @@ setMethod("dbGetQuery",
 #           def = function(object, ...) mysqlDescribeResult(object, ...)
 # )
 # 
-# setMethod("dbDataType", 
-#           signature(dbObj = "MySQLObject", obj = "ANY"),
-#           def = function(dbObj, obj, ...) mysqlDataType(obj, ...),
-#           valueClass = "character"
-# )
-# 
-# setMethod("make.db.names", 
-#           signature(dbObj="MySQLObject", snames = "character"),
-#           def = function(dbObj, snames, keywords = .MySQLKeywords,
-#                          unique, allow.keywords, ...){
-#             #      make.db.names.default(snames, keywords = .MySQLKeywords, unique = unique,
-#             #                            allow.keywords = allow.keywords)
-#             "makeUnique" <- function(x, sep = "_") {
-#               if (length(x) == 0)
-#                 return(x)
-#               out <- x
-#               lc <- make.names(tolower(x), unique = FALSE)
-#               i <- duplicated(lc)
-#               lc <- make.names(lc, unique = TRUE)
-#               out[i] <- paste(out[i], substring(lc[i], first = nchar(out[i]) +
-#                                                   1), sep = sep)
-#               out
-#             }
-#             fc <- substring(snames, 1, 1)
-#             lc <- substring(snames, nchar(snames))
-#             i <- match(fc, c("'", "\"","`"), 0) > 0 & match(lc, c("'", "\"","`"),
-#                                                             0) > 0
-#             snames[!i] <- make.names(snames[!i], unique = FALSE)
-#             if (unique)
-#               snames[!i] <- makeUnique(snames[!i])
-#             if (!allow.keywords) {
-#               kwi <- match(keywords, toupper(snames), nomatch = 0L)
-#               
-#               # We could check to see if the database we are connected to is
-#               # running in ANSI mode. That would allow double quoted strings
-#               # as database identifiers. Until then, the backtick needs to be used.
-#               snames[kwi] <- paste("`", snames[kwi], "`", sep = "")
-#             }
-#             gsub("\\.", "_", snames)
-#           },
-#           valueClass = "character"
-# )
+setMethod("dbDataType", 
+          signature(dbObj = "SqlServerObject", obj = "ANY"),
+          def = function(dbObj, obj, ...) sqlServerDataType(obj, ...),
+          valueClass = "character"
+)
+
+sqlServerDataType <-
+  function(obj, ...)
+    ## find a suitable SQL data type for the R/S object obj
+    ## TODO: Lots and lots!! (this is a very rough first draft)
+    ## need to register converters, abstract out MySQL and generalize 
+    ## to Oracle, Informix, etc.  Perhaps this should be table-driven.
+    ## NOTE: MySQL data types differ from the SQL92 (e.g., varchar truncate
+    ## trailing spaces).  MySQL enum() maps rather nicely to factors (with
+    ## up to 65535 levels)
+  {
+    rs.class <- data.class(obj)    ## this differs in R 1.4 from older vers
+    rs.mode <- storage.mode(obj)
+    if(rs.class=="numeric" || rs.class == "integer"){
+      sql.type <- if(rs.mode=="integer") "bigint" else  "double"
+    } 
+    else {
+      sql.type <- switch(rs.class,
+                         character = "text",
+                         logical = "tinyint",  ## but we need to coerce to int!!
+                         factor = "text",      ## up to 65535 characters
+                         ordered = "text",
+                         "text")
+    }
+    sql.type
+  }
+
+setMethod("make.db.names", 
+          signature(dbObj="SqlServerObject", snames = "character"),
+          def = function(dbObj, snames, keywords = .SqlServersKeywords,
+                         unique, allow.keywords, ...){
+            #      make.db.names.default(snames, keywords = .MySQLKeywords, unique = unique,
+            #                            allow.keywords = allow.keywords)
+            "makeUnique" <- function(x, sep = "_") {
+              if (length(x) == 0)
+                return(x)
+              out <- x
+              lc <- make.names(tolower(x), unique = FALSE)
+              i <- duplicated(lc)
+              lc <- make.names(lc, unique = TRUE)
+              out[i] <- paste(out[i], substring(lc[i], first = nchar(out[i]) +
+                                                  1), sep = sep)
+              out
+            }
+            fc <- substring(snames, 1, 1)
+            lc <- substring(snames, nchar(snames))
+            i <- match(fc, c("'", "\"","`"), 0) > 0 & match(lc, c("'", "\"","`"),
+                                                            0) > 0
+            snames[!i] <- make.names(snames[!i], unique = FALSE)
+            if (unique)
+              snames[!i] <- makeUnique(snames[!i])
+            if (!allow.keywords) {
+              kwi <- match(keywords, toupper(snames), nomatch = 0L)
+              
+              # We could check to see if the database we are connected to is
+              # running in ANSI mode. That would allow double quoted strings
+              # as database identifiers. Until then, the backtick needs to be used.
+              snames[kwi] <- paste("`", snames[kwi], "`", sep = "")
+            }
+            gsub("\\.", "_", snames)
+          },
+          valueClass = "character"
+)
 # 
 # setMethod("SQLKeywords", "MySQLObject",
 #           def = function(dbObj, ...) .MySQLKeywords,

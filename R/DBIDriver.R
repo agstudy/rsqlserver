@@ -12,7 +12,7 @@ setOldClass("data.frame")      ## to appease setMethod's signature warnings...
 setClass("SqlServerObject", representation("DBIObject","dbObjectId", "VIRTUAL"))
 setClass("SqlServerDriver", representation("DBIDriver", "SqlServerObject"))
 
-"SqlServer" <-
+SqlServer <-
   function(max.con = 200L, fetch.default.rec = 500, force.reload = FALSE,
            shared.cache=FALSE)
   {
@@ -21,7 +21,9 @@ setClass("SqlServerDriver", representation("DBIDriver", "SqlServerObject"))
 
 ## coerce (extract) any SqlServerObject into a SqlServerDriver
 setAs("SqlServerObject", "SqlServerDriver", 
-      def = function(from) new("SqlServerDriver", Id = from@Id)
+      def = function(from) {
+        new("SqlServerDriver", Id = from@Id)
+      }
 )
       
 
