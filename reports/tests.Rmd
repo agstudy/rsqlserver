@@ -1,4 +1,4 @@
-RSQLSERVER documentation
+rsqlserver documentation
 ========================================================
 
 
@@ -33,11 +33,10 @@ This can be done in a single statement
 
 ```{r  getquery}
 
-con <- dbConnect(drv,user="collateral",password="collat",
+con <- dbConnect('SqlServer',user="collateral",password="collat",
                  host="localhost",trusted=TRUE, timeout=30)
 resdat <- dbGetQuery(con, "select * from sys.tables")
-dbDisconnect(con)
-head(res.dat)
+head(resdat)
 
 ```
 
@@ -45,6 +44,7 @@ head(res.dat)
 To create a connection, you should call dbConnect. Here some example:
 
 ```{r connections}
+drv <- dbDriver('SqlServer')
 con <- dbConnect(drv,user="collateral",password="collat",
                  host="localhost",trusted=TRUE, timeout=30)
 dbDisconnect(con)
@@ -53,4 +53,177 @@ con <- dbConnect('SqlServer',user="collateral",password="collat",
 dbDisconnect(con)
 
 ```
+
+to retrieve information about the connection , you can do this :
+```{r geConnectionInfo}
+drv <- dbDriver('SqlServer')
+
+con <- dbConnect(drv,user="collateral",password="collat",
+                 host="localhost",trusted=TRUE, timeout=30)
+dbGetInfo(con)
+dbGetInfo(con,"State")
+dbDisconnect(con)
+dbGetInfo(con,"State")
+```
+
+
+## SQL Results
+
+Use dbGetInfo to retrieve the result state. 
+
+```{r getResultsInfo}
+drv <- dbDriver('SqlServer')
+con <- dbConnect(drv,user="collateral",password="collat",
+                 host="localhost",trusted=TRUE, timeout=30)
+res <- dbSendQuery(con, "select * from sys.tables")
+dbGetInfo(res,'HasRows')
+dbHasCompleted(res)
+dbClearResult(res)
+dbHasCompleted(res)
+dbDisconnect(con)
+dbHasCompleted(res)
+
+```
+
+then you can fetch the result.
+
+
+```{r fetchResult}
+
+drv <- dbDriver('SqlServer')
+con <- dbConnect(drv,user="collateral",password="collat",
+                 host="localhost",trusted=TRUE, timeout=30)
+res <- dbSendQuery(con, "select * from sys.tables")
+if(!dbHasCompleted(res))
+  res.dat <- fetch(res,4) ## retrieve only 4 rows
+
+dbClearResult(res)
+dbDisconnect(con)
+
+```
+
+
+## Convenience functions for Importing/Exporting DBMS tables
+
+These functions mimic their R/Splus counterpart get, assign, exists, remove, and objects, except that they generate code that gets remotely executed in a database engine.
+
+*  `dbReadTable(conn, name, ...)`
+*  `dbWriteTable(conn, name, value, ...)`
+*  `dbExistsTable(conn, name, ...)`
+*  `dbRemoveTable(conn, name, ...)`
+
+To check if a table already exist:
+
+```{r dbTableExist}
+
+con <- dbConnect('SqlServer',user="collateral",password="collat",
+                 host="localhost",trusted=TRUE, timeout=30)
+res <- dbExistsTable(con, "BM_INDICE")
+dbDisconnect(con)
+
+```
+
+
+to read a sql server table as a data.frame
+
+```{r dbReadTableL}
+con <- dbConnect('SqlServer',user="collateral",password="collat",
+                 host="localhost",trusted=TRUE, timeout=30)
+
+rs <- dbSendQuery(con,'SELECT * FROM BM_INDICE')
+dat.rs <- fetch(rs,n=-1)
+dbClearResult(rs)
+dbDisconnect(con)
+
+```
+Or sipmly use the convenient function dbReadTable
+
+```{r dbReadTable}
+con <- dbConnect('SqlServer',user="collateral",password="collat",
+                 host="localhost",trusted=TRUE, timeout=30)
+res <- dbReadTable(con, "BM_INDICE")
+
+dbDisconnect(con)
+
+```
+
+
+you have 2 methods to create a new table 
+
+
+```{r createNewTable1}
+con <- dbConnect('SqlServer',user="collateral",password="collat",
+                 host="localhost",trusted=TRUE, timeout=30)
+if(!dbExistsTable(con,'MYTABLE')){
+  rs <- dbSendQuery(con,"CREATE TABLE MYTABLE ( myvar varchar(1) )")
+  dbClearResult(rs)
+  }
+dbReadTable(con, 'MYTABLE')
+dbDisconnect(con)
+
+```
+
+Since the creation of a table does not retuen a result, it is better to 
+use dbGetScalar.
+```{r createNewTable2}
+con <- dbConnect('SqlServer',user="collateral",password="collat",
+                 host="localhost",trusted=TRUE, timeout=30)
+if(!dbExistsTable(con,'MYTABLE1'))
+  dbGetScalar(con,"CREATE TABLE MYTABLE1 ( myvar varchar(1) )")
+dbReadTable(con,'MYTABLE1')
+dbDisconnect(con)
+
+```
+
+```{r dbremoveTable}
+
+conn <- dbConnect('SqlServer',user="collateral",password="collat",
+                 host="localhost",trusted=TRUE, timeout=30)
+dbRemoveTable(conn,"MYTABLE2")
+dbDisconnect(conn)
+
+```
+
+
+
+
+```{r dbWriteTable}
+con <- dbConnect('SqlServer',user="collateral",password="collat",
+                 host="localhost",trusted=TRUE, timeout=30)
+dbWriteTable(con,'T_MTCARS',mtcars)
+dbDisconnect(con)
+
+
+```
+
+## Transactions
+
+```{r transaction}
+conn <- dbConnect('SqlServer',user="collateral",password="collat",
+                 host="localhost",trusted=TRUE, timeout=30)
+conn <- dbTransaction(conn,name='newTableTranst')
+tryCatch(
+     {
+       dbGetScalar(conn,"CREATE TABLE MYTABLE3 
+                        ( myvar varchar(1) )")
+       dbGetScalar(conn,"CREATE TABLE MYTABLE2 
+                         ( myvar varchar(1) )")
+       dbCommit(conn)
+      },
+  error=function(e){
+    dbRollback(conn)
+    },
+  finally=dbDisconnect(conn)
+  )
+
+
+```
+
+
+
+
+
+
+
+
 
