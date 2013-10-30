@@ -9,8 +9,8 @@ Maintainer: Amine Gassem (agstudy) <contact@ag-study.com>
 Description: Database Interface R driver for SQL server.  
             This package wraps the System.Data.SqlClient 
             assembly and provide a handy R interface.
-depends: methods, rClr, DBI (>= 0.2-7), utils
-Imports: methods, rClr, DBI (>= 0.2-7)
+Depends: methods 
+Imports: rClr, DBI (>= 0.2-7)
 License: GPL-2
 Collate:  "zzz.R" "dbObjectId.R"  "DBIDriver.R"  "DBIConnection.R" 
            "DBIResult.R"  "DBIConvenience.R"  "DBITransaction.R"     
