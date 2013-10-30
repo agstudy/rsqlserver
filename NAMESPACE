@@ -1,1 +1,47 @@
-exportPattern("^[[:alpha:]]+")
+import(rClr)
+import(methods)
+import(DBI)
+
+
+
+
+exportClasses(
+  SqlServerDriver,  SqlServerConnection, SqlServerResult,
+  SqlServerTransaction)
+
+exportMethods(
+  ## General
+  dbGetInfo, summary, show,
+
+  ## DBIDriver
+  dbDriver,dbUnloadDriver, dbListConnections,
+
+  ## DBIConnection
+  dbConnect, dbDisconnect, dbSendQuery, dbGetQuery, dbGetException,
+  dbListResults,
+
+  ## DBIConnection: Convenience
+  dbListTables, dbReadTable, dbWriteTable, dbExistsTable, dbRemoveTable,
+  dbListFields,
+
+  ## DBIConnection: Transaction management
+  dbCommit, dbRollback,
+
+  ## DBIConnection: Stored procedures
+  # dbCallProc,
+
+  ## DBIResult
+  fetch, dbClearResult, 
+  #dbColumnInfo, dbGetStatement, 
+  dbHasCompleted,
+  #dbGetRowsAffected, dbGetRowCount,
+
+  ## DBIResult: Data conversion
+  #dbSetDataMappings,
+
+  ##  DBI extensions
+  dbGetScalar,   
+  dbTransaction,
+  )
+
+export(SqlServer)
