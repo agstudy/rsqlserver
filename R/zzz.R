@@ -1,13 +1,18 @@
 
-.conflicts.OK <- TRUE
 
-.onLoad <-
+.onLoad <- function(libname, pkgname){
   if(.Platform$OS.type == "windows") {
-    function(libname, pkgname){
-#       library(rClr)
-#     clrLoadAssembly('System.Data')
-  } 
-}else {
-  function(libname, pkgname) NULL
+    libLocation<- system.file(package=pkgname)
+    libpath <- file.path(libLocation, 'libs')
+    f <- file.path(libpath, 'rsqlserver.net.dll')
+    if( !file.exists(f) ) {
+      packageStartupMessage('Could not find path to rsqlserver.dll, 
+                            you will have to load it manually')
+    } else {
+      clrLoadAssembly(f)
+    }
+  }
 }
+
+
 
