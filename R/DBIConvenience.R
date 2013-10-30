@@ -169,11 +169,9 @@ sqlServerWriteTable <-
                           paste(cnames,collapse=','))
       values <- paste0('VALUES (',do.call(paste, c(value, sep=",",collapse='),(')),')')
       stmt = paste(stmt,values,sep='\n')
-      browser()      
       dbGetScalar(con, stmt, data = value)
       dbCommit(con)}, 
             error = function(e) {
-              browser()
               dbRollback(con)
             }
     )
@@ -212,22 +210,6 @@ sqlServer.data.frame <- function(obj)
   obj
 }
 
-sqlServerDbType <- function(obj,...)
-{
-  
-  switch(typeof(obj),
-         logical   = "TINYINT",
-         integer   = "INTEGER",
-         double  = if (inherits(obj, "POSIXct"))
-           "DATETIME"
-         else
-           "REAL",
-         character = "VARCHAR(128)",
-         list      = "varbinary(2000)",
-         stop(gettextf("rsqlserver internal error [%s, %d, %s]",
-                       "sqlServerDbType", 1L, class(obj))))    
-  
-}
 
 
 dbCreateTable <- function(con, name, cnames, ctypes)

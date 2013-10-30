@@ -168,11 +168,9 @@ function(dbObj,what,...){
       stop(paste("expired", class(dbObj), deparse(substitute(dbObj))))
   conn <- rClr:::createReturnedObject(dbObj@Id)
   info <- vector("list", length = length(clrGetProperties(conn)))
-  ## TODO : choose a list of information instead of using all propertied
-  ## some propetry here return a CLR/SEXP conversion excpetion 
   sqlDataHelper <- clrNew("rsqlserver.net.SqlDataHelper")
   for (prop in clrGetProperties(conn))
-      info[[prop]] <- clrCall(sqlDataHelper,"GetProperty",conn,
+      info[[prop]] <- clrCall(sqlDataHelper,"GetConnectionProperty",conn,
                               prop)
   info <- as.list(unlist(info))
   if(!missing(what))
