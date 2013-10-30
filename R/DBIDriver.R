@@ -1,4 +1,3 @@
-library(DBI)
 .SQLserverPkgName <- "SQLServer"
 .SQLserverPkgRCS <- "$Id$"
 .SQLserver.NA.string <- "\\N"  ## on input SQLite interprets \N as NULL (NA)
@@ -13,7 +12,7 @@ setClass("SqlServerObject", representation("DBIObject","dbObjectId", "VIRTUAL"))
 setClass("SqlServerDriver", representation("DBIDriver", "SqlServerObject"))
 
 SqlServer <-
-  function(max.con = 200L, fetch.default.rec = 500, force.reload = FALSE,
+  function(max.con = 100L, fetch.default.rec = 500, force.reload = FALSE,
            shared.cache=FALSE)
   {
     sqlServerInitDriver(max.con, fetch.default.rec, force.reload, shared.cache)
