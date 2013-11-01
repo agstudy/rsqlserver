@@ -1,34 +1,34 @@
 
+# Emacs please make this -*- mode: makefile; tab-width: 8 -*-
+#
+#
+
 ifeq "$(BuildConfiguration)" ""
-BuildConfiguration:= Release
+BuildConfiguration:=Debug
 endif
 
 SLN:= rsqlserver.net.sln
-RSQLSERVER_BINDIR:=./rsqlserver.net/bin/$(BuildConfiguration)
+TIME2RBINDIR:=./rsqlserver.net/bin/$(BuildConfiguration)
+
 INSTDIR:= ../inst
-RSQLSERVER_BINs:= $(RSQLSERVER_BINDIR)/*.dll $(RSQLSERVER_BINDIR)/*.pdb
-MSB := C:/WINDOWS/Microsoft.NET/Framework/v4.0.30319/MSBuild.exe
+TIME2RBINs:= $(TIME2RBINDIR)/*.dll $(TIME2RBINDIR)/*.pdb
+MSB :=C:/WINDOWS/Microsoft.NET/Framework/v4.0.30319/MSBuild.exe
 MODE:=Build
 SLNPROPERTIES:=/p:Configuration=$(BuildConfiguration)
 
-all: instdir SQLSERVER_RLib 
+all:  instdir Time2RLib
 
-RSQLSERVER_LibComp:
-  $(MSB) $(SLN) /t:$(MODE) $(SLNPROPERTIES)
+Time2RLibComp:
+	$(MSB) $(SLN) /t:$(MODE) $(SLNPROPERTIES)
 
-SQLSERVER_RLib: RSQLSERVER_LibComp 
-	-@cp -p -u $(RSQLSERVER_BINs) $(INSTDIR)/libs
+Time2RLib:	Time2RLibComp
+	-cp -u -p $(TIME2RBINs) $(INSTDIR)/libs
 
 instdir:
-	#-@rm -rf $(INSTDIR)/libs
-	# the following two lines are required, even if empty folder, 
-    # otherwise R complains at package load time.
+	-@rm -rf $(INSTDIR)/libs
+# the following two lines are required, even if empty folder, otherwise R complains at package load time.
 	-@mkdir -p $(INSTDIR)/libs/i386
 	-@mkdir -p $(INSTDIR)/libs/x64
 	-@mkdir -p $(INSTDIR)/libs 2>/dev/null
 
-clean: 
-	$(MSB) $(SLN) /t:Clean
-
-
-.PHONY: all
+.PHONY:	all
