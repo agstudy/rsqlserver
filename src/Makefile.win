@@ -8,21 +8,21 @@ BuildConfiguration:=Debug
 endif
 
 SLN:= rsqlserver.net.sln
-TIME2RBINDIR:=./rsqlserver.net/bin/$(BuildConfiguration)
+RSQLSERVERBINDIR:=./rsqlserver.net/bin/$(BuildConfiguration)
 
 INSTDIR:= ../inst
-TIME2RBINs:= $(TIME2RBINDIR)/*.dll $(TIME2RBINDIR)/*.pdb
+RSQLSERVERBINs:= $(RSQLSERVERBINDIR)/*.dll $(RSQLSERVERBINDIR)/*.pdb
 MSB :=C:/WINDOWS/Microsoft.NET/Framework/v4.0.30319/MSBuild.exe
 MODE:=Build
 SLNPROPERTIES:=/p:Configuration=$(BuildConfiguration)
 
-all:  instdir Time2RLib
+all:  instdir RSQLSERVERLib
 
-Time2RLibComp:
+RSQLSERVERLibComp:
 	$(MSB) $(SLN) /t:$(MODE) $(SLNPROPERTIES)
 
-Time2RLib:	Time2RLibComp
-	-cp -u -p $(TIME2RBINs) $(INSTDIR)/libs
+RSQLSERVERLib:	RSQLSERVERLibComp
+	-cp -u -p $(RSQLSERVERBINs) $(INSTDIR)/libs
 
 instdir:
 	-@rm -rf $(INSTDIR)/libs
