@@ -56,7 +56,8 @@ To simplify the previous example to :
 
 
 ```{r  getquery}
-
+query <- "SELECT  name,object_id,create_date 
+          FROM    sys.tables"
 conn <- dbConnect('SqlServer',user="collateral",password="collat",
                  host="localhost",trusted=TRUE, timeout=30)
 res <- dbGetQuery(conn, query)
