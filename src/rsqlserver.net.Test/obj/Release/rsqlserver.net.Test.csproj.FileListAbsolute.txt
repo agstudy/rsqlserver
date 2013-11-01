@@ -1,0 +1,13 @@
+C:\projects\R\rsqlserver\src\rsqlserver.net.Test\bin\Release\rsqlserver.net.Test.exe.config
+C:\projects\R\rsqlserver\src\rsqlserver.net.Test\bin\Release\rsqlserver.net.Test.exe
+C:\projects\R\rsqlserver\src\rsqlserver.net.Test\bin\Release\rsqlserver.net.Test.pdb
+C:\projects\R\rsqlserver\src\rsqlserver.net.Test\bin\Release\rsqlserver.net.dll
+C:\projects\R\rsqlserver\src\rsqlserver.net.Test\bin\Release\rsqlserver.net.pdb
+C:\projects\R\rsqlserver\src\rsqlserver.net.Test\obj\Release\rsqlserver.net.Test.csprojResolveAssemblyReference.cache
+C:\projects\R\rsqlserver\src\rsqlserver.net.Test\obj\Release\rsqlserver.net.Test.exe
+C:\projects\R\rsqlserver\src\rsqlserver.net.Test\obj\Release\rsqlserver.net.Test.pdb
+C:\projects\R\rsqlserver\src\rsqlserver.net.Test\bin\Release\RDotNet.dll
+C:\projects\R\rsqlserver\src\rsqlserver.net.Test\bin\Release\RDotNet.NativeLibrary.dll
+C:\projects\R\rsqlserver\src\rsqlserver.net.Test\bin\Release\RDotNet.xml
+C:\projects\R\rsqlserver\src\rsqlserver.net.Test\bin\Release\RDotNet.NativeLibrary.xml
+C:\projects\R\rsqlserver\src\rsqlserver.net.Test\bin\Release\SqlDataHelper.cs

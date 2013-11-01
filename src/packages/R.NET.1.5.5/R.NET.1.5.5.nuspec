@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>R.NET</id>
+    <version>1.5.5</version>
+    <title>R.NET</title>
+    <authors>RecycleBin</authors>
+    <owners>RecycleBin</owners>
+    <licenseUrl>http://rdotnet.codeplex.com/license</licenseUrl>
+    <projectUrl>http://rdotnet.codeplex.com/</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Collaboration of .NET Framework with R statistical computing. This requires the R binaries, which are available on http://www.r-project.org/</description>
+    <summary>Collaboration of .NET Framework with R statistical computing.</summary>
+    <copyright>Copyright 2012 RecycleBin</copyright>
+    <tags>R RDotNet statistics</tags>
+    <frameworkAssemblies>
+      <frameworkAssembly assemblyName="System.Numerics" targetFramework="" />
+    </frameworkAssemblies>
+    <references>
+      <reference file="RDotNet.dll" />
+      <reference file="RDotNet.NativeLibrary.dll" />
+    </references>
+  </metadata>
+</package>

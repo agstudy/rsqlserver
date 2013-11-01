@@ -1,7 +1,7 @@
 
 
 sqlServerInitDriver <-
-  function(max.con = 16, fetch.default.rec = 500, force.reload=FALSE,
+  function(max.con = 100L, fetch.default.rec = 500, force.reload=FALSE,
            shared.cache=FALSE)
     ## return a manager id
   {
@@ -9,8 +9,6 @@ sqlServerInitDriver <-
     config.params <- as.integer(c(max.con, fetch.default.rec))
     force <- as.logical(force.reload)
     cache <- as.logical(shared.cache)
-    clrLoadAssembly('System.Data')
-    clrLoadAssembly(system.file("rsqlserver.net.dll", package="rsqlserver"))
     new("SqlServerDriver", Id = clrGetExtPtr(clrNew('System.Object')))
   }
 
