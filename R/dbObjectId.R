@@ -1,6 +1,7 @@
 
 
-setClass("dbObjectId", representation(Id = "externalptr", "VIRTUAL"))
+setClass("dbObjectId", representation(Id = "externalptr", "VIRTUAL"),
+         prototype=list(Id=NULL))
 
 
 isIdCurrent <- 
