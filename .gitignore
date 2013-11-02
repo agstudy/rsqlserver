@@ -1,7 +1,5 @@
 .Rproj.user
 .Rhistory
 .RData
-/build
-/bin
-/Debug
-/Release
+bin/
+obj/
