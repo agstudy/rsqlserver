@@ -105,49 +105,6 @@ sqlServerExecScalar <-
     
   }
 
-# sqlServerFetch <- 
-#   function(res,n){
-#     n <- as(n, "integer")
-#     dataReader <- rClr:::createReturnedObject(res@Id)
-#     ncols <- clrGet(dataReader,"FieldCount")
-#     if(ncols==0) return(NULL)
-#     cnt <- 0
-#     out <- data.frame()
-#     if(clrGet(dataReader,'HasRows')>0) {
-#       sqlDataHelper <- clrNew("rsqlserver.net.SqlDataHelper")
-#       while (clrCall(dataReader,"Read"))
-#       {
-#         datarow <- vector(mode='list',ncols)
-#         for( i in seq_len(ncols)-1)
-#         {
-#           datarow[i+1] <- clrCall(sqlDataHelper,"GetItem",dataReader,
-#                                         as.integer(i))
-#         }
-#         out <- if(length(out)==0) unlist(datarow)
-#                else rbind(out,unlist(datarow))
-#         cnt <- cnt +1 
-#         if(cnt==n) break
-#       }
-#      rownames(out) <- as.integer(seq_len(cnt))
-#     }
-#     columns = vector('list',ncols)
-#     columnsTypes = vector('list',ncols)
-#     for( i in seq(0,ncols-1))
-#       columns[i+1] <- clrCall(dataReader,'GetName',as.integer(i))
-#     for( i in seq(0,ncols-1)){
-#       columnsTypes[i+1] <- clrCall(dataReader,'GetDataTypeName',as.integer(i))
-#       if(columnsTypes[i+1]=="datetime"){
-# 
-#         out[,i+1] <- as.POSIXct(out[,i+1])
-#       }
-#     }
-#       
-#     if(length(out)==0)
-#       out <- do.call(cbind,as.list(rep(NA,ncols)))
-#     colnames(out) <- columns
-#     attr(out,'FielsType') <- columnsTypes
-#     as.data.frame(out)
-#   }
 
 
 sqlServerFetch <- 
@@ -156,28 +113,20 @@ sqlServerFetch <-
     dataReader <- rClr:::createReturnedObject(res@Id)
     ncols <- clrGet(dataReader,"FieldCount")
     if(ncols==0) return(NULL)
-    cnt <- 0
     sqlDataHelper <- clrNew("rsqlserver.net.SqlDataHelper")
-    out <-clrCall(sqlDataHelper,'Fetch',dataReader)
-    columns = vector('list',ncols)
-    columnsTypes = vector('list',ncols)
-    for( i in seq(0,ncols-1))
-      columns[i+1] <- clrCall(dataReader,'GetName',as.integer(i))
-    browser()
-    vals <- clrCall(sqlDataHelper,'TestRdotNet')
+    outDict <- clrCall(sqlDataHelper,'Fetch',dataReader)
+    cnames = clrGet(sqlDataHelper,'Columns')
+    ctypes = clrGet(sqlDataHelper,'ColumnsTypes')
+    nrows = clrGet(sqlDataHelper,'Nrows')
+    out <- lapply(ctypes,function(x)vector(netToRType(x),
+                                           length=nrows))
+    setNames(out,cnames)
     for( i in seq(0,ncols-1)){
-      columnsTypes[i+1] <- clrCall(dataReader,'GetDataTypeName',as.integer(i))
-      if(columnsTypes[i+1]=="datetime"){
-        
-        out[,i+1] <- as.POSIXct(out[,i+1])
-      }
+      browser()
+      out[[i]] = clrCall(outDict,'get_Item',cnames[i+1])
     }
-    
-    if(length(out)==0)
-      out <- do.call(cbind,as.list(rep(NA,ncols)))
-    colnames(out) <- columns
-    attr(out,'FielsType') <- columnsTypes
     as.data.frame(out)
+    
   }
 
 
@@ -299,7 +248,6 @@ setMethod("dbDataType",
 
 sqlServerDbType <- function(obj,...)
 {
-  
   switch(typeof(obj),
          logical   = "TINYINT",
          integer   = "INTEGER",
@@ -313,21 +261,14 @@ sqlServerDbType <- function(obj,...)
                        "sqlServerDbType", 1L, class(obj))))    
   
 }
-sqlServerToRType <- function(obj,...)
+netToRType <- function(obj,...)
 {
-  
-  switch(typeof(obj),
-         datetime   = "TINYINT",
-         integer   = "INTEGER",
-         double  = if (inherits(obj, "POSIXct"))
-           "DATETIME"
-         else
-           "REAL",
-         character = "VARCHAR(128)",
-         list      = "varbinary(2000)",
-         stop(gettextf("rsqlserver internal error [%s, %d, %s]",
-                       "sqlServerDbType", 1L, class(obj))))    
-  
+  switch(obj,
+         System.String   = "character",
+         System.Int32  = "integer",
+         System.Double  = "numeric",
+         System.DateTime  = "character",
+         "character")
 }
 
 
