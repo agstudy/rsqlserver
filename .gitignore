@@ -22,6 +22,9 @@ build/
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
 
+
+## inst package
+/inst
 *_i.c
 *_p.c
 *.ilk
