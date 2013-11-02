@@ -1,15 +1,15 @@
-﻿using RDotNet;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Xunit;
 
 namespace rsqlserver.net.Test
 {
-    class Program
+    public class SqlDataHelperTest
     {
 
         static SqlConnection myConnection = new SqlConnection("user id=collateral;" +
@@ -63,8 +63,6 @@ namespace rsqlserver.net.Test
             }
             Console.ReadLine();
         }
-
-
         public static void TestGetReaderProperty()
         {
 
@@ -89,20 +87,20 @@ namespace rsqlserver.net.Test
             Console.ReadLine();
         }
 
-
+        [Fact]
         public static void TestFetch()
         {
             try
             {
                 myConnection.Open();
                 SqlDataReader myReader = null;
-                SqlCommand myCommand = new SqlCommand("select * from sys.tables",
-                    myConnection);
+                var query = "SELECT  name,object_id,create_date \n" +
+                             "FROM    sys.tables";
+                SqlCommand myCommand = new SqlCommand(query,myConnection);
                 myReader = myCommand.ExecuteReader();
                 var helper = new SqlDataHelper();
                 var ll = helper.Fetch(myReader);
-
-            }
+               }
             catch (Exception e)
             {
                 Console.WriteLine(e.ToString());
@@ -112,41 +110,10 @@ namespace rsqlserver.net.Test
         }
 
 
-        //static void Main(string[] args)
-        //{
-        //    //TestGetProperty();
-        //    // var v = (new SqlDataHelper()).perfTest(1000);
-        //    //TestGetReaderProperty();
-        //    //TestFetch();
-
-        //}
-        public static void SetupPath(string Rversion = "R-3.0.0" )
-        {
-            var oldPath = System.Environment.GetEnvironmentVariable("PATH");
-            var rPath = System.Environment.Is64BitProcess ? string.Format(@"C:\Program Files\R\{0}\bin\x64", Rversion) :
-                                  string.Format(@"C:\Program Files\R\{0}\bin\i386", Rversion);
-
-            if (!Directory.Exists(rPath))
-                throw new DirectoryNotFoundException(string.Format("Could not found the specified path to the directory containing R.dll: {0}", rPath));
-            var newPath = string.Format("{0}{1}{2}", rPath, System.IO.Path.PathSeparator, oldPath);
-            System.Environment.SetEnvironmentVariable("PATH", newPath);
-        }
-
+  
         static void Main(string[] args)
         {
-            //REngine.SetEnvironmentVariables(); // Currently under development - coming soon
-            SetupPath(); // current process, soon to be deprecated
-            using (REngine engine = REngine.CreateInstance("RDotNet"))
-            {
-                engine.Initialize(); // required since v1.5
-                CharacterVector charVec = engine.CreateCharacterVector(new[] { "Hello, R world!, .NET speaking" });
-                engine.SetSymbol("greetings", charVec);
-                engine.Evaluate("str(greetings)"); // print out in the console
-                string[] a = engine.Evaluate("'Hi there .NET, from the R engine'").AsCharacter().ToArray();
-                Console.WriteLine("R answered: '{0}'", a[0]);
-                Console.WriteLine("Press any key to exit the program");
-                Console.ReadKey();
-            }
+          
         }
     }
 }
