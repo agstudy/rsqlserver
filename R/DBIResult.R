@@ -126,7 +126,7 @@ sqlServerFetch <-
       }
       out
     })
-    as.data.frame(out)
+    as.data.frame(out,stringsAsFactors=FALSE)
     
   }
 
