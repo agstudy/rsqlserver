@@ -17,6 +17,9 @@ namespace rsqlserver.net.Test
                                      "Trusted_Connection=yes;" +
                                      "connection timeout=30");
 
+        private static SqlDataHelper helper = new SqlDataHelper();
+
+
         public static void TestGetItem()
         {
             try
@@ -86,30 +89,35 @@ namespace rsqlserver.net.Test
             }
             Console.ReadLine();
         }
+
+
+
         [Fact]
         public static void TestFetch()
         {
-                using (myConnection)
-                {
-                    myConnection.Open();
-                    SqlDataReader myReader = null;
-                    var query = "SELECT  name,object_id,create_date \n" +
-                                 "FROM    sys.tables";
-                    SqlCommand myCommand = new SqlCommand(query, myConnection);
-                    myReader = myCommand.ExecuteReader();
-                    var helper = new SqlDataHelper();
-                    var ll = helper.Fetch(myReader);
-                    Assert.Equal(ll.Keys.Count, 3);
-                    string[] cols = new string[] { "name", "object_id", "create_date" };
-                    foreach (string key in ll.Keys)
-                        Assert.Contains(key, cols);
-                }
+            using (myConnection)
+            {
+                myConnection.Open();
+                SqlDataReader myReader = null;
+                var query = "SELECT  name,object_id,create_date \n" +
+                             "FROM    sys.tables";
+                SqlCommand myCommand = new SqlCommand(query, myConnection);
+                myReader = myCommand.ExecuteReader();
+                helper = new SqlDataHelper();
+                var result = helper.Fetch(myReader);
+                Assert.Equal(result.Keys.Count, 3);
+                string[] cols = new string[] { "name", "object_id", "create_date" };
+                foreach (string key in result.Keys)
+                    Assert.Contains(key, cols);
+            }
+
+            Assert.Equal(helper.Frame["name"].Length, helper.Nrows);
+            Assert.Equal(helper.Frame.Keys.Count, helper.Cnames.Length);
         }
 
 
-        
 
-  
+
         static void Main(string[] args)
         {
             TestFetch();

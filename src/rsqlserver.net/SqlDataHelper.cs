@@ -83,6 +83,11 @@ namespace rsqlserver.net
         {
             get { return _cdbtypes; }
         }
+
+        public Dictionary<string, Array> Frame
+        {
+            get { return _frame; }
+        }
         #endregion 
         #region global methods 
         public Object GetItem(SqlDataReader _dataReader, int i){
@@ -149,9 +154,11 @@ namespace rsqlserver.net
             if (cnt < MAX_ROWS)
                 for (int i = 0; i < dr.FieldCount; i++)
                     _frame[_cnames[i]] = TrimArray(_frame[_cnames[i]], cnt, i);
+            // set nrows
+            _nrows = cnt;
             return _frame;
         }
-        #endregion 
+        #endregion  
         #region tools
         private Array allocColumn(Type cType,int curr){
             return Array.CreateInstance(cType, MAX_ROWS);
