@@ -86,10 +86,9 @@ namespace rsqlserver.net.Test
             }
             Console.ReadLine();
         }
-
+        [Fact]
         public static void TestFetch()
         {
-     
                 using (myConnection)
                 {
                     myConnection.Open();
@@ -100,9 +99,11 @@ namespace rsqlserver.net.Test
                     myReader = myCommand.ExecuteReader();
                     var helper = new SqlDataHelper();
                     var ll = helper.Fetch(myReader);
+                    Assert.Equal(ll.Keys.Count, 3);
+                    string[] cols = new string[] { "name", "object_id", "create_date" };
+                    foreach (string key in ll.Keys)
+                        Assert.Contains(key, cols);
                 }
-
- 
         }
 
 
@@ -111,7 +112,7 @@ namespace rsqlserver.net.Test
   
         static void Main(string[] args)
         {
-          
+            TestFetch();
         }
     }
 }

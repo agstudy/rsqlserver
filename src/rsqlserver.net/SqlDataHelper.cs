@@ -116,7 +116,7 @@ namespace rsqlserver.net
             }
             return val;
         }
-        public object Fetch(SqlDataReader dr)
+        public Dictionary<string, Array> Fetch(SqlDataReader dr)
         {
             int cnt = 0;
             while (dr.Read() && cnt < MAX_ROWS)
@@ -129,24 +129,22 @@ namespace rsqlserver.net
                     _ctypes = new Type[dr.FieldCount];
                     _frame = new Dictionary<string, Array>();
                 }
-
                 // fetch rows and strore data by column
                 for (int i = 0; i < dr.FieldCount; i++)
                 {
                     // allocates structures memory the first row reached
                     if (cnt == 0)
                     {
-                        string dbType = dr.GetDataTypeName(i);
-                        _frame[_cnames[i]] = allocColumn(dbType, i);
+                        _cdbtypes[i] = dr.GetDataTypeName(i);
+                        _ctypes[i] = dr.GetFieldType(i);
                         _cnames[i] = dr.GetName(i);
-                        _cdbtypes[i] = dbType;
+                        _frame[_cnames[i]] = allocColumn(_ctypes[i], i);
                     }
                     // 
                     _frame[_cnames[i]].SetValue(dr.GetValue(i), cnt);
                 }
                 cnt += 1;
             }
-
             // trim array 
             if (cnt < MAX_ROWS)
                 for (int i = 0; i < dr.FieldCount; i++)
@@ -155,9 +153,8 @@ namespace rsqlserver.net
         }
         #endregion 
         #region tools
-        private Array allocColumn(string dbType,int curr){
-            _ctypes[curr] = dbToNetType[dbType];
-            return Array.CreateInstance(_ctypes[curr], MAX_ROWS);
+        private Array allocColumn(Type cType,int curr){
+            return Array.CreateInstance(cType, MAX_ROWS);
         }
         private Array TrimArray(Array source, int length,int curr)
         {
