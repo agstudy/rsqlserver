@@ -9,7 +9,7 @@ using Xunit;
 
 namespace rsqlserver.net.Test
 {
-    public class SqlDataHelperTest
+    public class TestSqlDataHelper
     {
 
         static SqlConnection myConnection = new SqlConnection("user id=collateral;" +
@@ -87,28 +87,26 @@ namespace rsqlserver.net.Test
             Console.ReadLine();
         }
 
-        [Fact]
         public static void TestFetch()
         {
-            try
-            {
-                myConnection.Open();
-                SqlDataReader myReader = null;
-                var query = "SELECT  name,object_id,create_date \n" +
-                             "FROM    sys.tables";
-                SqlCommand myCommand = new SqlCommand(query,myConnection);
-                myReader = myCommand.ExecuteReader();
-                var helper = new SqlDataHelper();
-                var ll = helper.Fetch(myReader);
-               }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
+     
+                using (myConnection)
+                {
+                    myConnection.Open();
+                    SqlDataReader myReader = null;
+                    var query = "SELECT  name,object_id,create_date \n" +
+                                 "FROM    sys.tables";
+                    SqlCommand myCommand = new SqlCommand(query, myConnection);
+                    myReader = myCommand.ExecuteReader();
+                    var helper = new SqlDataHelper();
+                    var ll = helper.Fetch(myReader);
+                }
 
-            Console.ReadLine();
+ 
         }
 
+
+        
 
   
         static void Main(string[] args)

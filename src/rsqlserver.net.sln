@@ -7,16 +7,26 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rsqlserver.net.Test", "rsql
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug[+TEST]|Any CPU = Debug[+TEST]|Any CPU
 		Debug|Any CPU = Debug|Any CPU
+		Release[+TEST]|Any CPU = Release[+TEST]|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{402EF9FC-7A93-4A67-B605-94C88353EC05}.Debug[+TEST]|Any CPU.ActiveCfg = Debug[+TEST]|Any CPU
+		{402EF9FC-7A93-4A67-B605-94C88353EC05}.Debug[+TEST]|Any CPU.Build.0 = Debug[+TEST]|Any CPU
 		{402EF9FC-7A93-4A67-B605-94C88353EC05}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{402EF9FC-7A93-4A67-B605-94C88353EC05}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{402EF9FC-7A93-4A67-B605-94C88353EC05}.Release[+TEST]|Any CPU.ActiveCfg = Release[+TEST]|Any CPU
+		{402EF9FC-7A93-4A67-B605-94C88353EC05}.Release[+TEST]|Any CPU.Build.0 = Release[+TEST]|Any CPU
 		{402EF9FC-7A93-4A67-B605-94C88353EC05}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{402EF9FC-7A93-4A67-B605-94C88353EC05}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D5C16450-5892-44E3-85C9-B79F230EC5E7}.Debug[+TEST]|Any CPU.ActiveCfg = Debug[+TEST]|Any CPU
+		{D5C16450-5892-44E3-85C9-B79F230EC5E7}.Debug[+TEST]|Any CPU.Build.0 = Debug[+TEST]|Any CPU
 		{D5C16450-5892-44E3-85C9-B79F230EC5E7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D5C16450-5892-44E3-85C9-B79F230EC5E7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D5C16450-5892-44E3-85C9-B79F230EC5E7}.Release[+TEST]|Any CPU.ActiveCfg = Release[+TEST]|Any CPU
+		{D5C16450-5892-44E3-85C9-B79F230EC5E7}.Release[+TEST]|Any CPU.Build.0 = Release[+TEST]|Any CPU
 		{D5C16450-5892-44E3-85C9-B79F230EC5E7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D5C16450-5892-44E3-85C9-B79F230EC5E7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection

@@ -133,7 +133,7 @@ namespace rsqlserver.net
                 // fetch rows and strore data by column
                 for (int i = 0; i < dr.FieldCount; i++)
                 {
-                    // allocates memory the first row
+                    // allocates structures memory the first row reached
                     if (cnt == 0)
                     {
                         string dbType = dr.GetDataTypeName(i);
@@ -141,7 +141,7 @@ namespace rsqlserver.net
                         _cnames[i] = dr.GetName(i);
                         _cdbtypes[i] = dbType;
                     }
-                    // TODO : see complexity here
+                    // 
                     _frame[_cnames[i]].SetValue(dr.GetValue(i), cnt);
                 }
                 cnt += 1;
