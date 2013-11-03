@@ -114,17 +114,18 @@ sqlServerFetch <-
     ncols <- clrGet(dataReader,"FieldCount")
     if(ncols==0) return(NULL)
     sqlDataHelper <- clrNew("rsqlserver.net.SqlDataHelper")
-    outDict <- clrCall(sqlDataHelper,'Fetch',dataReader)
-    cnames = clrGet(sqlDataHelper,'Cnames')
-    ctypes = clrGet(sqlDataHelper,'CDbtypes')
-    nrows = clrGet(sqlDataHelper,'Nrows')
-    out <- lapply(ctypes,function(x)vector(netToRType(x),
-                                           length=nrows))
-    setNames(out,cnames)
-    for( i in seq(0,ncols-1)){
-      browser()
-      out[[i]] = clrCall(outDict,'get_Item',cnames[i+1])
-    }
+    res.Dict <- clrCall(sqlDataHelper,'Fetch',dataReader)
+    res.props <- sapply(c('Cnames','CDbtypes','Nrows'),
+                        function(x)clrGet(sqlDataHelper,x),simplify=FALSE)
+    out <- with(res.props, {
+      out <- lapply(CDbtypes, function(x)
+        vector(netToRType(x),length=Nrows))
+      names(out) <- Cnames
+      for( i in seq(0,ncols-1)){
+        out[[i+1]] <- clrCall(res.Dict,'get_Item',res.props$Cnames[i+1])
+      }
+      out
+    })
     as.data.frame(out)
     
   }
