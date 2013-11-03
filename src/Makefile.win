@@ -22,7 +22,7 @@ RSQLSERVERLibComp:
 	$(MSB) $(SLN) /t:$(MODE) $(SLNPROPERTIES)
 
 RSQLSERVERLib:	RSQLSERVERLibComp
-	-cp -u -p $(RSQLSERVERBINs) $(INSTDIR)/libs
+#	-@cp -u -p $(RSQLSERVERBINs) $(INSTDIR)/libs
 
 instdir:
 	-@rm -rf $(INSTDIR)/libs
