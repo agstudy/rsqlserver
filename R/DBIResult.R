@@ -115,8 +115,8 @@ sqlServerFetch <-
     if(ncols==0) return(NULL)
     sqlDataHelper <- clrNew("rsqlserver.net.SqlDataHelper")
     outDict <- clrCall(sqlDataHelper,'Fetch',dataReader)
-    cnames = clrGet(sqlDataHelper,'Columns')
-    ctypes = clrGet(sqlDataHelper,'ColumnsTypes')
+    cnames = clrGet(sqlDataHelper,'Cnames')
+    ctypes = clrGet(sqlDataHelper,'CDbtypes')
     nrows = clrGet(sqlDataHelper,'Nrows')
     out <- lapply(ctypes,function(x)vector(netToRType(x),
                                            length=nrows))
