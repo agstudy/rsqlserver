@@ -126,7 +126,10 @@ sqlServerFetch <-
       }
       out
     })
-    as.data.frame(out,stringsAsFactors=FALSE)
+    # as.data.frame is expensive - create it on the fly from the list
+    attr(out, "row.names") <- c(NA_integer_, length(out[[1]]))
+    class(out) <- "data.frame"
+    out
     
   }
 
