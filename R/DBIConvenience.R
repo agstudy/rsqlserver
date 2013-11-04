@@ -225,7 +225,7 @@ dropTable <- function(con, name,...)
   name <- as.character(name)
   if (length(name) != 1L)
     stop("'name' must be a single string")
-  if(dbExistsTable(conn, name)){
+  if(dbExistsTable(con, name)){
     rc <- try( {stmt <- sprintf('DROP TABLE "%s"', name)
                 dbGetScalar(con, stmt)})
     !inherits(rc, "try-error")
