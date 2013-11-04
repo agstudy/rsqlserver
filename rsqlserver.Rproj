@@ -14,4 +14,4 @@ LaTeX: pdfLaTeX
 
 BuildType: Package
 PackageInstallArgs: --no-multiarch --no-test-load
-PackageCheckArgs: --no-manual
+PackageCheckArgs: --as-cran
