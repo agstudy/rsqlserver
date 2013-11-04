@@ -17,33 +17,33 @@ namespace rsqlserver.net.Test
                                      "Trusted_Connection=yes;" +
                                      "connection timeout=30");
 
-        private static SqlDataHelper helper = new SqlDataHelper();
+        private static SqlDataHelper helper;
 
 
-        public static void TestGetItem()
-        {
-            try
-            {
-                myConnection.Open();
-                SqlDataReader myReader = null;
-                SqlCommand myCommand = new SqlCommand("select * from sys.tables",
-                    myConnection);
-                myReader = myCommand.ExecuteReader();
-                object val = 0;
-                while (myReader.Read())
-                {
-                    for (int i = 0; i < myReader.FieldCount; i++)
-                        val = (new SqlDataHelper()).GetItem(myReader, i);
+        //public static void TestGetItem()
+        //{
+        //    try
+        //    {
+        //        myConnection.Open();
+        //        SqlDataReader myReader = null;
+        //        SqlCommand myCommand = new SqlCommand("select * from sys.tables",
+        //            myConnection);
+        //        myReader = myCommand.ExecuteReader();
+        //        object val = 0;
+        //        while (myReader.Read())
+        //        {
+        //            for (int i = 0; i < myReader.FieldCount; i++)
+        //                val = (new SqlDataHelper()).GetItem(myReader, i);
 
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
-            }
+        //        }
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Console.WriteLine(e.ToString());
+        //    }
 
-            Console.ReadLine();
-        }
+        //    Console.ReadLine();
+        //}
         public static void TestGetProperty()
         {
 
@@ -72,12 +72,13 @@ namespace rsqlserver.net.Test
             try
             {
                 myConnection.Open();
-                var helper = new SqlDataHelper();
                 SqlCommand cmd = new SqlCommand("select * from sys.tables");
                 cmd.Connection = myConnection;
                 var reader = cmd.ExecuteReader();
+                var helper = new SqlDataHelper(reader);
+             
                 foreach (var prop in myConnection.GetType().GetProperties())
-                    Console.WriteLine(helper.GetReaderProperty(reader, prop.Name));
+                    Console.WriteLine(helper.GetReaderProperty( prop.Name));
             }
             catch (Exception e)
             {
@@ -101,19 +102,23 @@ namespace rsqlserver.net.Test
                 SqlDataReader myReader = null;
                 var query = "SELECT  name,object_id,create_date \n" +
                              "FROM    sys.tables";
+
+                //var query = "SELECT  mpg,cyl,wt \n" +
+                //         "FROM    T_MTCARS     ";
                 SqlCommand myCommand = new SqlCommand(query, myConnection);
                 myReader = myCommand.ExecuteReader();
-                helper = new SqlDataHelper();
-                var result = helper.Fetch(myReader);
-                Assert.Equal(result.Keys.Count, 3);
+                helper = new SqlDataHelper(myReader);
+                var result = helper.Fetch(20);
+                Assert.Equal(helper.ResultSet.Keys.Count, 3);
                 string[] cols = new string[] { "name", "object_id", "create_date" };
-                foreach (string key in result.Keys)
+                foreach (string key in helper.ResultSet.Keys)
                     Assert.Contains(key, cols);
             }
 
-            Assert.Equal(helper.Frame["name"].Length, helper.Nrows);
-            Assert.Equal(helper.Frame.Keys.Count, helper.Cnames.Length);
+            Assert.Equal(helper.ResultSet["name"].Length, helper.Nrows);
+            Assert.Equal(helper.ResultSet.Keys.Count, helper.Cnames.Length);
         }
+
 
 
 
@@ -121,6 +126,7 @@ namespace rsqlserver.net.Test
         static void Main(string[] args)
         {
             TestFetch();
+
         }
     }
 }
