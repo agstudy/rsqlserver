@@ -113,20 +113,36 @@ sqlServerFetch <-
     dataReader <- rClr:::createReturnedObject(res@Id)
     ncols <- clrGet(dataReader,"FieldCount")
     if(ncols==0) return(NULL)
-    sqlDataHelper <- clrNew("rsqlserver.net.SqlDataHelper")
-    res.Dict <- clrCall(sqlDataHelper,'Fetch',dataReader)
-    res.props <- sapply(c('Cnames','CDbtypes','Nrows'),
-                        function(x)clrGet(sqlDataHelper,x),simplify=FALSE)
-    out <- with(res.props, {
+    browser()
+    sqlDataHelper <- clrNew("rsqlserver.net.SqlDataHelper",dataReader)
+    
+    Cnames <- clrGet(sqlDataHelper,'Cnames')
+    CDbtypes <- clrGet(sqlDataHelper,'CDbtypes')
+    
+    out <- if (n < 0L) { ## infinite pull
       out <- lapply(CDbtypes, function(x)
-        vector(netToRType(x),length=Nrows))
-      names(out) <- Cnames
-      for( i in seq(0,ncols-1)){
-        out[[i+1]] <- clrCall(res.Dict,'get_Item',res.props$Cnames[i+1])
+        vector(netToRType(x),length=0L))
+      stride <- 32768L  ## start fairly small to support tiny queries and increase later
+      while ((nrec <- clrCall(sqlDataHelper,'Fetch',stride)) > 0L) {
+        res.Dict <- clrGet(sqlDataHelper,"ResultSet")
+        for (i in seq.int(Cnames)){
+          out[[i]] <- c(out[[i]], clrCall(res.Dict,'get_Item',Cnames[i]))
+        }
+        if (nrec < stride) break
+        stride <- 524288L # 512k
       }
       out
-    })
-    # as.data.frame is expensive - create it on the fly from the list
+    } else {
+      clrCall(sqlDataHelper,'Fetch',as.integer(n))
+      res.Dict <- clrGet(sqlDataHelper,"ResultSet")
+      out <- lapply(CDbtypes, function(x)
+        vector(netToRType(x),length=n))
+      for (i in seq.int(Cnames))
+        out[[i]] <- clrCall(res.Dict,'get_Item',Cnames[i])    
+      out
+    }
+    ## set names and convert list to a data.frame
+    names(out) <- Cnames
     attr(out, "row.names") <- c(NA_integer_, length(out[[1]]))
     class(out) <- "data.frame"
     out
@@ -169,9 +185,9 @@ sqlServerResultInfo <-
       stop(paste("expired", class(dbObj), deparse(substitute(dbObj))))
     res <- rClr:::createReturnedObject(dbObj@Id)
     info <- vector("list", length = length(clrGetProperties(res)))
-    sqlDataHelper <- clrNew("rsqlserver.net.SqlDataHelper")
+    sqlDataHelper <- clrNew("rsqlserver.net.SqlDataHelper",res)
     for (prop in clrGetProperties(res))
-      info[[prop]] <- clrCall(sqlDataHelper,"GetReaderProperty",res,
+      info[[prop]] <- clrCall(sqlDataHelper,"GetReaderProperty",
                               prop)
     info <- as.list(unlist(info))
     if(!missing(what))
