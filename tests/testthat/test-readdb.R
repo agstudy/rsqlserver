@@ -95,17 +95,19 @@ test_that(" get some columns from a table without setting  ", {
 
 test_that("save and read a hudge data frame",{
   set.seed(1)
-  N=100000
+  N=10000
+  table.name = paste('T_BIG',N,sep='_')
   dat <- data.frame(value=sample(1:100,N,rep=TRUE),
-                    key=sample(letters,N,rep=TRUE),
+                    key  =sample(letters,N,rep=TRUE),
                     stringsAsFactors=FALSE)
   conn <- dbConnect('SqlServer',user="collateral",password="collat",
                     host="localhost",trusted=TRUE, timeout=30)
-  dbWriteTable(conn,name='T_BIG',dat,row.names=FALSE,overwrite=TRUE)
-  expect_equal(dbExistsTable(conn,'T_BIG'),TRUE)
-  res <- dbReadTable(conn,name='T_BIG')
+  dbWriteTable(conn,name=table.name,dat,row.names=FALSE,overwrite=TRUE)
+  expect_equal(dbExistsTable(conn,table.name),TRUE)
+  res <- dbReadTable(conn,name=table.name)
   expect_equal(nrow(res),N)
   dbDisconnect(conn)
+  
   
 })
 
