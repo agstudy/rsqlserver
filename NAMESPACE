@@ -19,7 +19,7 @@ dbListResults,
 # 
 # ## DBIConnection: Convenience
 dbListTables, dbReadTable, dbWriteTable, dbExistsTable, dbRemoveTable,
-dbListFields,
+dbListFields,make.db.names,
 # 
 # ## DBIConnection: Transaction management
 dbCommit, dbRollback,
