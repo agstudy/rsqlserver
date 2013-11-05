@@ -11,57 +11,6 @@ namespace rsqlserver.net
     public class SqlDataHelper
     {
         #region map types
-        //private Dictionary<Type, DbType> NetToDbType{
-        //    get
-        //    {
-        //        var typeMap = new Dictionary<Type, DbType>();
-        //        typeMap[typeof(byte)] = DbType.Byte;
-        //        typeMap[typeof(sbyte)] = DbType.SByte;
-        //        typeMap[typeof(short)] = DbType.Int16;
-        //        typeMap[typeof(ushort)] = DbType.UInt16;
-        //        typeMap[typeof(int)] = DbType.Int32;
-        //        typeMap[typeof(uint)] = DbType.UInt32;
-        //        typeMap[typeof(long)] = DbType.Int64;
-        //        typeMap[typeof(ulong)] = DbType.UInt64;
-        //        typeMap[typeof(float)] = DbType.Single;
-        //        typeMap[typeof(double)] = DbType.Double;
-        //        typeMap[typeof(decimal)] = DbType.Decimal;
-        //        typeMap[typeof(bool)] = DbType.Boolean;
-        //        typeMap[typeof(string)] = DbType.String;
-        //        typeMap[typeof(char)] = DbType.StringFixedLength;
-        //        typeMap[typeof(Guid)] = DbType.Guid;
-        //        typeMap[typeof(DateTime)] = DbType.DateTime;
-        //        typeMap[typeof(DateTimeOffset)] = DbType.DateTimeOffset;
-        //        typeMap[typeof(byte[])] = DbType.Binary;
-        //        return typeMap;
-        //    }
-        //}
-        //private Dictionary<string,Type> dbToNetType
-        //{
-        //   get{
-        //    var typeMap = new Dictionary<string, Type>();
-        //    typeMap[DbType.Byte.ToString()] = typeof(byte);
-        //    typeMap[DbType.SByte.ToString()] = typeof(sbyte);
-        //    typeMap[DbType.Int16.ToString()] = typeof(short);
-        //    typeMap[DbType.UInt16.ToString()] = typeof(ushort);
-        //    typeMap[DbType.Int32.ToString()] = typeof(int);
-        //    typeMap[DbType.UInt32.ToString()] = typeof(uint);
-        //    typeMap[DbType.Int64.ToString()] = typeof(long);
-        //    typeMap[DbType.UInt64.ToString()] = typeof(ulong);
-        //    typeMap[DbType.Single.ToString()] = typeof(float);
-        //    typeMap[DbType.Double.ToString()] = typeof(double);
-        //    typeMap[DbType.Decimal.ToString()] = typeof(decimal);
-        //    typeMap[DbType.Boolean.ToString()] = typeof(bool);
-        //    typeMap[DbType.String.ToString()] = typeof(string);
-        //    typeMap[DbType.StringFixedLength.ToString()] = typeof(char);
-        //    typeMap[DbType.Guid.ToString()] = typeof(Guid);
-        //    typeMap[DbType.DateTime.ToString()] = typeof(DateTime);
-        //    typeMap[DbType.DateTimeOffset.ToString()] = typeof(DateTimeOffset);
-        //    typeMap[DbType.Binary.ToString()] = typeof(byte[]); 
-        //    return typeMap;
-        //   }
-        //}
-
         private Dictionary<Type, Type> NetToRType
         {
             get
@@ -84,7 +33,7 @@ namespace rsqlserver.net
         #region 
         public SqlDataHelper()
         {
-        }
+         }
     
         public SqlDataHelper (SqlDataReader reader){
             _reader=reader;
