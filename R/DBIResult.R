@@ -258,7 +258,7 @@ setMethod("make.db.names",
               # We could check to see if the database we are connected to is
               # running in ANSI mode. That would allow double quoted strings
               # as database identifiers. Until then, the backtick needs to be used.
-              snames[kwi] <- paste("`", snames[kwi], "`", sep = "")
+              snames[kwi] <- paste("[", snames[kwi], "]", sep = "")
             }
             gsub("\\.", "_", snames)
           },
