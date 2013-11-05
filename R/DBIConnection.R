@@ -183,7 +183,7 @@ function(dbObj,what,...){
 sqlServerCloneConnection <-
   function(conn,...){
     obj <- rClr:::createReturnedObject(conn@Id)
-    action = dbListResults(con)$action
+    action = dbListResults(conn)$action
      if(action == "CloseAndOpenMe")  ## broken connection
        obj <- clrCall(obj,'Close')
     obj <- clrCall(obj,'Open')
