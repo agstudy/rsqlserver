@@ -133,8 +133,8 @@ sqlServerWriteTable <-
     } 
     
     
-    #     i <- match("row.names", names(field.types), nomatch=0)
-    #     if(i>0) field.types[i] <- sqlServerDbType(obj=field.types$row.names)
+    # i <- match("row.names", names(field.types), nomatch=0)
+    # if(i>0) field.types[i] <- sqlServerDbType(obj=field.types$row.names)
     names(field.types) <- make.db.names(con, names(field.types), 
                                         allow.keywords = allow.keywords)
     
@@ -149,9 +149,7 @@ sqlServerWriteTable <-
     cnames <- names(field.types)
     ctypes <- field.types
     res <- tryCatch({
-      
-# create the table --------------------------------------------------------
-
+      (function(con,name,cnames,ctypes){
       if (dbExistsTable(con, name)){
         if (overwrite)
         {
@@ -165,20 +163,36 @@ sqlServerWriteTable <-
       }
       else
         dbCreateTable(con, name, cnames, ctypes)
-
-# insert values -----------------------------------------------------------
+      })(con,name,cnames,ctypes)
       
-      stmt <- sprintf('INSERT INTO %s (%s)', name, 
-                      paste(cnames,collapse=','))
-      values <- paste0('VALUES (',do.call(paste, c(value, sep=",",collapse='),(')),')')
-      stmt = paste(stmt,values,sep='\n')
-      dbGetScalar(con, stmt, data = value)
+      insert.into(con,name,cnames,value,row.names)
       dbCommit(con)}, 
                     error = function(e) {
-                      print(stmt)
+                      print(e)
                       dbRollback(con)
                     })
   }
+
+insert.into <- function(con,name,cnames,value,row.names){
+  
+  if(nrow(value)<1000) {
+    stmt <- sprintf('INSERT INTO %s (%s)', name, 
+                    paste(cnames,collapse=','))
+    values <- paste0('VALUES (',do.call(paste, c(value, sep=",",collapse='),(')),')')
+    stmt = paste(stmt,values,sep='\n')
+    dbGetScalar(con, stmt, data = value)
+  }else{
+    con.string = dbGetInfo(con)$ConnectionString
+    id = "d:/temp/temp.csv"
+    write.csv(value,file=id,row.names=row.names)
+    browser()
+    clrCallStatic("rsqlserver.net.misc","SqlBulkCopy",con.string ,id,name)
+   ## file.remove(id)
+  }
+  
+}
+
+
 
 
 
@@ -217,13 +231,14 @@ sqlServer.data.frame <- function(obj)
 dbCreateTable <- function(con, name, cnames, ctypes)
 {
   tryCatch({
-  stmt <- sprintf('CREATE TABLE "%s" (%s)', name,
-                  paste(cnames, ctypes, collapse = ","))
-  dbGetScalar(con, stmt)},
-  error=function(e){
-    print(stmt)
-    stop("dbCreateTable: Impossible to create table , see the stmt expression")
-  })
+    stmt <- sprintf('CREATE TABLE "%s" (%s)', name,
+                    paste(cnames, ctypes, collapse = ","))
+    dbGetScalar(con, stmt)},
+           error=function(e){
+             cat(paste0("query : ",stmt),sep='\n')
+             print(e)
+             stop("dbCreateTable: Impossible to create table , see the stmt expression")
+           })
 }
 
 dropTable <- function(con, name,...)
