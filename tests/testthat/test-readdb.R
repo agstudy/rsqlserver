@@ -32,7 +32,31 @@ test_that("Create a table and remove it using handy functions ", {
 })
 
 
-test_that(" get some columns from a table ", {
+
+
+test_that(" get n rows from a table", {
+  
+  conn <- dbConnect('SqlServer',user="collateral",password="collat",
+                    host="localhost",trusted=TRUE, timeout=30)
+  if(dbExistsTable(conn,'T_MTCARS'))
+    dbRemoveTable(conn,'T_MTCARS')
+  dbWriteTable(conn,name='T_MTCARS',mtcars)
+  expect_equal(dbExistsTable(conn,'T_MTCARS'),TRUE)
+  
+  query <- "SELECT  mpg,cyl,wt 
+               FROM    T_MTCARS"
+  res <- dbSendQuery(conn, query)
+  res.dat <- fetch(res,n=nrow(mtcars))
+  invisible(dbClearResult(res))
+  dbRemoveTable(conn,'T_MTCARS')
+  expect_equal(!dbExistsTable(conn,'T_MTCARS'),TRUE)
+  dbDisconnect(conn)
+  expect_is(res.dat,'data.frame')
+  expect_equal(nrow(mtcars),nrow(res.dat))
+  lapply(res.dat,function(x)expect_is(x,"numeric"))
+})
+
+test_that(" get some columns from a table without setting  ", {
   
   conn <- dbConnect('SqlServer',user="collateral",password="collat",
                     host="localhost",trusted=TRUE, timeout=30)
@@ -49,6 +73,8 @@ test_that(" get some columns from a table ", {
   dbDisconnect(conn)
   expect_is(res,'data.frame')
   expect_equal(nrow(mtcars),nrow(res))
+  lapply(res,function(x)expect_is(x,"numeric"))
 })
+
 
 
