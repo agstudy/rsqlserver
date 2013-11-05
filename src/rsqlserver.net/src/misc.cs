@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Transactions;
 
 namespace rsqlserver.net
 {
@@ -16,6 +17,11 @@ namespace rsqlserver.net
         private static readonly ILog _Logger = LogManager.GetLogger(typeof(misc));
 
         static misc() {
+            InitLog();
+        }
+
+        private static void InitLog()
+        {
             string asmFile = System.Reflection.Assembly.GetExecutingAssembly().Location;
             Configuration dllConfig = ConfigurationManager.OpenExeConfiguration(asmFile);
             string fileName = Path.GetDirectoryName(asmFile) + "/log4net.config";
@@ -24,7 +30,7 @@ namespace rsqlserver.net
                 System.IO.FileInfo configFileInfo = new System.IO.FileInfo(fileName);
                 log4net.Config.XmlConfigurator.Configure(configFileInfo);
             }
-        
+            _Logger.Info("I am rsqlserver logger");
         }
 
         public static Single[] GetSingleArray()
@@ -85,6 +91,7 @@ namespace rsqlserver.net
         {
             var tableSource = fileToDataTable(sourcePath);
             if (tableSource == null) return;
+
             using (SqlConnection destConnection =
                        new SqlConnection(connectionString))
             {
@@ -95,20 +102,24 @@ namespace rsqlserver.net
                                new SqlBulkCopy(destConnection))
                     {
                         bulkCopy.DestinationTableName = destTableName;
+                        _Logger.InfoFormat("copying table {0} having {1} rows ....", 
+                                 destTableName,tableSource.Rows.Count);
                         bulkCopy.BulkCopyTimeout = 60;
                         bulkCopy.WriteToServer(tableSource);
                         _Logger.InfoFormat("Succes to load table {0} in database", destTableName);
                         tableSource.Rows.Clear();
+                        _Logger.Info("Sucess copy");
                     }
                 }
                 catch (Exception ex)
                 {
-                    _Logger.DebugFormat("Error {0}", ex.Message);
+                    _Logger.DebugFormat("Failure to copy : {0}", ex.Message);
+                    throw ex;
                 }
 
             }
         }
-    }
+     }
 }
        
 
