@@ -274,10 +274,10 @@ db2RType <- function(obj,...)
          "binary"="integer",                                                       
          "bit"="integer",                                                         
          "char"=  "character",                                                      
-         "date"= "Date",                  #(SQL Server 2008 and later)"          
+         "date"= "Date",                  ##2008++       
          "datetime"="POSIXct",                                                     
-         "datetime2"=  "POSIXct",            #    (SQL Server 2008 and later)"     
-         "datetimeoffset"=  "POSIXct",       #        (SQL Server 2008 and later)"
+         "datetime2"=  "POSIXct",         ##2008++   
+         "datetimeoffset"=  "POSIXct",    ##2008++
          "decimal"="numeric",                                                      
          "FILESTREAM attribute (varbinary(max))"= "TODO",                      
          "float"="numeric",                                                        
@@ -295,7 +295,7 @@ db2RType <- function(obj,...)
          "smallmoney"= "character",                                                 
          "sql_variant"= "TODO",                                                
          "text"=   "character",                                                      
-         "time"= "POSIXct",                  #(SQL Server 2008 and later)"=         
+         "time"= "POSIXct",             ##2008++
          "timestamp"=  "TODO",                                                 
          "tinyint"="integer",                                                     
          "uniqueidentifier"=  "TODO",                                           
