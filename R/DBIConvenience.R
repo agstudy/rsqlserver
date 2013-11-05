@@ -71,9 +71,10 @@ setMethod("dbListFields",
           valueClass = "character"
 )
 
-##############################################################
-### implementations
-##############################################################
+
+# implementations ---------------------------------------------------------
+
+
 
 sqlServerReadTable <- 
   function(con, name, row.names = "row_names", check.names = TRUE, ...)
@@ -132,11 +133,11 @@ sqlServerWriteTable <-
     } 
     
     
-#     i <- match("row.names", names(field.types), nomatch=0)
-#     if(i>0) field.types[i] <- sqlServerDbType(obj=field.types$row.names)
+    #     i <- match("row.names", names(field.types), nomatch=0)
+    #     if(i>0) field.types[i] <- sqlServerDbType(obj=field.types$row.names)
     names(field.types) <- make.db.names(con, names(field.types), 
                                         allow.keywords = allow.keywords)
-
+    
     ## Do we need to clone the connection (ie., if it is in use)?
     if(length(dbListResults(con))!=0){ 
       new.con <- dbConnect(con)
@@ -147,38 +148,39 @@ sqlServerWriteTable <-
     con <- dbTransaction(new.con,name='newTableTranst')
     cnames <- names(field.types)
     ctypes <- field.types
-    
-    if (dbExistsTable(con, name)){
-      if (overwrite)
-      {
-        dbRemoveTable(con, name)
-        dbCreateTable(con, name, cnames, ctypes)
-      }
-      else if (append)
-        drop <- FALSE
-      else
-        stop("table or view already exists")
-    }
-    else
-      dbCreateTable(con, name, cnames, ctypes)
-    
     res <- tryCatch({
-      ## INSERT INTO MyTable (col, col2) 
-      ##   VALUES (1, 'Bob'), (2, 'Peter'), (3, 'Joe');
+      
+# create the table --------------------------------------------------------
+
+      if (dbExistsTable(con, name)){
+        if (overwrite)
+        {
+          dbRemoveTable(con, name)
+          dbCreateTable(con, name, cnames, ctypes)
+        }
+        else if (append)
+          drop <- FALSE
+        else
+          stop("table or view already exists")
+      }
+      else
+        dbCreateTable(con, name, cnames, ctypes)
+
+# insert values -----------------------------------------------------------
+      
       stmt <- sprintf('INSERT INTO %s (%s)', name, 
-                          paste(cnames,collapse=','))
+                      paste(cnames,collapse=','))
       values <- paste0('VALUES (',do.call(paste, c(value, sep=",",collapse='),(')),')')
       stmt = paste(stmt,values,sep='\n')
       dbGetScalar(con, stmt, data = value)
       dbCommit(con)}, 
-            error = function(e) {
-              dbRollback(con)
-            }
-    )
-
-
-
+                    error = function(e) {
+                      print(stmt)
+                      dbRollback(con)
+                    })
   }
+
+
 
 
 sqlServer.dbTypeCheck <- function(obj)
@@ -214,9 +216,14 @@ sqlServer.data.frame <- function(obj)
 
 dbCreateTable <- function(con, name, cnames, ctypes)
 {
+  tryCatch({
   stmt <- sprintf('CREATE TABLE "%s" (%s)', name,
                   paste(cnames, ctypes, collapse = ","))
-  dbGetQuery(con, stmt)
+  dbGetScalar(con, stmt)},
+  error=function(e){
+    print(stmt)
+    stop("dbCreateTable: Impossible to create table , see the stmt expression")
+  })
 }
 
 dropTable <- function(con, name,...)
