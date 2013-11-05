@@ -118,14 +118,29 @@ namespace rsqlserver.net.Test
             Assert.Equal(helper.ResultSet["name"].Length, helper.Nrows);
             Assert.Equal(helper.ResultSet.Keys.Count, helper.Cnames.Length);
         }
-
+         
+        [Fact]
+        public static void TestSqlBulkCopy(){
+            var connectionString = "user id=collateral;" +
+                                     "password=collat;server=localhost;" +
+                                     "Trusted_Connection=yes;" +
+                                     "connection timeout=30";
+            misc.SqlBulkCopy(connectionString, "d:/temp/temp.csv", "T_BIG");
+    }
 
 
 
 
         static void Main(string[] args)
         {
-            TestFetch();
+
+            
+          //  System.IO.FileInfo configFileInfo = new System.IO.FileInfo(configuration.FilePath);
+          // log4net.Config.XmlConfigurator.Configure();
+          
+
+            TestSqlBulkCopy();
+            Console.ReadLine();
 
         }
     }
