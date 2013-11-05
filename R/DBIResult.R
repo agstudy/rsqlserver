@@ -113,7 +113,6 @@ sqlServerFetch <-
     dataReader <- rClr:::createReturnedObject(res@Id)
     ncols <- clrGet(dataReader,"FieldCount")
     if(ncols==0) return(NULL)
-    browser()
     sqlDataHelper <- clrNew("rsqlserver.net.SqlDataHelper",dataReader)
     
     Cnames <- clrGet(sqlDataHelper,'Cnames')
@@ -121,7 +120,7 @@ sqlServerFetch <-
     
     out <- if (n < 0L) { ## infinite pull
       out <- lapply(CDbtypes, function(x)
-        vector(netToRType(x),length=0L))
+        vector(db2RType(x),length=0L))
       stride <- 32768L  ## start fairly small to support tiny queries and increase later
       while ((nrec <- clrCall(sqlDataHelper,'Fetch',stride)) > 0L) {
         res.Dict <- clrGet(sqlDataHelper,"ResultSet")
@@ -136,7 +135,7 @@ sqlServerFetch <-
       clrCall(sqlDataHelper,'Fetch',as.integer(n))
       res.Dict <- clrGet(sqlDataHelper,"ResultSet")
       out <- lapply(CDbtypes, function(x)
-        vector(netToRType(x),length=n))
+        vector(db2RType(x),length=n))
       for (i in seq.int(Cnames))
         out[[i]] <- clrCall(res.Dict,'get_Item',Cnames[i])    
       out
@@ -197,74 +196,12 @@ sqlServerResultInfo <-
   }
 
 
-# 
-# setMethod("dbGetStatement", "MySQLResult",
-#           def = function(res, ...){
-#             st <-  dbGetInfo(res, "statement")[[1]]
-#             if(is.null(st))
-#               st <- character()
-#             st
-#           },
-#           valueClass = "character"
-# )
-# 
-# setMethod("dbListFields", 
-#           signature(conn="MySQLResult", name="missing"),
-#           def = function(conn, name, ...){
-#             flds <- dbGetInfo(conn, "fields")$fields$name
-#             if(is.null(flds))
-#               flds <- character()
-#             flds
-#           },
-#           valueClass = "character"
-# )
-# 
-# setMethod("dbColumnInfo", "MySQLResult", 
-#           def = function(res, ...) mysqlDescribeFields(res, ...),
-#           valueClass = "data.frame"
-# )
-# 
-# ## NOTE: The following is experimental (as suggested by Greg Warnes)
-# setMethod("dbColumnInfo", "MySQLConnection",
-#           def = function(res, ...){
-#             dots <- list(...) 
-#             if(length(dots) == 0)
-#               stop("must specify one MySQL object (table) name")
-#             if(length(dots) > 1)
-#               warning("dbColumnInfo: only one MySQL object name (table) may be specified", call.=FALSE)
-#             dbGetQuery(res, paste("describe", dots[[1]]))
-#           },
-#           valueClass = "data.frame"
-# )
-# setMethod("dbGetRowsAffected", "MySQLResult",
-#           def = function(res, ...) dbGetInfo(res, "rowsAffected")[[1]],
-#           valueClass = "numeric"
-# )
-# 
-# setMethod("dbGetRowCount", "MySQLResult",
-#           def = function(res, ...) dbGetInfo(res, "rowCount")[[1]],
-#           valueClass = "numeric"
-# )
-# 
 
-# 
-# setMethod("dbGetException", "MySQLResult",
-#           def = function(conn, ...){
-#             id <- as(conn, "integer")[1:2]
-#             .Call("RS_MySQL_getException", id, PACKAGE = .MySQLPkgName)
-#           },
-#           valueClass = "list"    ## TODO: should be a DBIException?
+# setMethod("dbDataType", 
+#           signature(dbObj = "SqlServerObject", obj = "ANY"),
+#           def = function(dbObj, obj, ...) sqlServerDbType(obj, ...),
+#           valueClass = "character"
 # )
-# 
-# setMethod("summary", "MySQLResult", 
-#           def = function(object, ...) mysqlDescribeResult(object, ...)
-# )
-# 
-setMethod("dbDataType", 
-          signature(dbObj = "SqlServerObject", obj = "ANY"),
-          def = function(dbObj, obj, ...) sqlServerDbType(obj, ...),
-          valueClass = "character"
-)
 
 sqlServerDbType <- function(obj,...)
 {
@@ -297,9 +234,7 @@ setMethod("make.db.names",
           signature(dbObj="SqlServerObject", snames = "character"),
           def = function(dbObj, snames, keywords = .SqlServersKeywords,
                          unique, allow.keywords, ...){
-            #      make.db.names.default(snames, keywords = .MySQLKeywords, unique = unique,
-            #                            allow.keywords = allow.keywords)
-            "makeUnique" <- function(x, sep = "_") {
+            makeUnique <- function(x, sep = "_") {
               if (length(x) == 0)
                 return(x)
               out <- x
@@ -329,66 +264,43 @@ setMethod("make.db.names",
           },
           valueClass = "character"
 )
-# 
-# setMethod("SQLKeywords", "MySQLObject",
-#           def = function(dbObj, ...) .MySQLKeywords,
-#           valueClass = "character"
-# )
-# 
-# setMethod("isSQLKeyword",
-#           signature(dbObj="MySQLObject", name="character"),
-#           def = function(dbObj, name, keywords = .MySQLKeywords, case, ...){
-#             isSQLKeyword.default(name, keywords = .MySQLKeywords, case = case)
-#           },
-#           valueClass = "character"
-# )
-# 
-# ## extension to the DBI 0.1-4
-# 
-# setGeneric("dbEscapeStrings", 
-#            def = function(con, strings, ...) standardGeneric("dbEscapeStrings"))
-# setMethod("dbEscapeStrings",
-#           sig = signature(con = "MySQLConnection", strings = "character"),
-#           def = mysqlEscapeStrings,
-#           valueClass = "character"
-# )
-# setMethod("dbEscapeStrings",
-#           sig = signature(con = "MySQLResult", strings = "character"),
-#           def = function(con, strings, ...) 
-#             mysqlEscapeStrings(as(con, "MySQLConnection"), strings),
-#           valueClass = "character"
-# )
-# 
-# setGeneric("dbApply", def = function(res, ...) standardGeneric("dbApply"))
-# setMethod("dbApply", "MySQLResult",
-#           def = function(res, ...)  mysqlDBApply(res, ...),
-# )
-# 
-# setGeneric("dbMoreResults",
-#            def = function(con, ...) standardGeneric("dbMoreResults"),
-#            valueClass = "logical"
-# )
-# 
-# setMethod("dbMoreResults", 
-#           signature(con = "MySQLConnection"),
-#           def = function(con, ...) 
-#             .Call("RS_MySQL_moreResultSets", as(con, "integer"), 
-#                   PACKAGE=.MySQLPkgName)
-# )
-# 
-# setGeneric("dbNextResult",
-#            def = function(con, ...) standardGeneric("dbNextResult")
-#            #valueClass = "DBIResult" or NULL
-# )
-# 
-# setMethod("dbNextResult", 
-#           signature(con = "MySQLConnection"),
-#           def = function(con, ...){
-#             for(rs in dbListResults(con)){
-#               dbClearResult(rs)
-#             }
-#             id = .Call("RS_MySQL_nextResultSet", as(con, "integer"),
-#                        PACKAGE=.MySQLPkgName)
-#             new("MySQLResult", Id = id)
-#           }
-# )
+
+## TODO complete this function 
+## maybe should I create some new R class to handle sql data type
+db2RType <- function(obj,...)
+{
+  switch(obj ,
+         "bigint"="numeric",                                                       
+         "binary"="integer",                                                       
+         "bit"="integer",                                                         
+         "char"=  "character",                                                      
+         "date"= "Date",                  #(SQL Server 2008 and later)"          
+         "datetime"="POSIXct",                                                     
+         "datetime2"=  "POSIXct",            #    (SQL Server 2008 and later)"     
+         "datetimeoffset"=  "POSIXct",       #        (SQL Server 2008 and later)"
+         "decimal"="numeric",                                                      
+         "FILESTREAM attribute (varbinary(max))"= "TODO",                      
+         "float"="numeric",                                                        
+         "image"=  "TODO",                                                     
+         "int"="integer",                                                         
+         "money"="character",                                                       
+         "nchar"=   "character",                                                     
+         "ntext"=   "character",                                                     
+         "numeric"="numeric",                                                      
+         "nvarchar"=   "character",                                                  
+         "real"= "numeric",                                                        
+         "rowversion"= "TODO",                                                 
+         "smalldatetime"= "POSIXct",                                               
+         "smallint"="integer",                                                    
+         "smallmoney"= "character",                                                 
+         "sql_variant"= "TODO",                                                
+         "text"=   "character",                                                      
+         "time"= "POSIXct",                  #(SQL Server 2008 and later)"=         
+         "timestamp"=  "TODO",                                                 
+         "tinyint"="integer",                                                     
+         "uniqueidentifier"=  "TODO",                                           
+         "varbinary"=   "TODO",                                                
+         "varchar"=  "character",                                                    
+         "xml"= "TODO")  
+}
+
