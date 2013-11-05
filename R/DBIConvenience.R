@@ -145,33 +145,36 @@ sqlServerWriteTable <-
     } else {
       new.con <- con
     }
-    con <- dbTransaction(new.con,name='newTableTranst')
+   ## con <- dbTransaction(new.con,name='sqlServerWriteTable')
     cnames <- names(field.types)
     ctypes <- field.types
     res <- tryCatch({
       (function(con,name,cnames,ctypes){
-      if (dbExistsTable(con, name)){
-        if (overwrite)
-        {
-          dbRemoveTable(con, name)
-          dbCreateTable(con, name, cnames, ctypes)
+        if (dbExistsTable(con, name)){
+          if (overwrite)
+          {
+            dbRemoveTable(con, name)
+            dbCreateTable(con, name, cnames, ctypes)
+          }
+          else if (append)
+            drop <- FALSE
+          else
+            stop("table or view already exists")
         }
-        else if (append)
-          drop <- FALSE
         else
-          stop("table or view already exists")
-      }
-      else
-        dbCreateTable(con, name, cnames, ctypes)
+          dbCreateTable(con, name, cnames, ctypes)
       })(con,name,cnames,ctypes)
-      
       insert.into(con,name,cnames,value,row.names)
-      dbCommit(con)}, 
-                    error = function(e) {
-                      print(e)
-                      dbRollback(con)
-                    })
+      TRUE
+   ##   dbCommit(con)
+    },error = function(e) {
+      print(e)
+   ##   dbRollback(con)
+    })
   }
+
+
+
 
 insert.into <- function(con,name,cnames,value,row.names){
   
@@ -182,12 +185,12 @@ insert.into <- function(con,name,cnames,value,row.names){
     stmt = paste(stmt,values,sep='\n')
     dbGetScalar(con, stmt, data = value)
   }else{
+    ##dbCommit(con)
     con.string = dbGetInfo(con)$ConnectionString
-    id = "d:/temp/temp.csv"
+    id = "d:/temp/temp.csv"           ## TODO use a tempfile or partial name
     write.csv(value,file=id,row.names=row.names)
-    browser()
     clrCallStatic("rsqlserver.net.misc","SqlBulkCopy",con.string ,id,name)
-   ## file.remove(id)
+    ## file.remove(id)
   }
   
 }
