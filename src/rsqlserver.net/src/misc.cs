@@ -1,5 +1,10 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.Collections.Generic;
+using System.Configuration;
+using System.Data;
+using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,6 +13,20 @@ namespace rsqlserver.net
 {
     public class misc
     {
+        private static readonly ILog _Logger = LogManager.GetLogger(typeof(misc));
+
+        static misc() {
+            string asmFile = System.Reflection.Assembly.GetExecutingAssembly().Location;
+            Configuration dllConfig = ConfigurationManager.OpenExeConfiguration(asmFile);
+            string fileName = Path.GetDirectoryName(asmFile) + "/log4net.config";
+            if (!dllConfig.HasFile && File.Exists(fileName))
+            {
+                System.IO.FileInfo configFileInfo = new System.IO.FileInfo(fileName);
+                log4net.Config.XmlConfigurator.Configure(configFileInfo);
+            }
+        
+        }
+
         public static Single[] GetSingleArray()
         {
             Single[] r = new Single[2] { Single.MaxValue, Single.MinValue };
@@ -18,10 +37,78 @@ namespace rsqlserver.net
         {
             var r = GetSingleArray();
             double[] dar = new double[r.Length];
-            for(int i =0;i < r.Length; i++)
+            for (int i = 0; i < r.Length; i++)
                 dar[i] = (double)r[i];
             return dar;
         }
 
+        public static DataTable fileToDataTable(string CSVFilePathName)
+        {
+            DataTable dt = new DataTable();
+            try
+            {
+                string[] Lines = File.ReadAllLines(CSVFilePathName);
+                string[] Fields;
+                Fields = Lines[0].Split(new char[] { ',' });
+                int Cols = Fields.GetLength(0);
+                //1st row must be column names; force lower case to ensure matching later on.
+                for (int i = 0; i < Cols; i++)
+                    dt.Columns.Add(Fields[i].ToLower(), typeof(string));
+                DataRow Row;
+                for (int i = 1; i < Lines.GetLength(0); i++)
+                {
+                    Fields = Lines[i].Split(new char[] { ',' });
+                    Row = dt.NewRow();
+                    for (int f = 0; f < Cols; f++)
+                        Row[f] = Fields[f];
+                    dt.Rows.Add(Row);
+                }
+            }
+            catch (FileNotFoundException exception)
+            {
+                _Logger.DebugFormat("Error {0}", exception.Message);
+                dt = null;
+            }
+            catch (Exception ex)
+            {
+                _Logger.DebugFormat("Error {0}", ex.Message);
+                dt = null;
+            }
+            return dt;
+
+        }
+
+
+
+        public static void SqlBulkCopy(String connectionString,
+                                       string sourcePath,string destTableName)
+        {
+            var tableSource = fileToDataTable(sourcePath);
+            if (tableSource == null) return;
+            using (SqlConnection destConnection =
+                       new SqlConnection(connectionString))
+            {
+                destConnection.Open();
+                try
+                {
+                    using (SqlBulkCopy bulkCopy =
+                               new SqlBulkCopy(destConnection))
+                    {
+                        bulkCopy.DestinationTableName = destTableName;
+                        bulkCopy.BulkCopyTimeout = 60;
+                        bulkCopy.WriteToServer(tableSource);
+                        _Logger.InfoFormat("Succes to load table {0} in database", destTableName);
+                        tableSource.Rows.Clear();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _Logger.DebugFormat("Error {0}", ex.Message);
+                }
+
+            }
+        }
     }
 }
+       
+
