@@ -76,5 +76,20 @@ test_that(" get some columns from a table without setting  ", {
   lapply(res,function(x)expect_is(x,"numeric"))
 })
 
-
+test_that(" create a hudge data",{
+  
+  set.seed(1)
+  
+  N=100000
+  dat <- data.frame(value=sample(1:100,N,rep=TRUE),
+                    key=sample(letters,N,rep=TRUE),
+                    stringsAsFcators=FALSE)
+  conn <- dbConnect('SqlServer',user="collateral",password="collat",
+                    host="localhost",trusted=TRUE, timeout=30)
+  if(!dbExistsTable(conn,'T_BIG'))
+     dbWriteTable(conn,name='T_BIG',dat)
+  expect_equal(dbExistsTable(conn,'T_BIG'),TRUE)
+  dbDisconnect(conn)
+  
+})
 
