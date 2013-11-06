@@ -29,23 +29,37 @@ conn.rsqlserver <- function(){
   }
 
 ```
-To query I used 
 
+Here we present 3  methods to get the results:
+* Using sqlQuery from RODBC package 
+* Using dbGetQuery from rsqlserver package
+* Using fetch from rsqlserver package, giving the number of lines to read.
 
 ```{r query}
-query <- "SELECT  TOP 1000 * 
-          FROM    T_BIG_1000000"
+
+nrows <- 1000000
+
+Query <- paste0("SELECT TOP ", format(nrows, scientific=F), " * 
+                 FROM T_BIG_1000000")
 
 
-get.rodbc <- function (conn){
+get.rodbc <- function (conn,query=Query){
   res <- sqlQuery(conn, query)
+  res
   }
 
-get.rsqlserver <- function(conn){
+get.rsqlserver1 <- function(conn,query=Query){
   res <- dbGetQuery(conn, query)
-  dbDisconnect(conn)
-  
-  }
+  res
+}
+
+get.rsqlserver2 <- function(conn,query=Query,n=nrows){
+  reader <- dbSendQuery(conn, query)
+  res <- fetch(reader,n)
+  invisible(dbClearResult(reader))
+  res
+}
+
 
 ```
 
@@ -54,7 +68,10 @@ get.rsqlserver <- function(conn){
 library(microbenchmark)
 microbenchmark(conn1<- conn.rodbc(),conn2 <- conn.rsqlserver(),times=1)
 
-microbenchmark(get.rodbc(conn1),get.rsqlserver(conn2),times=1)
+microbenchmark(get.rodbc(conn1),
+               get.rsqlserver1(conn2),
+               get.rsqlserver2(conn2) ,times=10)
 
+dbDisconnect(conn2)
 
 ```
