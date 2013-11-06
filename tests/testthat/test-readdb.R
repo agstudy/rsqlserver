@@ -95,8 +95,8 @@ test_that(" get some columns from a table without setting  ", {
 
 test_that("save and read a hudge data frame",{
   set.seed(1)
-  N=10000
-  table.name = paste('T_BIG',N,sep='_')
+  N=1000
+  table.name = paste('T_BIG',sprintf("%.9g", N) ,sep='_')
   dat <- data.frame(value=sample(1:100,N,rep=TRUE),
                     key  =sample(letters,N,rep=TRUE),
                     stringsAsFactors=FALSE)
