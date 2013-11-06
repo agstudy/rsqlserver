@@ -6,7 +6,6 @@ setMethod("dbClearResult", "SqlServerResult",
 )
 
 setMethod("fetch", signature(res="SqlServerResult", n="numeric"),
-          def = function(res, n, ...){ 
             out <- sqlServerFetch(res, n, ...)
             if(is.null(out))
               out <- data.frame(out)
@@ -18,8 +17,8 @@ setMethod("fetch", signature(res="SqlServerResult", n="numeric"),
 
 setMethod("fetch", 
           signature(res="SqlServerResult", n="missing"),
-          def = function(res, n, ...){
-            out <-  sqlServerFetch(res, n=0, ...)
+          def = function(res, ...){
+            out <-  sqlServerFetch(res, n =-1, ...)
             if(is.null(out))
               out <- data.frame(out)
             out
