@@ -57,12 +57,18 @@ setMethod("dbRollback",
 
 
 setMethod("dbConnect", "SqlServerDriver",
-          def = function(drv, ...) sqlServerNewConnection(drv, ...),
+          def = function(drv, ...) {
+                   args <- list(...)
+                   if ("url" %in% names(args))
+                     sqlServerConnectionUrl(args$url)
+                   else
+                      sqlServerNewConnection(drv, ...)
+            },
           valueClass = "SqlServerConnection"
 )
 
 setMethod("dbConnect", "character",
-          def = function(drv, ...) sqlServerNewConnection(dbDriver(drv), ...),
+          def = function(drv, ...) dbConnect(dbDriver(drv), ...),
           valueClass = "SqlServerConnection"
 )
 
@@ -117,10 +123,10 @@ setMethod("dbGetException", "SqlServerConnection",
 ## TODO use SqlConnectionStringBuilder Class (.net 4.5) 
 ## http://msdn.microsoft.com/en-us/library/system.data.sqlclient.sqlconnectionstringbuilder.aspx
 
-"sqlServerNewConnection" <-
-  function(drv,  username=NULL,
+sqlServerNewConnection <-
+  function(drv, username=NULL,
            password=NULL, host=NULL,
-           trusted=TRUE, timeout=30)
+           trusted=FALSE, timeout=30)
   {
     if(!isIdCurrent(drv))
       stop("expired manager")
@@ -134,13 +140,21 @@ setMethod("dbGetException", "SqlServerConnection",
     if (is.null(timeout) || !is.numeric(timeout))
       stop("Argument timeout must be an integer value")
     if (is.null(trusted) || !is.logical(trusted))
-      stop("Argument client.flag must be a boolean")
-    connect.string <- paste(paste0("user id=",username),
+      stop("Argument trusted must be a boolean")
+    url <- paste(paste0("user id=",username),
                             paste0("password=",password),paste0("server=",host),
                             paste0("Trusted_Connection=",ifelse(trusted,"yes","false")),
                             paste0("connection timeout=",timeout),
                             sep=";")
-    id = clrNew("System.Data.SqlClient.SqlConnection",connect.string)
+    sqlServerConnectionUrl(url)
+  }
+
+sqlServerConnectionUrl <- 
+  function(url){
+    if (is.null(url) || !is.character(url))
+      stop("Argument url must be a not NULL string ")
+    
+    id = clrNew("System.Data.SqlClient.SqlConnection",url)
     trans = clrNew('System.Object')
     clrCall(id,'Open')
     new("SqlServerConnection", 
