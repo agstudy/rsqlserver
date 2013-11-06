@@ -6,6 +6,7 @@ setMethod("dbClearResult", "SqlServerResult",
 )
 
 setMethod("fetch", signature(res="SqlServerResult", n="numeric"),
+          def = function(res, n , ...){ 
             out <- sqlServerFetch(res, n, ...)
             if(is.null(out))
               out <- data.frame(out)
@@ -116,7 +117,6 @@ sqlServerFetch <-
     
     Cnames <- clrGet(sqlDataHelper,'Cnames')
     CDbtypes <- clrGet(sqlDataHelper,'CDbtypes')
-    
     out <- if (n < 0L) { ## infinite pull
       out <- lapply(CDbtypes, function(x)
         vector(db2RType(x),length=0L))
@@ -202,21 +202,7 @@ sqlServerResultInfo <-
 #           valueClass = "character"
 # )
 
-sqlServerDbType <- function(obj,...)
-{
-  switch(typeof(obj),
-         logical   = "TINYINT",
-         integer   = "INTEGER",
-         double  = if (inherits(obj, "POSIXct"))
-           "DATETIME"
-         else
-           "REAL",
-         character = "VARCHAR(128)",
-         list      = "varbinary(2000)",
-         stop(gettextf("rsqlserver internal error [%s, %d, %s]",
-                       "sqlServerDbType", 1L, class(obj))))    
-  
-}
+
 netToRType <- function(obj,...)
 {
   switch(obj,
@@ -272,7 +258,7 @@ db2RType <- function(obj,...)
          "bigint"="numeric",                                                       
          "binary"="integer",                                                       
          "bit"="integer",                                                         
-         "char"=  "character",                                                      
+         "char"=  "factor",                                                      
          "date"= "Date",                  ##2008++       
          "datetime"="POSIXct",                                                     
          "datetime2"=  "POSIXct",         ##2008++   
@@ -301,5 +287,24 @@ db2RType <- function(obj,...)
          "varbinary"=   "TODO",                                                
          "varchar"=  "character",                                                    
          "xml"= "TODO")  
+}
+
+R2DbType <- function(obj,...)
+{
+  class.obj <- ifelse(length(class(obj))==1,
+                             tolower(class(obj)),
+                             tolower(class(obj)[1]))
+                             
+  switch(class.obj,
+         integer   = "int",
+         factor    = "char(12)" ,
+         numeric   = "float",
+         posixct   = "datetime",
+         date      = "date",
+         character = "varchar(128)",
+         list      = "varbinary(2000)",
+         stop(gettextf("rsqlserver internal error [%s, %d, %s]",
+                       "R2DbType", 1L, class(obj))))    
+  
 }
 

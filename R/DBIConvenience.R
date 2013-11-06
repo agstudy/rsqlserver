@@ -119,17 +119,16 @@ sqlServerWriteTable <-
     name <- as.character(name)
     if (length(name) != 1L)
       stop("'name' must be a single string")
-    
-    #
-    
+  
     if(row.names){
       value <- cbind(row.names(value), value)  ## can't use row.names= here
       names(value)[1] <- "row.names"
     }
     
     value <- sqlServer.data.frame(value)
+    
     if(missing(field.types) || is.null(field.types)){
-      field.types <- lapply(value, sqlServerDbType)
+      field.types <- lapply(value, R2DbType)
     } 
     
     
@@ -137,7 +136,6 @@ sqlServerWriteTable <-
     # if(i>0) field.types[i] <- sqlServerDbType(obj=field.types$row.names)
     names(field.types) <- make.db.names(con, names(field.types), 
                                         allow.keywords = allow.keywords)
-    
     ## Do we need to clone the connection (ie., if it is in use)?
     if(length(dbListResults(con))!=0){ 
       new.con <- dbConnect(con)
