@@ -1,0 +1,60 @@
+Benchmarking
+========================================================
+
+In order to convince people to use the package, 
+I Compare rsqlserver performance with other packges.
+
+* RJDBC
+* RODBC
+
+
+```{r globaloptions,ech=FALSE}
+
+opts_chunk$set(warning=FALSE)
+
+```
+
+The code to connect from differnt drivers is :
+```{r connections}
+library(RODBC)
+
+conn.rodbc <- function()
+  {
+  odbcConnect(dsn = "my-dns", uid = "collateral", pwd = "collat")
+  }
+library(rsqlserver)
+conn.rsqlserver <- function(){
+  dbConnect('SqlServer',user="collateral",password="collat",
+            host="localhost",trusted=TRUE, timeout=30)
+  }
+
+```
+To query I used 
+
+
+```{r query}
+query <- "SELECT  TOP 1000 * 
+          FROM    T_BIG_1000000"
+
+
+get.rodbc <- function (conn){
+  res <- sqlQuery(conn, query)
+  }
+
+get.rsqlserver <- function(conn){
+  res <- dbGetQuery(conn, query)
+  dbDisconnect(conn)
+  
+  }
+
+```
+
+```{r benchamrking}
+
+library(microbenchmark)
+microbenchmark(conn1<- conn.rodbc(),conn2 <- conn.rsqlserver(),times=1)
+
+microbenchmark(get.rodbc(conn1),get.rsqlserver(conn2),times=1)
+
+
+```
