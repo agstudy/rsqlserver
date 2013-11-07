@@ -112,7 +112,6 @@ sqlServerWriteTable <-
   function(con, name, value, field.types, row.names = TRUE, 
            overwrite = FALSE, append = FALSE, ..., allow.keywords = FALSE)
   {
-    
     if(overwrite && append)
       stop("overwrite and append cannot both be TRUE")
     # validate name
@@ -120,22 +119,22 @@ sqlServerWriteTable <-
     if (length(name) != 1L)
       stop("'name' must be a single string")
   
+    
     if(row.names){
       value <- cbind(row.names(value), value)  ## can't use row.names= here
       names(value)[1] <- "row.names"
     }
     
-    value <- sqlServer.data.frame(value)
     
     if(missing(field.types) || is.null(field.types)){
       field.types <- lapply(value, R2DbType)
-    } 
-    
-    
-    # i <- match("row.names", names(field.types), nomatch=0)
-    # if(i>0) field.types[i] <- sqlServerDbType(obj=field.types$row.names)
+    }
     names(field.types) <- make.db.names(con, names(field.types), 
                                         allow.keywords = allow.keywords)
+    
+
+    value <- sqlServer.data.frame(value,field.types)
+    
     ## Do we need to clone the connection (ie., if it is in use)?
     if(length(dbListResults(con))!=0){ 
       new.con <- dbConnect(con)
@@ -195,37 +194,6 @@ insert.into <- function(con,name,cnames,value,row.names){
 
 
 
-
-
-
-sqlServer.dbTypeCheck <- function(obj)
-{
-  (inherits(obj, c("logical", "integer", "numeric", "character",
-                   "POSIXct")) ||
-     (is.list(obj) && all(unlist(lapply(obj, is.raw), use.names = FALSE))))
-}
-
-sqlServer.data.frame <- function(obj)
-{
-  if (!is.data.frame(obj))
-    obj <- as.data.frame(obj)
-  for (i in seq_len(ncol(obj)))
-  {
-    col <- obj[[i]]
-    if (!sqlServer.dbTypeCheck(col))
-    {
-      if (inherits(col, "Date"))
-        obj[[i]] <- as.POSIXct(as.POSIXlt(col), tz = "")  # use local time zone
-      else
-        obj[[i]] <- as.character(col)
-    }
-    col <- obj[[i]]
-    if(inherits(col,'character')){
-      obj[[i]] <- paste0("'",gsub("'","''",col),"'")
-    }
-  }
-  obj
-}
 
 
 
