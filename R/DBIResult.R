@@ -118,13 +118,15 @@ sqlServerFetch <-
     Cnames <- clrGet(sqlDataHelper,'Cnames')
     CDbtypes <- clrGet(sqlDataHelper,'CDbtypes')
     out <- if (n < 0L) { ## infinite pull
-      out <- lapply(CDbtypes, function(x)
-        vector(db2RType(x),length=0L))
+      out <- vector('list',ncols)
       stride <- 32768L  ## start fairly small to support tiny queries and increase later
       while ((nrec <- clrCall(sqlDataHelper,'Fetch',stride)) > 0L) {
         res.Dict <- clrGet(sqlDataHelper,"ResultSet")
         for (i in seq.int(Cnames)){
-          out[[i]] <- c(out[[i]], clrCall(res.Dict,'get_Item',Cnames[i]))
+          out[[i]] <- if(is.null(out[[i]]))
+                         clrCall(res.Dict,'get_Item',Cnames[i])
+                      else 
+                        c(out[[i]], clrCall(res.Dict,'get_Item',Cnames[i]))
         }
         if (nrec < stride) break
         stride <- 524288L # 512k
@@ -292,14 +294,15 @@ db2RType <- function(obj,...)
 R2DbType <- function(obj,...)
 {
   class.obj <- ifelse(length(class(obj))==1,
-                             tolower(class(obj)),
-                             tolower(class(obj)[1]))
-                             
+                      tolower(class(obj)),
+                      tolower(class(obj)[1]))
+  
   switch(class.obj,
          integer   = "int",
          factor    = "char(12)" ,
          numeric   = "float",
-         posixct   = "datetime",
+         posixct   = "datetime2",   ## not datatime to manage fractional seconds
+         posixlt   = "datetime2",   ## not datatime to manage fractional seconds
          date      = "date",
          character = "varchar(128)",
          list      = "varbinary(2000)",
@@ -307,4 +310,29 @@ R2DbType <- function(obj,...)
                        "R2DbType", 1L, class(obj))))    
   
 }
+
+
+
+
+sqlServer.data.frame <- function(obj,field.types)
+{
+  
+  out <- lapply(seq_along(field.types),function(x){
+     dbtype <- field.types[[x]]
+     col <- obj[[x]]
+     col <- if(dbtype %in% c("datetime","datetime2","datetimeoffset")){
+       paste0("'",col,"'")
+     }else if(grepl("char",dbtype)) { ## char , varchar
+       col <- paste0("'",gsub("'","''",col),"'")
+     }else 
+        col
+     col
+  })
+  
+  attr(out, "row.names") <- c(NA_integer_, length(out[[1]]))
+  attr(out, "names") <- names(field.types)
+  class(out) <- "data.frame"
+  out
+}
+
 
