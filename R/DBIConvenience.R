@@ -183,16 +183,27 @@ insert.into <- function(con,name,cnames,value,row.names){
     dbGetScalar(con, stmt, data = value)
   }else{
     ##dbCommit(con)
-    con.string = dbGetInfo(con)$ConnectionString
-    id = "d:/temp/temp.csv"           ## TODO use a tempfile or partial name
-    write.csv(value,file=id,row.names=row.names)
-    clrCallStatic("rsqlserver.net.misc","SqlBulkCopy",con.string ,id,name)
-    ## file.remove(id)
+    bulk.copy(con,name,value)
   }
-  
 }
 
 
+bulk.copy <- function(con,name,value,...){
+  if(is.data.frame(value)){
+      id = "d:/temp/temp.csv"                       ## TODO use a tempfile or partial name
+      write.csv(value,file=id,row.names=FALSE)
+      bulk.copy.file(con,name,id)
+  }
+}
+
+bulk.copy.file <- function(con,name,value){
+  con.string = dbGetInfo(con)$ConnectionString
+  if (!is.null(value) && file.exists(value))
+    clrCallStatic("rsqlserver.net.misc","SqlBulkCopy",con.string ,value,name)
+  else
+    stop("file is null or not exist")
+  
+}
 
 
 

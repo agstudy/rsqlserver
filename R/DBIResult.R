@@ -54,6 +54,18 @@ setMethod("dbGetInfo", "SqlServerResult",
           valueClass = "list"
 )
 
+setGeneric("dbBulkCopy", function(conn,name,value,...) 
+  standardGeneric("dbBulkCopy")
+)
+
+setMethod("dbBulkCopy",
+          signature(conn ="SqlServerConnection",value="data.frame",name="character"),
+          def = function(conn,name,value,...)   bulk.copy(con,name,value,...)
+)
+setMethod("dbBulkCopy",
+          signature(conn ="SqlServerConnection",value="character",name="character"),
+          def = function(conn,name,value,...)   bulk.copy.file(con,name,value,...)
+)
 
 ## TODO: 
 setMethod("dbHasCompleted", "SqlServerResult",
