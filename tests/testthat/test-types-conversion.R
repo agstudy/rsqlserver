@@ -1,7 +1,7 @@
 
 context("conversion of types and db naming conventions")
 
-test_that("mapping fom sql server types to R types",
+test_that("db2RType: mapping fom sql server types to R types works",
 {
   
   expect_equal(rsqlserver:::db2RType("char"),"factor")
@@ -10,7 +10,7 @@ test_that("mapping fom sql server types to R types",
   
 })
 
-test_that("the names are valid db names",{
+test_that("make.db.names:the names are valid db names",{
   
   drv <- dbDriver("SqlServer")
   expect_equal(make.db.names(drv,"a mine"),"a_mine") ## space 
@@ -21,7 +21,7 @@ test_that("the names are valid db names",{
 })
 
 
-test_that("Automatic Conversion from R to data base",{
+test_that("R2DbType:Automatic Conversion from R to data base",{
   
   value <- list(x.int=1L,
                 x.num=1,
@@ -31,7 +31,7 @@ test_that("Automatic Conversion from R to data base",{
                 x.date= Sys.Date(),
                 x.posixct= Sys.time())
   expected <- list("int","float","char(12)","varchar(128)",
-       "varbinary(2000)","date","datetime")
+       "varbinary(2000)","date","datetime2")
   effective <- lapply(value, rsqlserver:::R2DbType)
   names(expected) <- names(value)
   expect_identical(expected,effective)
@@ -39,21 +39,47 @@ test_that("Automatic Conversion from R to data base",{
 })
 
 
-# 
-# test_that("save POSIXct , read it POSIXct",{
-# 	
-# 	drv  <- dbDriver("SqlServer")
-# 	start <- Sys.time()
-# 	dat <- data.frame(cdate = as.POSIXct(seq.POSIXt(from=start,by=1,length.out=100)))
-# 	conn <- dbConnect('SqlServer',user="collateral",password="collat",
-# 	                  host="localhost",trusted=TRUE, timeout=30)
-#   
-#   dbWriteTable(conn,name='T_DATE',value=dat,overwrite=TRUE)
-#   res <- dbReadTable(conn,'T_DATE')
-#   expect_is (res$cdate,'POSIXct')
-# 	dbDisconnect(conn)
-# 	
-# })
+
+test_that("sqlServer.data.frame:data is well quoted before insert",{
+  
+  options(stringsAsFactors = FALSE) 
+  
+  value <- data.frame(a=as.POSIXct("2013-11-07 01:47:33"),
+                      b="value ' alol",
+                      c="aa jujs",
+                      d=1,
+                      e=as.Date("2013-11-07"))
+  
+  expected = data.frame(a="'2013-11-07 01:47:33'",  ## tz=""
+                        b="'value '' alol'",
+                        c="'aa jujs'",
+                        d=1,
+                        e=as.Date("2013-11-07"))
+  field.types <- lapply(value, rsqlserver:::R2DbType)
+  names(field.types) <- names(value)
+  value.db <- rsqlserver:::sqlServer.data.frame(
+                 value,field.types)
+  expect_equal(expected,value.db)
+  
+
+})
+
+
+
+test_that("dbWriteTable/dbReadTable :save POSIXct , read it again as POSIXct",{
+	
+	drv  <- dbDriver("SqlServer")
+	start <- Sys.time()
+	dat <- data.frame(cdate = as.POSIXct(seq.POSIXt(from=start,by=1,length.out=100)))
+	conn <- dbConnect('SqlServer',user="collateral",password="collat",
+	                  host="localhost",trusted=TRUE, timeout=30)
+  
+  dbWriteTable(conn,name='T_DATE',value=dat,overwrite=TRUE)
+  res <- dbReadTable(conn,'T_DATE')
+  expect_is (res$cdate,'POSIXct')
+	dbDisconnect(conn)
+	
+})
 
 
         
