@@ -81,5 +81,21 @@ test_that("dbWriteTable/dbReadTable :save POSIXct , read it again as POSIXct",{
 	
 })
 
+test_that("dbWriteTable/dbReadTable :save POSIXct , read it again as POSIXct",{
+  
+  drv  <- dbDriver("SqlServer")
+  start <- Sys.time()
+  dat <- data.frame(cdate = as.POSIXct(seq.POSIXt(from=start,by=1,length.out=100)))
+  conn <- dbConnect('SqlServer',user="collateral",password="collat",
+                    host="localhost",trusted=TRUE, timeout=30)
+  
+  dbWriteTable(conn,name='T_DATE',value=dat,overwrite=TRUE)
+  res <- dbReadTable(conn,'T_DATE')
+  expect_is (res$cdate,'POSIXct')
+  dbDisconnect(conn)
+  
+})
+
+
 
         
