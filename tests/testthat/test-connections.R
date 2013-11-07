@@ -7,14 +7,14 @@ test_isConnected <- function(url){
   dbDisconnect(conn)
 }
 
-test_that("Standard Security",{
+test_that("dbConnect : Standard Security",{
  url = "Server=localhost;Database=COLLATERAL;User Id=collateral;
   Password=collat;"
  test_isConnected(url)
 })
 
 ###           
-test_that("Trusted Connection",{
+test_that("dbConnect : Trusted Connection",{
   url = "Server=localhost;Database=COLLATERAL;Trusted_Connection=True;"
   test_isConnected(url)
   
