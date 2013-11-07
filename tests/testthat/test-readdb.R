@@ -1,6 +1,6 @@
 context("Reading/Writing tables")
 
-test_that("query in a temporary table works fine ", {
+test_that("dbGetScalar : query in a temporary table works fine ", {
 
   req <- "create table #tempTable(Test int)
           insert into #tempTable
@@ -18,7 +18,7 @@ test_that("query in a temporary table works fine ", {
 
 
 
-test_that("Create a table and remove it using handy functions ", {
+test_that("dbWriteTable/dbRemoveTable: Create a table and remove it using handy functions ", {
   
   conn <- dbConnect('SqlServer',user="collateral",password="collat",
                     host="localhost",trusted=TRUE, timeout=30)
@@ -33,7 +33,7 @@ test_that("Create a table and remove it using handy functions ", {
 
 
 
-test_that("Create a table having sql keywords as columns ", {
+test_that(":::dbCreateTable:Create a table having sql keywords as columns ", {
   
   conn <- dbConnect('SqlServer',user="collateral",password="collat",
                     host="localhost",trusted=TRUE, timeout=30)
@@ -48,7 +48,7 @@ test_that("Create a table having sql keywords as columns ", {
 
 
 
-test_that(" get n rows from a table", {
+test_that("fetch: get n rows from a table", {
   
   conn <- dbConnect('SqlServer',user="collateral",password="collat",
                     host="localhost",trusted=TRUE, timeout=30)
@@ -70,7 +70,7 @@ test_that(" get n rows from a table", {
   lapply(res.dat,function(x)expect_is(x,"numeric"))
 })
 
-test_that(" get some columns from a table without setting  ", {
+test_that("dbGetQuery: get some columns from a table without setting  ", {
   
   conn <- dbConnect('SqlServer',user="collateral",password="collat",
                     host="localhost",trusted=TRUE, timeout=30)
@@ -93,7 +93,7 @@ test_that(" get some columns from a table without setting  ", {
 
 
 
-test_that("save and read a hudge data frame",{
+test_that("dbWriteTable/BulCopy:save and read a hudge data frame",{
   set.seed(1)
   N=1000
   table.name = paste('T_BIG',sprintf("%.9g", N) ,sep='_')
