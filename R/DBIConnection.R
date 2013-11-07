@@ -126,7 +126,9 @@ setMethod("dbGetException", "SqlServerConnection",
 sqlServerNewConnection <-
   function(drv, username=NULL,
            password=NULL, host=NULL,
-           trusted=FALSE, timeout=30)
+           trusted=FALSE, 
+           database='TEST_RSQLSERVER',
+           timeout=30)
   {
     if(!isIdCurrent(drv))
       stop("expired manager")
@@ -146,6 +148,8 @@ sqlServerNewConnection <-
                             paste0("Trusted_Connection=",ifelse(trusted,"yes","false")),
                             paste0("connection timeout=",timeout),
                             sep=";")
+    if (!is.null(database) && is.character(database))
+      url <- paste(url,paste0("Database=",database),sep=";")
     sqlServerConnectionUrl(url)
   }
 
@@ -196,9 +200,6 @@ function(dbObj,what,...){
 
 sqlServerCloneConnection <-
   function(conn,...){
-    obj <- rClr:::createReturnedObject(conn@Id)
-    action = dbListResults(conn)$action
-     if(action == "CloseAndOpenMe")  ## broken connection
-       obj <- clrCall(obj,'Close')
-    obj <- clrCall(obj,'Open')
+    strConnection = dbGetInfo(conn)$ConnectionString
+    sqlServerConnectionUrl(strConnection)
   }
