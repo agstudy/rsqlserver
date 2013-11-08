@@ -49,6 +49,6 @@ Comparaison with `RODBC`.
 
 ## Acknowledgements
 
-I thank Jean-Michel Perraud the author of [rClr](http://r2clr.codeplex.com/) package.
+I want to thank Jean-Michel Perraud the author of [rClr](http://r2clr.codeplex.com/) package.
 
 
