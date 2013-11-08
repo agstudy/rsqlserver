@@ -1,7 +1,7 @@
-
 ##
 ## Class: DBITransaction
 ##
+
 setClass("SqlServerTransaction", representation("SqlServerObject"))
 setClass("SqlServerConnection", 
          contains=c("DBIConnection", "SqlServerObject"),
@@ -23,7 +23,7 @@ setMethod("dbTransaction",
               return(new("SqlServerConnection", 
                          Id = conn@Id,
                          trans=clrGetExtPtr(trans)))
-             
+              
             }
             return(NULL)
           },
@@ -58,12 +58,12 @@ setMethod("dbRollback",
 
 setMethod("dbConnect", "SqlServerDriver",
           def = function(drv, ...) {
-                   args <- list(...)
-                   if ("url" %in% names(args))
-                     sqlServerConnectionUrl(args$url)
-                   else
-                      sqlServerNewConnection(drv, ...)
-            },
+            args <- list(...)
+            if ("url" %in% names(args))
+              sqlServerConnectionUrl(args$url)
+            else
+              sqlServerNewConnection(drv, ...)
+          },
           valueClass = "SqlServerConnection"
 )
 
@@ -102,9 +102,9 @@ setMethod("dbListResults", "SqlServerConnection",
           def = function(conn, ...) {
             state = dbGetInfo(conn, "State")[[1]]
             switch(state ,
-              "1"  = NULL,
-              "0"  = list(action='OpenMe'),
-              "16" = list(action='CloseAndOpenMe'))
+                   "1"  = NULL,
+                   "0"  = list(action='OpenMe'),
+                   "16" = list(action='CloseAndOpenMe'))
           }
 )
 
@@ -144,10 +144,10 @@ sqlServerNewConnection <-
     if (is.null(trusted) || !is.logical(trusted))
       stop("Argument trusted must be a boolean")
     url <- paste(paste0("user id=",username),
-                            paste0("password=",password),paste0("server=",host),
-                            paste0("Trusted_Connection=",ifelse(trusted,"yes","false")),
-                            paste0("connection timeout=",timeout),
-                            sep=";")
+                 paste0("password=",password),paste0("server=",host),
+                 paste0("Trusted_Connection=",ifelse(trusted,"yes","false")),
+                 paste0("connection timeout=",timeout),
+                 sep=";")
     if (!is.null(database) && is.character(database))
       url <- paste(url,paste0("Database=",database),sep=";")
     sqlServerConnectionUrl(url)
@@ -181,21 +181,21 @@ sqlServerCloseConnection <-
 
 
 sqlServerConnectionInfo <- 
-function(dbObj,what,...){
-  if(!isIdCurrent(dbObj))
+  function(dbObj,what,...){
+    if(!isIdCurrent(dbObj))
       stop(paste("expired", class(dbObj), deparse(substitute(dbObj))))
-  conn <- rClr:::createReturnedObject(dbObj@Id)
-  info <- vector("list", length = length(clrGetProperties(conn)))
-  sqlDataHelper <- clrNew("rsqlserver.net.SqlDataHelper")
-  for (prop in clrGetProperties(conn))
+    conn <- rClr:::createReturnedObject(dbObj@Id)
+    info <- vector("list", length = length(clrGetProperties(conn)))
+    sqlDataHelper <- clrNew("rsqlserver.net.SqlDataHelper")
+    for (prop in clrGetProperties(conn))
       info[[prop]] <- clrCall(sqlDataHelper,"GetConnectionProperty",conn,
                               prop)
-  info <- as.list(unlist(info))
-  if(!missing(what))
-    info[what]
-  else
-    info
-}
+    info <- as.list(unlist(info))
+    if(!missing(what))
+      info[what]
+    else
+      info
+  }
 
 
 sqlServerCloneConnection <-
