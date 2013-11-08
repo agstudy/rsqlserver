@@ -98,10 +98,10 @@ sqlServerReadTable <-
       warning("row.names not set on output data.frame (non-existing field)")
       return(out)
     }
-    rnms <- as.character(out[,j])
+    rnms <- out[,j]
     if(all(!duplicated(rnms))){
       out <- out[,-j, drop = FALSE]
-      row.names(out) <- rnms
+      attr(out, "row.names") <- rnms
     } else warning("row.names not set on output (duplicate elements in field)")
     out
   } 
@@ -166,7 +166,7 @@ sqlServerWriteTable <-
       TRUE
       ##   dbCommit(con)
     },error = function(e) {
-      stop(sqlException.Message(res))
+      stop(sqlException.Message(e))
     })
   }
 
@@ -180,7 +180,7 @@ insert.into <- function(con,name,cnames,value,row.names){
                     paste(cnames,collapse=','))
     values <- paste0('VALUES (',do.call(paste, c(value, sep=",",collapse='),(')),')')
     stmt = paste(stmt,values,sep='\n')
-    dbGetScalar(con, stmt, data = value)
+    dbNonQuery(con, stmt, data = value)
   }else{
     ##dbCommit(con)
     bulk.copy(con,name,value)
@@ -197,6 +197,7 @@ bulk.copy <- function(con,name,value,...){
 }
 
 bulk.copy.file <- function(con,name,value){
+  browser()
   con.string = dbGetInfo(con)$ConnectionString
   if (!is.null(value) && file.exists(value))
     clrCallStatic("rsqlserver.net.misc","SqlBulkCopy",con.string ,value,name)
@@ -210,14 +211,12 @@ bulk.copy.file <- function(con,name,value){
 
 dbCreateTable <- function(con, name, cnames, ctypes)
 {
-  tryCatch({
     stmt <- sprintf('CREATE TABLE "%s" (%s)', name,
                     paste(cnames, ctypes, collapse = ","))
-    dbGetScalar(con, stmt)},
-           error=function(e){
-             cat(paste0("query : ",stmt),sep='\n')
-             stop(sqlException.Message(e))
-           })
+    if(!dbExistsTable(con, name)){
+      rc <- try(dbNonQuery(con, stmt),silent=TRUE)
+      !inherits(rc, "try-error")
+    }else FALSE
 }
 
 dropTable <- function(con, name,...)
@@ -228,9 +227,18 @@ dropTable <- function(con, name,...)
     stop("'name' must be a single string")
   if(dbExistsTable(con, name)){
     rc <- try({stmt <- sprintf('DROP TABLE "%s"', name)
-               dbGetScalar(con, stmt)})
+               dbNonQuery(con, stmt)})
     !inherits(rc, "try-error")
   }else FALSE
 }
 
+dropProc  <- function(con,sp.name){
+  line1 <- paste0("IF NOT EXISTS (SELECT * FROM sys.objects",
+         " WHERE object_id = OBJECT_ID(N'[",
+         sp.name,"]') AND type in (N'P', N'PC'))")
+  line2 <- paste0("DROP PROCEDURE [",sp.name,"]")
+  stmt = paste(line1,line2,sep='\n')
+  rc <- try(dbNonQuery(con, stmt))
+  !inherits(rc, "try-error")
+}
 
