@@ -143,6 +143,7 @@ sqlServerWriteTable <-
     } else {
       new.con <- con
     }
+    ## con <- dbTransaction(new.con,name='sqlServerWriteTable')
     cnames <- names(field.types)
     ctypes <- field.types
     res <- tryCatch({
@@ -163,6 +164,7 @@ sqlServerWriteTable <-
       })(con,name,cnames,ctypes)
       insert.into(con,name,cnames,value,row.names)
       TRUE
+      ##   dbCommit(con)
     },error = function(e) {
       stop(sqlException.Message(res))
     })
