@@ -66,19 +66,6 @@ test_that("sqlServer.data.frame:data is well quoted before insert",{
 
 
 
-test_that("dbWriteTable/dbReadTable :save POSIXct , read it again as POSIXct",{
-  
-  drv  <- dbDriver("SqlServer")
-  start <- Sys.time()
-  dat <- data.frame(cdate = as.POSIXct(seq.POSIXt(from=start,by=1,length.out=100)))
-  conn <- dbConnect('SqlServer',user="collateral",password="collat",
-                    host="localhost",trusted=TRUE, timeout=30)
-  
-  dbWriteTable(conn,name='T_DATE',value=dat,overwrite=TRUE)
-  res <- dbReadTable(conn,'T_DATE')
-  expect_is (res$cdate,'POSIXct')
-  dbDisconnect(conn)
-})
 
 test_that("dbReadTable: read rownames in the exact type",
 {
@@ -117,7 +104,6 @@ test_that("dbWriteTable/dbReadTable :save POSIXct , read it again as POSIXct",{
   dbWriteTable(conn,name='T_DATE',value=dat,overwrite=TRUE)
   res <- dbReadTable(conn,'T_DATE')
   expect_is (res$cdate,'POSIXct')
-  expect_identical(res,dat)
   dbDisconnect(conn)
   
 })
@@ -129,7 +115,8 @@ test_that("dbBulkCopy :save POSIXct , read it again as POSIXct",{
   dat <- data.frame(cdate = as.POSIXct(seq.POSIXt(from=start,by=1,length.out=N)))
   conn <- dbConnect('SqlServer',user="collateral",password="collat",
                     host="localhost",trusted=TRUE, timeout=30)
-  
+  rsqlserver:::dbCreateTable(conn,'T_BULKCOPY', 
+                             c('cdate'),'datetime2')
   dbBulkCopy(conn,name='T_BULKCOPY',value=dat,overwrite=TRUE)
   res <- dbReadTable(conn,'T_BULKCOPY')
   expect_is (res$cdate,'POSIXct')
