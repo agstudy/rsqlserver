@@ -10,12 +10,13 @@ The .NET Framework Data Provider for SQL Server (SqlClient) `System.Data.SqlClie
 The .NET Framework Data Provider for SQL Server (SqlClient) uses its own protocol to communicate with SQL Server. It is lightweight and performs well because it is optimized to access a SQL Server directly without adding an OLE DB or Open Database Connectivity (ODBC) layer.
 
 
-## Requirement
+## Prerequisites and package dependencies 
 
-`rsqlserver` is using  using thee [Rclr package](https://rclr.codeplex.com/) package which requires: 
 
-* .NET 4.0
-* MS Visual C++ 2012 runtime
+The `rsqlserver` package uses the .NET framework SDK to build some a small C# project. Typically if you have on your machine the file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe", you can skip this paragraph. Otherwise you need to install the [Microsoft Windows SDK for Windows 7 and .NET Framework 4](http://www.microsoft.com/en-us/download/details.aspx?id=8279). An overview of list of Microsoft SDKs is available [here](http://msdn.microsoft.com/en-us/vstudio/hh487283.aspx)
+
+The interoperability of R and .NET code relies on the [rClr](http://r2clr.codeplex.com/) R package. You can download an installable R package for windows (zip file). Make sure to at least skim through the [installation instructions](http://r2clr.codeplex.com/wikipage?title=Installing%20R%20packages&referringTitle=Documentation).
+
 
 ## Installation
 
@@ -25,7 +26,6 @@ You can install it from `github` using the `devtools` package
 
 ```coffee
 require(devtools)
-install_github('rClr', 'agstudy')
 install_github('rsqlserver', 'agstudy')
 ```
 
@@ -49,6 +49,6 @@ Comparaison with `RODBC`.
 
 ## Acknowledgements
 
-I thank the author of `rClr` package.
+I thank Jean-Michel Perraud the author of [rClr](http://r2clr.codeplex.com/) package.
 
 
