@@ -10,6 +10,7 @@ Description:Sql server database interface (DBI) driver for R.
             This is a DBI-compliant Sql server driver based on the System.Data.SqlClient. 
 Depends: methods 
 Imports: rClr, DBI (>= 0.2-7)
+Suggests: testthat,  knitr,  xtable
 License: GPL-2
 Collate:  "zzz.R" "dbObjectId.R"  "DBIDriver.R"  "DBIConnection.R" 
            "DBIResult.R"  "DBIConvenience.R"  "DBITransaction.R"     
