@@ -39,12 +39,13 @@ install_github('rsqlserver', 'agstudy')
 * Easy **Transaction** management to commit and rollback
 * **Stored procedure** call.
 * Uses named parameters in the format @parametername to pass values to SQL statements or stored procedures. This will provide better type checking and imporve performance. (not yet implemented)
-* **Bulk Copy** for quickly bulk copying large files into tables or views in SQL Server databases.
+* **Bulk Copy** for quickly bulk copying Big data.frame or large files into tables or views in SQL Server databases.
 * DBI extension like `dbGetScalar` and `dbGetNoQuery`
 
 ## Benchmarking
 
-i am preparing some benchmarking with `RODBC`.
+TODO performance tests
+Comparaison with `RODBC`.
 
 ## Acknowledgements
 
