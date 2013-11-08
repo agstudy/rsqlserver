@@ -1,4 +1,4 @@
-# 
+###
 context('test connections')
 
 test_isConnected <- function(url){
@@ -8,14 +8,14 @@ test_isConnected <- function(url){
 }
 
 test_that("dbConnect : Standard Security",{
- url = "Server=localhost;Database=COLLATERAL;User Id=collateral;
+ url = "Server=localhost;Database=TEST_RSQLSERVER;User Id=collateral;
   Password=collat;"
  test_isConnected(url)
 })
 
 ###           
 test_that("dbConnect : Trusted Connection",{
-  url = "Server=localhost;Database=COLLATERAL;Trusted_Connection=True;"
+  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
   test_isConnected(url)
   
 })
