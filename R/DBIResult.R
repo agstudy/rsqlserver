@@ -93,11 +93,20 @@ sqlServerExecStatement <-
       trans <- rClr:::createReturnedObject(conn@trans)
       clrCall(cmd,'set_Transaction',trans)
     }
-    dataReader <- clrCall(cmd,'ExecuteReader')
-    new("SqlServerResult", Id = clrGetExtPtr(dataReader))
+    res <- try(clrCall(cmd,'ExecuteReader'),silent=TRUE)
+   
+   if (inherits(res, "try-error")){
+      stop(sqlException.Message(res))
+   }
+   
+    new("SqlServerResult", Id = clrGetExtPtr(res))
     
   }
 
+sqlException.Message <- function(exception){
+  message = conditionMessage(attr(exception,"condition"))
+  readLines(textConnection(message),n=2)[2]
+}
 
 sqlServerExecScalar <- 
   function(conn,statement,...)
@@ -112,8 +121,12 @@ sqlServerExecScalar <-
       trans <- rClr:::createReturnedObject(conn@trans)
       clrCall(cmd,'set_Transaction',trans)
     }
-    value <- clrCall(cmd,'ExecuteScalar')
-    value
+    res <- try(clrCall(cmd,'ExecuteScalar'),silent=TRUE)
+    
+      if (inherits(res, "try-error")){
+        stop(sqlException.Message(res))
+      }
+    res
     
   }
 
@@ -129,8 +142,8 @@ sqlServerFetch <-
     
     Cnames <- clrGet(sqlDataHelper,'Cnames')
     CDbtypes <- clrGet(sqlDataHelper,'CDbtypes')
+    out <- vector('list',ncols)
     out <- if (n < 0L) { ## infinite pull
-      out <- vector('list',ncols)
       stride <- 32768L  ## start fairly small to support tiny queries and increase later
       while ((nrec <- clrCall(sqlDataHelper,'Fetch',stride)) > 0L) {
         res.Dict <- clrGet(sqlDataHelper,"ResultSet")
@@ -144,15 +157,13 @@ sqlServerFetch <-
         stride <- 524288L # 512k
       }
       out
-    } else {
-      clrCall(sqlDataHelper,'Fetch',as.integer(n))
-      res.Dict <- clrGet(sqlDataHelper,"ResultSet")
-      out <- lapply(CDbtypes, function(x)
-        vector(db2RType(x),length=n))
-      for (i in seq.int(Cnames))
-        out[[i]] <- clrCall(res.Dict,'get_Item',Cnames[i])    
-      out
-    }
+    } 
+           else { clrCall(sqlDataHelper,'Fetch',as.integer(n))
+                  res.Dict <- clrGet(sqlDataHelper,"ResultSet")
+                  for (i in seq.int(Cnames))
+                    out[[i]] <- clrCall(res.Dict,'get_Item',Cnames[i])    
+                 out
+           }
     ## set names and convert list to a data.frame
     names(out) <- Cnames
     attr(out, "row.names") <- c(NA_integer_, length(out[[1]]))

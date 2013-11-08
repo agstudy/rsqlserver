@@ -118,13 +118,14 @@ sqlServerWriteTable <-
     name <- as.character(name)
     if (length(name) != 1L)
       stop("'name' must be a single string")
-  
     
-    if(row.names){
-      value <- cbind(row.names(value), value)  ## can't use row.names= here
-      names(value)[1] <- "row.names"
+    
+    if(row.names)
+    {
+      row_names = attr(value,"row.names")
+      value <- cbind(row_names=row_names, value)  
+      attr(value$row_names,"class") <- attr(row_names,"class")
     }
-    
     
     if(missing(field.types) || is.null(field.types)){
       field.types <- lapply(value, R2DbType)
@@ -132,7 +133,7 @@ sqlServerWriteTable <-
     names(field.types) <- make.db.names(con, names(field.types), 
                                         allow.keywords = allow.keywords)
     
-
+    
     value <- sqlServer.data.frame(value,field.types)
     
     ## Do we need to clone the connection (ie., if it is in use)?
@@ -142,7 +143,6 @@ sqlServerWriteTable <-
     } else {
       new.con <- con
     }
-   ## con <- dbTransaction(new.con,name='sqlServerWriteTable')
     cnames <- names(field.types)
     ctypes <- field.types
     res <- tryCatch({
@@ -163,10 +163,8 @@ sqlServerWriteTable <-
       })(con,name,cnames,ctypes)
       insert.into(con,name,cnames,value,row.names)
       TRUE
-   ##   dbCommit(con)
     },error = function(e) {
-      print(e)
-   ##   dbRollback(con)
+      stop(sqlException.Message(res))
     })
   }
 
@@ -190,9 +188,9 @@ insert.into <- function(con,name,cnames,value,row.names){
 
 bulk.copy <- function(con,name,value,...){
   if(is.data.frame(value)){
-      id = "d:/temp/temp.csv"                       ## TODO use a tempfile or partial name
-      write.csv(value,file=id,row.names=FALSE)
-      bulk.copy.file(con,name,id)
+    id = "d:/temp/temp.csv"                       ## TODO use a tempfile or partial name
+    write.csv(value,file=id,row.names=FALSE)
+    bulk.copy.file(con,name,id)
   }
 }
 
@@ -216,8 +214,7 @@ dbCreateTable <- function(con, name, cnames, ctypes)
     dbGetScalar(con, stmt)},
            error=function(e){
              cat(paste0("query : ",stmt),sep='\n')
-             print(e)
-             stop("dbCreateTable: Impossible to create table , see the stmt expression")
+             stop(sqlException.Message(e))
            })
 }
 
@@ -228,8 +225,8 @@ dropTable <- function(con, name,...)
   if (length(name) != 1L)
     stop("'name' must be a single string")
   if(dbExistsTable(con, name)){
-    rc <- try( {stmt <- sprintf('DROP TABLE "%s"', name)
-                dbGetScalar(con, stmt)})
+    rc <- try({stmt <- sprintf('DROP TABLE "%s"', name)
+               dbGetScalar(con, stmt)})
     !inherits(rc, "try-error")
   }else FALSE
 }
