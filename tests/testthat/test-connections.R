@@ -1,5 +1,5 @@
 ###
-context('test connections')
+context('Test connections')
 
 test_isConnected <- function(url){
   conn <- dbConnect('SqlServer',url=url)
