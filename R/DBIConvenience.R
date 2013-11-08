@@ -197,7 +197,6 @@ bulk.copy <- function(con,name,value,...){
 }
 
 bulk.copy.file <- function(con,name,value){
-  browser()
   con.string = dbGetInfo(con)$ConnectionString
   if (!is.null(value) && file.exists(value))
     clrCallStatic("rsqlserver.net.misc","SqlBulkCopy",con.string ,value,name)
