@@ -39,14 +39,26 @@ setMethod("dbGetQuery",
           def = function(conn, statement, ...) sqlServerExecRetrieve(conn, statement, ...)
 )
 
-setGeneric("dbGetScalar", function(conn, statement, ...) 
-  standardGeneric("dbGetScalar")
-)
+setGeneric("dbGetScalar", function(conn, statement, ...){
+  value <- standardGeneric("dbGetScalar")
+  if (!is.atomic(value) || length(value) > 1L) ## valuecan be NULL 
+    stop("not a scalar atomic vector")
+  value
+})
 setMethod("dbGetScalar", 
           signature(conn = "SqlServerConnection", statement = "character"),
           def = function(conn, statement, ...) sqlServerExecScalar(conn, statement, ...),
-          valueClass = "character"
 )
+
+
+setGeneric("dbNonQuery", function(conn, statement, ...) 
+  standardGeneric("dbNonQuery")
+)
+setMethod("dbNonQuery", 
+          signature(conn = "SqlServerConnection", statement = "character"),
+          def = function(conn, statement, ...) sqlServerNonQuery(conn, statement, ...)
+)
+
 
 
 setMethod("dbGetInfo", "SqlServerResult",
@@ -60,12 +72,24 @@ setGeneric("dbBulkCopy", function(conn,name,value,...)
 
 setMethod("dbBulkCopy",
           signature(conn ="SqlServerConnection",value="data.frame",name="character"),
-          def = function(conn,name,value,...)   bulk.copy(con,name,value,...)
+          def = function(conn,name,value,...)   bulk.copy(conn,name,value,...)
 )
 setMethod("dbBulkCopy",
           signature(conn ="SqlServerConnection",value="character",name="character"),
           def = function(conn,name,value,...)   bulk.copy.file(con,name,value,...)
 )
+
+
+setGeneric("dbCallProc",
+           function(conn,name,...)
+             standardGeneric("dbCallProc"))
+
+setMethod("dbCallProc",
+          signature(conn="SqlServerConnection",name="character"),
+                    def =function(conn,name,...) sqlExecuteProc(conn,name,...)
+)
+
+
 
 ## TODO: 
 setMethod("dbHasCompleted", "SqlServerResult",
@@ -79,50 +103,38 @@ setMethod("dbHasCompleted", "SqlServerResult",
 ### internal implementations
 ### helper functions
 
+get.command <- function(conn,stmt,...){
+  if(!isIdCurrent(conn)){
+    warning(paste("expired SqlServerConnection"))
+    return(TRUE)
+  }
+  clr.conn <- rClr:::createReturnedObject(conn@Id)
+  cmd <- clrNew("System.Data.SqlClient.SqlCommand",stmt,clr.conn)
+  if(isTransaction(conn)){
+    trans <- rClr:::createReturnedObject(conn@trans)
+    clrCall(cmd,'set_Transaction',trans)
+  }
+  cmd
+}
+
 
 sqlServerExecStatement <- 
   function(conn,statement,...)
   {
-    if(!isIdCurrent(conn)){
-      warning(paste("expired SqlServerConnection"))
-      return(TRUE)
-    }
-    clr.conn <- rClr:::createReturnedObject(conn@Id)
-    cmd <- clrNew("System.Data.SqlClient.SqlCommand",statement,clr.conn)
-    if(isTransaction(conn)){
-      trans <- rClr:::createReturnedObject(conn@trans)
-      clrCall(cmd,'set_Transaction',trans)
-    }
-    res <- try(clrCall(cmd,'ExecuteReader'),silent=TRUE)
-   
+   cmd <- get.command(conn,statement)
+   res <- try(clrCall(cmd,'ExecuteReader'),silent=TRUE)
    if (inherits(res, "try-error")){
       stop(sqlException.Message(res))
    }
-   
-    new("SqlServerResult", Id = clrGetExtPtr(res))
-    
+  new("SqlServerResult", Id = clrGetExtPtr(res))
   }
-
-sqlException.Message <- function(exception){
-  message = conditionMessage(attr(exception,"condition"))
-  readLines(textConnection(message),n=2)[2]
-}
 
 sqlServerExecScalar <- 
   function(conn,statement,...)
   {
-    if(!isIdCurrent(conn)){
-      warning(paste("expired SqlServerConnection"))
-      return(TRUE)
-    }
-    clr.conn <- rClr:::createReturnedObject(conn@Id)
-    cmd <- clrNew("System.Data.SqlClient.SqlCommand",statement,clr.conn)
-    if(isTransaction(conn)){
-      trans <- rClr:::createReturnedObject(conn@trans)
-      clrCall(cmd,'set_Transaction',trans)
-    }
+    cmd <- get.command(conn,statement)
     res <- try(clrCall(cmd,'ExecuteScalar'),silent=TRUE)
-    
+  
       if (inherits(res, "try-error")){
         stop(sqlException.Message(res))
       }
@@ -130,6 +142,32 @@ sqlServerExecScalar <-
     
   }
 
+sqlServerNonQuery <- 
+  function(conn,statement,...)
+  {
+    cmd <- get.command(conn,statement)
+    res <- try(clrCall(cmd,'ExecuteNonQuery'),silent=TRUE)
+    if (inherits(res, "try-error")){
+      stop(sqlException.Message(res))
+    }
+  }
+
+
+
+sqlExecuteProc <- 
+  function(con,name,...){
+    
+  }
+
+
+
+sqlException.Message <- function(exception){
+  message <- 
+  if(inherits(exception,'simpleError'))
+    message(exception)
+  else conditionMessage(attr(exception,"condition"))
+  readLines(textConnection(message),n=2)[2]
+}
 
 
 sqlServerFetch <- 
@@ -200,6 +238,9 @@ sqlServerExecRetrieve <-
     dbClearResult(rs)
     res
   }
+
+
+
 
 
 sqlServerResultInfo <- 
