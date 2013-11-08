@@ -1,5 +1,24 @@
 context("Reading/Writing tables")
 
+test_that("dbReadTable : return a significant message if table not found", {
+  conn <- dbConnect('SqlServer',user="collateral",password="collat",
+                    host="localhost",trusted=TRUE, timeout=30)
+  
+  expect_error(dbReadTable(conn,'NO_EXIST_TABLE'),"Invalid object name")
+  dbDisconnect(conn)
+  
+})
+
+test_that("dbReadTable : reopen connection if connection is already closed", {
+  conn <- dbConnect('SqlServer',user="collateral",password="collat",
+                    host="localhost",trusted=TRUE, timeout=30)
+  dbDisconnect(conn)
+  res <- dbReadTable(conn,'T_DATE')
+  expect_is(res,class="data.frame")
+})
+
+
+
 test_that("dbGetScalar : query in a temporary table works fine ", {
 
   req <- "create table #tempTable(Test int)
@@ -13,10 +32,6 @@ test_that("dbGetScalar : query in a temporary table works fine ", {
   dbDisconnect(conn)
   expect_equal(ress,2)
 })
-
-
-
-
 
 test_that("dbWriteTable/dbRemoveTable: Create a table and remove it using handy functions ", {
   
