@@ -51,3 +51,7 @@ TODO performance tests :Comparaison with `RODBC`.
 I want to thank Jean-Michel Perraud the author of [rClr](http://r2clr.codeplex.com/) package.
 
 
+
+
+[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/agstudy/rsqlserver/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
+
