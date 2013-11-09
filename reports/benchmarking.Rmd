@@ -57,12 +57,16 @@ conn.rsqlserver <- function(){
 
 ```
 
-Depending on the application any sub-second response time may be sufficient. But `rsqlserver` is much faster than RODBC.
+Depending on the application any sub-second response time may be sufficient. 
+But **`rsqlserver` is much faster than `RODBC` ** to connect to the data base. 
 
 ```{r bench.connections}
-
 library(microbenchmark)
-microbenchmark(conn1<- conn.rodbc(),conn2 <- conn.rsqlserver(),times=1)
+tm <- microbenchmark(conn1<- conn.rodbc(),conn2 <- conn.rsqlserver(),
+               times=1)
+
+library(ggplot2)
+autoplot(tm)
 ````
 
 
@@ -87,19 +91,19 @@ url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
 conn <- dbConnect('SqlServer',url=url) 
 cnames <- paste0('col',seq_len(ncol))
 rsqlserver:::dbCreateTable(conn,TABLE_NAME, 
-  												 cnames,rep("float",ncol))
+                           cnames,rep("float",ncol))
 gen.matrix <- function() {
-	replicate(10,{
-		dat <- matrix(round(rnorm(N*ncol),2),
-									nrow=N,
-									ncol=ncol)
-		colnames(dat) <- cnames 
-		id.file = "d:/temp/temp.csv"                      
-		write.csv(dat,file=id.file,row.names=FALSE)
-		dbBulkCopy(conn,name=TABLE_NAME,value=id.file)
-		rm(dat)
-	})
-}
+  replicate(10,{
+    dat <- matrix(round(rnorm(N*ncol),2),
+                  nrow=N,
+                  ncol=ncol)
+    colnames(dat) <- cnames 
+    id.file = "d:/temp/temp.csv"                      
+    write.csv(dat,file=id.file,row.names=FALSE)
+    dbBulkCopy(conn,name=TABLE_NAME,value=id.file)
+    rm(dat)
+    })
+  }
 
 system.time(gen.matrix())
 
@@ -111,41 +115,32 @@ dbDisconnect(conn)
 
 ## Loading database data to an R data.frame
 
-Here we present 2  methods to get the results:
 
-* Using sqlQuery from RODBC package 
-* Using dbGetQuery from rsqlserver package since it a DBI interafce.
+* Using `sqlQuery` from RODBC package 
+* Using `dbGetQuery` from rsqlserver package since it a DBI interafce.
 
-
-```{r query}
-
-nrows <- 100000
-
-qselect <- paste0("SELECT TOP ", format(nrows, scientific=F), " * 
-                FROM ",TABLE_NAME)
-## RODBC
-get.rodbc <- function (conn,query=qselect){
-  res <- sqlQuery(conn, query)
-  res
-  }
-## rsqlserver dbGetQuery
-get.rsqlserver <- function(conn,query=qselect){
-  res <- dbGetQuery(conn,statement= query)
-  res
-  }
-
-
-```
 
 Comapring results:
 
-```{r bench.query}
-conn1 <- conn.rodbc()
-conn2 <- conn.rsqlserver()
-microbenchmark(get.rodbc(conn1),
-               get.rsqlserver(conn2),
-               times=1)
+```{r bench.query,fig.align='center'}
+times <- c(1,5,10,50,100)
+ll <- lapply(times,function(x){
+  nrows <- 1*x
+  qselect <- paste0("SELECT TOP ", format(nrows, scientific=F), " * 
+                    FROM ",TABLE_NAME)
+  res <- microbenchmark(sqlQuery(conn1, qselect),
+                        dbGetQuery(conn2,qselect),
+                        times=1)
+  data.frame( x   = x, 
+             time = microbenchmark:::convert_to_unit(res$time,'s'),
+             method = as.character(res$expr))
+        
+  })
 
+res <- do.call(rbind,ll)
+res$method <- gsub('dbGet.*','rsqlserver',res$method)
+res$method <- gsub('sqlQ.*','rodbc',res$method)
 dbDisconnect(conn2)
-
+ggplot(res) +geom_line(aes(x=x,y=time,color=method))
+res
 ```
