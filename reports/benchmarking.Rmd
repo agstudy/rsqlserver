@@ -1,35 +1,90 @@
 Benchmarking
 ========================================================
 
-In order to convince people to use the package, 
-I Compare rsqlserver performance with other packges.
+## Introduction
 
-* RJDBC
-* RODBC
+R users have a few choices of how to connect to their MS Sql Server Database. The most commonly seen include:
+
+* RODBC to access from Windows environment 
+* RJDBC to access from Linux like environment
+
+However, these packages have significantly different performance and scalability characteristics which can greatly impact your application development. 
+
+In this report, we will we will discuss these options and highlight performance benchmark results on a wide range of data sets.
 
 
-```{r globaloptions,ech=FALSE}
 
+```{r globaloptions,echo=FALSE}
 opts_chunk$set(warning=FALSE)
+opts_chunk$set(message=FALSE)
 
 ```
 
-The code to connect from differnt drivers is :
-```{r connections}
-library(RODBC)
+## Connections 
 
-conn.rodbc <- function()
-  {
+A Typical way to connect to Sql Server from `RODBC` is to define a Data Source Name or DSN 
+
+```{r conn.rodbc}
+library(RODBC)
+conn.rodbc <- function(){
   odbcConnect(dsn = "my-dns", uid = "collateral", pwd = "collat")
   }
+````
+In the other side `rsqlserver` offer many ways to acces to the data base. You can either sppecify an url for connection string or specify some parameters like server address, data base name , user name and paswword,...
+One inetrsting option is to use the Integrated Security and Trusted_Connection to specify wheter the connnection is secure, such as Windows Authentication or SSPI.
+
+Windows Authentication is sometimes called a trusted connection, because SQL Server trusts the credentials provided by Windows.
+
+```{r conn.rsqlserver}
 library(rsqlserver)
 conn.rsqlserver <- function(){
-  dbConnect('SqlServer',user="collateral",password="collat",
-            host="localhost",trusted=TRUE, timeout=30)
-  }
+    url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+  conn <- dbConnect('SqlServer',url=url)
+}
 
 ```
 
+Comparing the connections time :
+```{r bench.connections}
+
+library(microbenchmark)
+microbenchmark(conn1<- conn.rodbc(),conn2 <- conn.rsqlserver(),times=1)
+````
+
+## Reading data 
+
+### Creating data
+
+We will create 1000000x100 matrix using `dbBulkCopy`. This is a new feature that rsqlserver offer gracefuly.
+
+```{r }
+#   drv  <- dbDriver("SqlServer")
+N = 100000 
+ncol=100
+TABLE_NAME = "T_BENCHMARKING"
+#   
+#   
+#   conn <- dbConnect('SqlServer',user="collateral",password="collat",
+#                     host="localhost",trusted=TRUE, timeout=30)
+#   cnames <- paste0('col',seq_len(ncol))
+#   rsqlserver:::dbCreateTable(conn,TABLE_NAME, 
+#         cnames,rep("float",ncol))
+#   for(i in 1:10){
+#     dat <- matrix(rnorm(N/10*ncol),nrow=N/10,ncol=ncol)
+#     colnames(dat) <- cnames 
+#     id.file = "d:/temp/temp.csv"                      
+#     write.csv(dat,file=id.file,row.names=FALSE)
+#     dbBulkCopy(conn,name=TABLE_NAME,value=id.file)
+#     rm(dat)
+#   }
+#  dbDisconnect(conn)
+
+
+
+```
+
+
+### Query data
 Here we present 3  methods to get the results:
 * Using sqlQuery from RODBC package 
 * Using dbGetQuery from rsqlserver package
@@ -37,40 +92,38 @@ Here we present 3  methods to get the results:
 
 ```{r query}
 
-nrows <- 1000000
+nrows <- 1000
 
 Query <- paste0("SELECT TOP ", format(nrows, scientific=F), " * 
-                 FROM T_BIG_1000000")
-
-
+                FROM ",TABLE_NAME)
+## RODBC
 get.rodbc <- function (conn,query=Query){
   res <- sqlQuery(conn, query)
   res
   }
-
+## rsqlserver dbGetQuery
 get.rsqlserver1 <- function(conn,query=Query){
   res <- dbGetQuery(conn, query)
   res
-}
+  }
 
+## rsqlserver fetch 
 get.rsqlserver2 <- function(conn,query=Query,n=nrows){
   reader <- dbSendQuery(conn, query)
   res <- fetch(reader,n)
   invisible(dbClearResult(reader))
   res
-}
-
-
+  }
 ```
 
-```{r benchamrking}
+Comapring results:
 
-library(microbenchmark)
-microbenchmark(conn1<- conn.rodbc(),conn2 <- conn.rsqlserver(),times=1)
-
+```{r bench.query}
+conn1 <- conn.rodbc()
+conn2 <- conn.rsqlserver()
 microbenchmark(get.rodbc(conn1),
                get.rsqlserver1(conn2),
-               get.rsqlserver2(conn2) ,times=10)
+               times=1)
 
 dbDisconnect(conn2)
 
