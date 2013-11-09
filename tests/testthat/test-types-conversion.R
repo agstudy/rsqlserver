@@ -80,12 +80,12 @@ test_that("dbReadTable: read rownames in the exact type",
   rownames(dat_date) <- as.POSIXct(seq.POSIXt(from=start,by=1,
                                               length.out=nrow(dat_date)))
   invisible(lapply(ls(pattern="dat_"),
-         function(x){
-           dbWriteTable(conn,name=x,value=get(x),overwrite=TRUE)
-           res <- dbReadTable(conn,name=x)
-           expect_identical(rownames(get(x)),
-                            rownames(res))
-         }))
+                   function(x){
+                     dbWriteTable(conn,name=x,value=get(x),overwrite=TRUE)
+                     res <- dbReadTable(conn,name=x)
+                     expect_identical(rownames(get(x)),
+                                      rownames(res))
+                   }))
   
   dbDisconnect(conn)
   
