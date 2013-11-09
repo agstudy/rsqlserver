@@ -76,7 +76,7 @@ setMethod("dbBulkCopy",
 )
 setMethod("dbBulkCopy",
           signature(conn ="SqlServerConnection",value="character",name="character"),
-          def = function(con,name,value,...)   bulk.copy.file(con,name,value,...)
+          def = function(conn,name,value,...)   bulk.copy.file(conn,name,value,...)
 )
 
 
