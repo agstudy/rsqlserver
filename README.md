@@ -51,3 +51,5 @@ TODO performance tests :Comparaison with `RODBC`.
 I want to thank Jean-Michel Perraud the author of [rClr](http://r2clr.codeplex.com/) package.
 
 
+[![githalytics.com alpha](https://cruel-carlota.pagodabox.com/02a6e8b8e984a8efdb565750d99a10cf "githalytics.com")](http://githalytics.com/agstudy/rsqlserver)
+

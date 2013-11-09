@@ -1,5 +1,13 @@
-Benchmarking
-========================================================
+```{r bench.settings,echo=FALSE}
+opts_chunk$set(warning=FALSE)
+opts_chunk$set(message=FALSE)
+TABLE_NAME = "T_BENCHMARKING2"
+
+```
+
+
+R and MS Sql server Connectivity: Use rslqserver for  Performance ,Scalability and DBI compliant
+=============================================================
 
 ## Introduction
 
@@ -13,12 +21,17 @@ However, these packages have significantly different performance and scalability
 In this report, we will we will discuss these options and highlight performance benchmark results on a wide range of data sets.
 
 
+## Configuration
 
-```{r globaloptions,echo=FALSE}
-opts_chunk$set(warning=FALSE)
-opts_chunk$set(message=FALSE)
+To compare these interfaces, we prepared tests along several dimensions:
 
-```
+* Number of rows 1M
+* Number of columns 100
+* Data types – numeric., randomly generated
+* Interfaces: RODBC 1.3-0 ,  rsqlserver 1.0 
+* Types of operations: select *, create table, connect
+* Data base :Microsoft SQL Server 2008 Express Edition (64-bit)
+
 
 ## Connections 
 
@@ -38,82 +51,90 @@ Windows Authentication is sometimes called a trusted connection, because SQL Ser
 ```{r conn.rsqlserver}
 library(rsqlserver)
 conn.rsqlserver <- function(){
-    url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
   conn <- dbConnect('SqlServer',url=url)
-}
+  }
 
 ```
 
-Comparing the connections time :
+Depending on the application any sub-second response time may be sufficient. But `rsqlserver` is much faster than RODBC.
+
 ```{r bench.connections}
 
 library(microbenchmark)
 microbenchmark(conn1<- conn.rodbc(),conn2 <- conn.rsqlserver(),times=1)
 ````
 
-## Reading data 
+
 
 ### Creating data
 
-We will create 1000000x100 matrix using `dbBulkCopy`. This is a new feature that rsqlserver offer gracefuly.
 
-```{r }
-#   drv  <- dbDriver("SqlServer")
-N = 100000 
+We will create 1Mx100 matrix using `dbBulkCopy`. This is a new feature that rsqlserver offer gracefuly.
+`dbBulkCopy` is differ from  `dbWriteTable` :
+* it is much faster 
+* Not limited in number of rows : `dbWriteTable` can write at most 1000 rows.  
+* can load a file or data.frame. Internally, the data.farme is saved as a file.
+
+Here I am creating 1Mx100 tables.
+
+```{r gen.bigtable, eval=FALSE }
+
+N = 100000
 ncol=100
-TABLE_NAME = "T_BENCHMARKING"
-#   
-#   
-#   conn <- dbConnect('SqlServer',user="collateral",password="collat",
-#                     host="localhost",trusted=TRUE, timeout=30)
-#   cnames <- paste0('col',seq_len(ncol))
-#   rsqlserver:::dbCreateTable(conn,TABLE_NAME, 
-#         cnames,rep("float",ncol))
-#   for(i in 1:10){
-#     dat <- matrix(rnorm(N/10*ncol),nrow=N/10,ncol=ncol)
-#     colnames(dat) <- cnames 
-#     id.file = "d:/temp/temp.csv"                      
-#     write.csv(dat,file=id.file,row.names=FALSE)
-#     dbBulkCopy(conn,name=TABLE_NAME,value=id.file)
-#     rm(dat)
-#   }
-#  dbDisconnect(conn)
 
+url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+conn <- dbConnect('SqlServer',url=url) 
+cnames <- paste0('col',seq_len(ncol))
+rsqlserver:::dbCreateTable(conn,TABLE_NAME, 
+  												 cnames,rep("float",ncol))
+gen.matrix <- function() {
+	replicate(10,{
+		dat <- matrix(round(rnorm(N*ncol),2),
+									nrow=N,
+									ncol=ncol)
+		colnames(dat) <- cnames 
+		id.file = "d:/temp/temp.csv"                      
+		write.csv(dat,file=id.file,row.names=FALSE)
+		dbBulkCopy(conn,name=TABLE_NAME,value=id.file)
+		rm(dat)
+	})
+}
+
+system.time(gen.matrix())
+
+dbDisconnect(conn)
 
 
 ```
 
 
-### Query data
-Here we present 3  methods to get the results:
+## Loading database data to an R data.frame
+
+Here we present 2  methods to get the results:
+
 * Using sqlQuery from RODBC package 
-* Using dbGetQuery from rsqlserver package
-* Using fetch from rsqlserver package, giving the number of lines to read.
+* Using dbGetQuery from rsqlserver package since it a DBI interafce.
+
 
 ```{r query}
 
-nrows <- 1000
+nrows <- 100000
 
-Query <- paste0("SELECT TOP ", format(nrows, scientific=F), " * 
+qselect <- paste0("SELECT TOP ", format(nrows, scientific=F), " * 
                 FROM ",TABLE_NAME)
 ## RODBC
-get.rodbc <- function (conn,query=Query){
+get.rodbc <- function (conn,query=qselect){
   res <- sqlQuery(conn, query)
   res
   }
 ## rsqlserver dbGetQuery
-get.rsqlserver1 <- function(conn,query=Query){
-  res <- dbGetQuery(conn, query)
+get.rsqlserver <- function(conn,query=qselect){
+  res <- dbGetQuery(conn,statement= query)
   res
   }
 
-## rsqlserver fetch 
-get.rsqlserver2 <- function(conn,query=Query,n=nrows){
-  reader <- dbSendQuery(conn, query)
-  res <- fetch(reader,n)
-  invisible(dbClearResult(reader))
-  res
-  }
+
 ```
 
 Comapring results:
@@ -122,7 +143,7 @@ Comapring results:
 conn1 <- conn.rodbc()
 conn2 <- conn.rsqlserver()
 microbenchmark(get.rodbc(conn1),
-               get.rsqlserver1(conn2),
+               get.rsqlserver(conn2),
                times=1)
 
 dbDisconnect(conn2)
