@@ -34,18 +34,17 @@ install_github('rsqlserver', 'agstudy')
 `rsqlserver` presentes many features:
 
 * fast and easy connection to Sql server.
-* Querying the data base : low levels functions using sql statement.
-* Full DBI compliant. Support of Higher level convenient functions( dbReadTable,dbWriteTable,dbRemoveTable,..) that support read, save, copy, and manipulation of data between R data.frame objects and database tables.
-* Easy **Transaction** management to commit and rollback
-* **Stored procedure** call.
-* Uses named parameters in the format @parametername to pass values to SQL statements or stored procedures. This will provide better type checking and imporve performance. (not yet implemented)
-* **Bulk Copy** for quickly bulk copying Big data.frame or large files into tables or views in SQL Server databases.
-* DBI extension like `dbGetScalar` and `dbGetNoQuery`
+* `dbSendQuery` Querying the data base : low levels functions using sql statement.
+* Full DBI compliant: Support of Higher level convenient functions :`dbReadTable`,`dbWriteTable`,`dbRemoveTable`,..)
+* `dbTransaction`, `dbCommit`, `dbRollback` for **Transaction** management
+* `dbCallProc` (in development)  for **Stored procedure** call.
+* `dbBulkCopy` using **Bulk Copy** for quickly bulk copying Big data.frame or large files into SQL server tables or views.
+* Many DBI extension like `dbGetScalar` , `dbGetNoQuery` , `dbBulkCopy`
+* `dbParameter`(coming soon) to handle Transact-SQL named parameters. This will provide better type checking and imporve performance. 
 
 ## Benchmarking
 
-TODO performance tests
-Comparaison with `RODBC`.
+TODO performance tests :Comparaison with `RODBC`.
 
 ## Acknowledgements
 
