@@ -35,7 +35,7 @@ install_github('rsqlserver', 'agstudy')
 
 * fast and easy connection to Sql server.
 * `dbSendQuery` Querying the data base : low levels functions using sql statement.
-* Full DBI compliant: Support of Higher level convenient functions :`dbReadTable`,`dbWriteTable`,`dbRemoveTable`,..)
+* Full DBI compliant: for example Support of Higher level convenient functions :`dbReadTable`,`dbWriteTable`,`dbRemoveTable`,..)
 * `dbTransaction`, `dbCommit`, `dbRollback` for **Transaction** management
 * `dbCallProc` (in development)  for **Stored procedure** call.
 * `dbBulkCopy` using **Bulk Copy** for quickly bulk copying Big data.frame or large files into SQL server tables or views.
