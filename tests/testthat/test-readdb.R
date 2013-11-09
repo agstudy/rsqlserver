@@ -1,8 +1,8 @@
 context("Reading/Writing tables")
 
 test_that("dbReadTable : return a significant message if table not found", {
-  conn <- dbConnect('SqlServer',user="collateral",password="collat",
-                    host="localhost",trusted=TRUE, timeout=30)
+  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+  conn <- dbConnect('SqlServer',url=url)
   
   expect_error(dbReadTable(conn,'NO_EXIST_TABLE'),"Invalid object name")
   dbDisconnect(conn)
@@ -10,8 +10,8 @@ test_that("dbReadTable : return a significant message if table not found", {
 })
 
 test_that("dbReadTable : reopen connection if connection is already closed", {
-  conn <- dbConnect('SqlServer',user="collateral",password="collat",
-                    host="localhost",trusted=TRUE, timeout=30)
+  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+  conn <- dbConnect('SqlServer',url=url)
   dbDisconnect(conn)
   res <- dbReadTable(conn,'T_DATE')
   expect_is(res,class="data.frame")
@@ -26,8 +26,8 @@ test_that("dbGetScalar : query in a temporary table works fine ", {
           select 2
           select * from #tempTable
           drop table #tempTable"
-  conn <- dbConnect('SqlServer',user="collateral",password="collat",
-                    host="localhost",trusted=TRUE, timeout=30)
+  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+  conn <- dbConnect('SqlServer',url=url)
   ress <- dbGetScalar(conn, req)
   dbDisconnect(conn)
   expect_equal(ress,2)
@@ -35,8 +35,8 @@ test_that("dbGetScalar : query in a temporary table works fine ", {
 
 test_that("dbWriteTable/dbRemoveTable: Create a table and remove it using handy functions ", {
   
-  conn <- dbConnect('SqlServer',user="collateral",password="collat",
-                    host="localhost",trusted=TRUE, timeout=30)
+  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+  conn <- dbConnect('SqlServer',url=url)
   if(dbExistsTable(conn,'T_MTCARS'))
     dbRemoveTable(conn,'T_MTCARS')
   dbWriteTable(conn,name='T_MTCARS',mtcars)
@@ -50,8 +50,8 @@ test_that("dbWriteTable/dbRemoveTable: Create a table and remove it using handy 
 
 test_that(":::dbCreateTable:Create a table having sql keywords as columns ", {
   
-  conn <- dbConnect('SqlServer',user="collateral",password="collat",
-                    host="localhost",trusted=TRUE, timeout=30)
+  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+  conn <- dbConnect('SqlServer',url=url)
   cnames = c('key','create','table')
   cnames = make.db.names(conn,cnames,allow.keywords=FALSE)
   if(dbExistsTable(conn,'TABLE_KEYWORDS'))
@@ -65,8 +65,8 @@ test_that(":::dbCreateTable:Create a table having sql keywords as columns ", {
 
 test_that("fetch: get n rows from a table", {
   
-  conn <- dbConnect('SqlServer',user="collateral",password="collat",
-                    host="localhost",trusted=TRUE, timeout=30)
+  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+  conn <- dbConnect('SqlServer',url=url)
   if(dbExistsTable(conn,'T_MTCARS'))
     dbRemoveTable(conn,'T_MTCARS')
   dbWriteTable(conn,name='T_MTCARS',mtcars)
@@ -87,8 +87,8 @@ test_that("fetch: get n rows from a table", {
 
 test_that("dbGetQuery: get some columns from a table without setting  ", {
   
-  conn <- dbConnect('SqlServer',user="collateral",password="collat",
-                    host="localhost",trusted=TRUE, timeout=30)
+  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+  conn <- dbConnect('SqlServer',url=url)
   if(dbExistsTable(conn,'T_MTCARS'))
     dbRemoveTable(conn,'T_MTCARS')
   dbWriteTable(conn,name='T_MTCARS',mtcars)
@@ -115,8 +115,8 @@ test_that("dbWriteTable/BulCopy:save and read a hudge data frame",{
   dat <- data.frame(value=sample(1:100,N,rep=TRUE),
                     key  =sample(letters,N,rep=TRUE),
                     stringsAsFactors=FALSE)
-  conn <- dbConnect('SqlServer',user="collateral",password="collat",
-                    host="localhost",trusted=TRUE, timeout=30)
+  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+  conn <- dbConnect('SqlServer',url=url)
   dbWriteTable(conn,name=table.name,dat,row.names=FALSE,overwrite=TRUE)
   expect_equal(dbExistsTable(conn,table.name),TRUE)
   res <- dbReadTable(conn,name=table.name)

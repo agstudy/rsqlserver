@@ -7,8 +7,8 @@ test_that("create and execute a stored procedure",{
  stmt.remove <- paste(reqs[[1]],collapse='\n')
  stmt.create <- paste(reqs[[2]][-1],collapse='\n')
  ## create procedure
- conn <- dbConnect('SqlServer',user="collateral",password="collat",
-                   host="localhost",trusted=TRUE, timeout=30)
+ url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+ conn <- dbConnect('SqlServer',url=url)
  dbNonQuery(conn,stmt.remove)
  dbNonQuery(conn,stmt.create)
  ## create data 

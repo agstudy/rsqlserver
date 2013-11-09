@@ -39,8 +39,8 @@ A typical use of the rsqlserver package is :
 
 ```{r  typicalUse}
 drv <- dbDriver('SqlServer')
-conn <- dbConnect(drv,user="collateral",password="collat",
-                 host="localhost",trusted=TRUE, timeout=30)
+  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+  conn <- dbConnect('SqlServer',url=url)
 query <- "SELECT  name,object_id,create_date 
           FROM    sys.tables"
 res <- dbSendQuery(conn, query)
@@ -58,8 +58,8 @@ To simplify the previous example to :
 ```{r  getquery}
 query <- "SELECT  name,object_id,create_date 
           FROM    sys.tables"
-conn <- dbConnect('SqlServer',user="collateral",password="collat",
-                 host="localhost",trusted=TRUE, timeout=30)
+  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+  conn <- dbConnect('SqlServer',url=url)
 res <- dbGetQuery(conn, query)
 invisible(dbDisconnect(conn))
 head(res)
@@ -71,21 +71,19 @@ To create a connection, you should call dbConnect. Here some example:
 
 ```{r connections}
 drv <- dbDriver('SqlServer')
-conn <- dbConnect(drv,user="collateral",password="collat",
-                 host="localhost",trusted=TRUE, timeout=30)
+  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+  conn <- dbConnect('SqlServer',url=url)
 dbDisconnect(conn)
-conn <- dbConnect('SqlServer',user="collateral",password="collat",
-                 host="localhost",trusted=TRUE, timeout=30)
+  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+  conn <- dbConnect('SqlServer',url=url)
 dbDisconnect(conn)
 
 ```
 
 to retrieve information about the connection , you can do this :
 ```{r geConnectionInfo}
-drv <- dbDriver('SqlServer')
-
-conn <- dbConnect(drv,user="collateral",password="collat",
-                 host="localhost",trusted=TRUE, timeout=30)
+url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+conn <- dbConnect('SqlServer',url=url)
 dbGetInfo(conn)
 dbGetInfo(conn,"State")
 dbDisconnect(conn)
@@ -98,9 +96,8 @@ dbGetInfo(conn,"State")
 Use dbGetInfo to retrieve the result state. 
 
 ```{r getResultsInfo}
-drv <- dbDriver('SqlServer')
-conn <- dbConnect(drv,user="collateral",password="collat",
-                 host="localhost",trusted=TRUE, timeout=30)
+url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+conn <- dbConnect('SqlServer',url=url)
 res <- dbSendQuery(conn, "select * from sys.tables")
 dbGetInfo(res,'HasRows')
 dbHasCompleted(res)
@@ -116,9 +113,8 @@ then you can fetch the result.
 
 ```{r fetchResult}
 
-drv <- dbDriver('SqlServer')
-conn <- dbConnect(drv,user="collateral",password="collat",
-                 host="localhost",trusted=TRUE, timeout=30)
+url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+conn <- dbConnect('SqlServer',url=url)
 res <- dbSendQuery(conn, "select * from sys.tables")
 if(!dbHasCompleted(res))
   res.dat <- fetch(res,4) ## retrieve only 4 rows
@@ -142,8 +138,8 @@ To check if a table already exist:
 
 ```{r dbTableExist}
 
-conn <- dbConnect('SqlServer',user="collateral",password="collat",
-                 host="localhost",trusted=TRUE, timeout=30)
+url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+conn <- dbConnect('SqlServer',url=url)
 res <- dbExistsTable(conn, "BM_INDICE")
 dbDisconnect(conn)
 
@@ -153,8 +149,8 @@ dbDisconnect(conn)
 to read a sql server table as a data.frame
 
 ```{r dbReadTableL}
-conn <- dbConnect('SqlServer',user="collateral",password="collat",
-                 host="localhost",trusted=TRUE, timeout=30)
+url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+conn <- dbConnect('SqlServer',url=url)
 
 rs <- dbSendQuery(conn,'SELECT * FROM BM_INDICE')
 dat.rs <- fetch(rs,n=-1)
@@ -165,8 +161,8 @@ dbDisconnect(conn)
 Or sipmly use the convenient function dbReadTable
 
 ```{r dbReadTable}
-conn <- dbConnect('SqlServer',user="collateral",password="collat",
-                 host="localhost",trusted=TRUE, timeout=30)
+url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+conn <- dbConnect('SqlServer',url=url)
 res <- dbReadTable(conn, "BM_INDICE")
 
 dbDisconnect(conn)
@@ -178,8 +174,8 @@ you have 2 methods to create a new table
 
 
 ```{r createNewTable1}
-conn <- dbConnect('SqlServer',user="collateral",password="collat",
-                 host="localhost",trusted=TRUE, timeout=30)
+url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+conn <- dbConnect('SqlServer',url=url)
 if(!dbExistsTable(conn,'MYTABLE')){
   rs <- dbSendQuery(conn,"CREATE TABLE MYTABLE ( myvar varchar(1) )")
   dbClearResult(rs)
@@ -192,8 +188,9 @@ dbDisconnect(conn)
 Since the creation of a table does not retuen a result, it is better to 
 use dbGetScalar.
 ```{r createNewTable2}
-conn <- dbConnect('SqlServer',user="collateral",password="collat",
-                 host="localhost",trusted=TRUE, timeout=30)
+url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+conn <- dbConnect('SqlServer',url=url)
+
 if(!dbExistsTable(conn,'MYTABLE1'))
   dbGetScalar(conn,"CREATE TABLE MYTABLE1 ( myvar varchar(1) )")
 dbReadTable(conn,'MYTABLE1')
@@ -204,8 +201,9 @@ dbDisconnect(conn)
 To remove a table :
 ```{r dbremoveTable}
 
-conn <- dbConnect('SqlServer',user="collateral",password="collat",
-                 host="localhost",trusted=TRUE, timeout=30)
+url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+conn <- dbConnect('SqlServer',url=url)
+
 if(dbExistsTable(conn, "MYTABLE2"))
    dbRemoveTable(conn,"MYTABLE2")
 dbDisconnect(conn)
@@ -215,8 +213,9 @@ dbDisconnect(conn)
 To create a new table :
 
 ```{r dbWriteTable}
-conn <- dbConnect('SqlServer',user="collateral",password="collat",
-                 host="localhost",trusted=TRUE, timeout=30)
+url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+conn <- dbConnect('SqlServer',url=url)
+
 
 if(dbExistsTable(conn, "MYTABLE2"))
   dbWriteTable(conn,'T_MTCARS',mtcars)
@@ -228,8 +227,9 @@ dbDisconnect(conn)
 ## Transactions
 
 ```{r transaction}
-conn <- dbConnect('SqlServer',user="collateral",password="collat",
-                 host="localhost",trusted=TRUE, timeout=30)
+url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+conn <- dbConnect('SqlServer',url=url)
+
 conn <- dbTransaction(conn,name='newTableTranst')
 tryCatch(
      {

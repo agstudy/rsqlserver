@@ -70,8 +70,8 @@ test_that("sqlServer.data.frame:data is well quoted before insert",{
 test_that("dbReadTable: read rownames in the exact type",
 {
   drv  <- dbDriver("SqlServer")
-  conn <- dbConnect('SqlServer',user="collateral",password="collat",
-                    host="localhost",trusted=TRUE, timeout=30)
+  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+  conn <- dbConnect('SqlServer',url=url)
   dat_int  <- data.frame(x=1:10)
   dat_char <- data.frame(x=1:10)
   dat_date <- data.frame(x=1:10)
@@ -98,8 +98,8 @@ test_that("dbWriteTable/dbReadTable :save POSIXct , read it again as POSIXct",{
   drv  <- dbDriver("SqlServer")
   start = Sys.time()
   dat <- data.frame(cdate = as.POSIXct(seq.POSIXt(from=start,by=1,length.out=100)))
-  conn <- dbConnect('SqlServer',user="collateral",password="collat",
-                    host="localhost",trusted=TRUE, timeout=30)
+  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+  conn <- dbConnect('SqlServer',url=url)
   
   dbWriteTable(conn,name='T_DATE',value=dat,overwrite=TRUE)
   res <- dbReadTable(conn,'T_DATE')
@@ -112,9 +112,10 @@ test_that("dbBulkCopy :save POSIXct , read it again as POSIXct",{
   
   drv  <- dbDriver("SqlServer")
   N = 100000
+  start = Sys.time()
   dat <- data.frame(cdate = as.POSIXct(seq.POSIXt(from=start,by=1,length.out=N)))
-  conn <- dbConnect('SqlServer',user="collateral",password="collat",
-                    host="localhost",trusted=TRUE, timeout=30)
+  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+  conn <- dbConnect('SqlServer',url=url)
   rsqlserver:::dbCreateTable(conn,'T_BULKCOPY', 
                              c('cdate'),'datetime2')
   dbBulkCopy(conn,name='T_BULKCOPY',value=dat,overwrite=TRUE)

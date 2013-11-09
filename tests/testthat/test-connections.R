@@ -2,6 +2,7 @@
 context('Test connections')
 
 test_isConnected <- function(url){
+  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
   conn <- dbConnect('SqlServer',url=url)
   expect_equal(dbGetInfo(conn,"State")[[1]],"1")
   dbDisconnect(conn)
