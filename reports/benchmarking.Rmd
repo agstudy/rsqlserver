@@ -1,7 +1,12 @@
 ```{r bench.settings,echo=FALSE}
 opts_chunk$set(warning=FALSE)
 opts_chunk$set(message=FALSE)
-TABLE_NAME = "T_BENCHMARKING2"
+TABLE_NAME = "T_BENCH_"
+
+bench.cols <- c(10,50,100,750)
+bench.rows <- c(1,10,100)
+bench.types = c('NUM','CHAR','DATE')
+  
 
 ```
 
@@ -25,10 +30,10 @@ In this report, we will we will discuss these options and highlight performance 
 
 To compare these interfaces, we prepared tests along several dimensions:
 
-* Number of rows 1M
-* Number of columns 100
-* Data types – numeric., randomly generated
-* Interfaces: RODBC 1.3-0 ,  rsqlserver 1.0 
+* Number of rows : `r  paste0(c(1,2),'K',collapse=', ')`
+* Number of columns : `r paste0(bench.cols,collapse=', ')`
+* Data types – NUMBER, DATETIME2, and VARCHAR; Numeric data is randomly generated, all character data is 10 characters long.
+* Interfaces: RODBC 1.3-0 ,  rsqlserver 1.0 , R 3.0.2
 * Types of operations: select *, create table, connect
 * Data base :Microsoft SQL Server 2008 Express Edition (64-bit)
 
@@ -71,44 +76,29 @@ autoplot(tm)
 
 
 
-### Creating data
+### Creating data with dbBulkCopy
 
+`dbBulkCopy` DBI extension interfaces the Microsoft SQL Server includes a popular command-line utility named [bcp](http://msdn.microsoft.com/en-us/library/7ek5da1a(v=vs.110).aspx)  quickly bulk copying large files into table.
 
-We will create 1Mx100 matrix using `dbBulkCopy`. This is a new feature that rsqlserver offer gracefuly.
-`dbBulkCopy` is differ from  `dbWriteTable` :
-* it is much faster 
+`dbBulkCopy` extends `dbWriteTable` and offer best perofomance an scalability :
+
 * Not limited in number of rows : `dbWriteTable` can write at most 1000 rows.  
-* can load a file or data.frame. Internally, the data.farme is saved as a file.
+* You can load data from a file or a data.frame. Internally, the data.farme is always saved as a file.
 
-Here I am creating 1Mx100 tables.
+For example a typical use:
+
+* Here I am creating a matrix nrow*ncol
+* I save it in a file
+* I call dbBulkCopy for quickly bulk copy.
 
 ```{r gen.bigtable, eval=FALSE }
-
-N = 100000
-ncol=100
-
-url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
-conn <- dbConnect('SqlServer',url=url) 
-cnames <- paste0('col',seq_len(ncol))
-rsqlserver:::dbCreateTable(conn,TABLE_NAME, 
-                           cnames,rep("float",ncol))
-gen.matrix <- function() {
-  replicate(10,{
-    dat <- matrix(round(rnorm(N*ncol),2),
-                  nrow=N,
+  dat <- matrix(round(rnorm(nrow*ncol),2),
+                  nrow=nrow,
                   ncol=ncol)
-    colnames(dat) <- cnames 
-    id.file = "d:/temp/temp.csv"                      
-    write.csv(dat,file=id.file,row.names=FALSE)
-    dbBulkCopy(conn,name=TABLE_NAME,value=id.file)
-    rm(dat)
-    })
-  }
-
-system.time(gen.matrix())
-
-dbDisconnect(conn)
-
+  colnames(dat) <- cnames 
+  id.file = "temp_file.csv"                      
+  write.csv(dat,file=id.file,row.names=FALSE)
+  dbBulkCopy(conn,'NEW_BP_TABLE',value=id.file)
 
 ```
 
@@ -125,35 +115,46 @@ Typical query are done :
 Below the benchmarking code:
 
 ```{r bench.query,fig.align='center',fig.cap='benchamrking',fig.width=8}
-coef <- 1
-times <- c(1,5,10,50,100,500)
-ll <- lapply(times,function(x){
-  nrows <- coef*x
-  qselect <- paste0("SELECT TOP ", format(nrows, scientific=F), " * 
-                    FROM ",TABLE_NAME)
+options(stringsAsFactors=FALSE)
+tt <- dbListTables(conn2)
+tables.names <- rep('T_BENCH_.*',tt,value=TRUE)
+bench.props = data.frame(
+  name   = tables.names,
+  rsize  = as.integer(gsub('.*BENCH_(.*)_(.*)_(.*)','\\3',tables.names)),
+  csize  = as.integer(gsub('.*BENCH_(.*)_(.*)_(.*)','\\2',tables.names)),
+  type   = gsub('.*BENCH_(.*)_(.*)_(.*)','\\1',tables.names))
+
+
+ll <- lapply(bench.props$name[1:18], function(TABLE_NAME){
+  qselect <- paste0("SELECT * FROM ",TABLE_NAME)
   res <- microbenchmark(sqlQuery(conn1, qselect),
                         dbGetQuery(conn2,qselect),
                         times=1)
-  data.frame( x   = x*coef, 
-             time = microbenchmark:::convert_to_unit(res$time,'s'),
-             method = as.character(res$expr))
-        
+     time = microbenchmark:::convert_to_unit(res$time,'s')
+     method = as.character(res$expr)
+     method <- gsub('dbGet.*','rsqlserver',method)
+     method <- gsub('sqlQ.*','rodbc',method)
+     setNames(time,method)
+     data.frame(name=TABLE_NAME,time=time,method=method)
+       
   })
 
 res <- do.call(rbind,ll)
-res$method <- gsub('dbGet.*','rsqlserver',res$method)
-res$method <- gsub('sqlQ.*','rodbc',res$method)
+res <- merge(bench.props ,res)
+
 dbDisconnect(conn2)
 ggplot(res) +
-  geom_line(aes(x=x,y=time,color=method)) +
-  geom_point(aes(x=x,y=time,color=method),size=4) +
-  scale_x_continuous(breaks=times*coef, 
-                       labels=paste0(times,'K')) +
-  ylab(label='time(s)')
+  geom_line(aes(x=rsize,y=time,color=method)) +
+  geom_point(aes(x=rsize,y=time,color=method),size=4) +
+  facet_grid(type~csize) +
+  scale_x_log10(breaks=bench.rows*1000, 
+                       labels=paste0(bench.rows,'K')) +
+  ylab(label='time(s)') +
+  ggtitle("RODBC versus rsqlserver for \n different data types and table sizes") 
 
 ```
 
 
-In This test , we compare the execution time to pull Top `r paste0(times,'K')` rows of  100 columns of data from 1M rows for float data . 
+In This test , we compare the execution time to pull Top `r paste0(times,'K')` rows of  100 columns of data from 1M rows of float type data table.
 
-`rsqlserver` and `ROODBC` both scale to these volumes. But  `rsqlserver` is consistently faster than `ROODBC`  up to 1000 faster.
+Note that `rsqlserver` and `ROODBC` both scale to these volumes, But  `rsqlserver` is consistently faster than `ROODBC`  up to 1000 faster.
