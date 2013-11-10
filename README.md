@@ -33,7 +33,7 @@ install_github('rsqlserver', 'agstudy')
 
 `rsqlserver` presentes many features:
 
-* fast and easy connection to Sql server.
+* fast and easy connection to Sql server.[see benchamrking]
 * `dbSendQuery` Querying the data base : low levels functions using sql statement.
 * Full DBI compliant: for example Support of Higher level convenient functions :`dbReadTable`,`dbWriteTable`,`dbRemoveTable`,..)
 * `dbTransaction`, `dbCommit`, `dbRollback` for **Transaction** management
