@@ -115,23 +115,26 @@ dbDisconnect(conn)
 
 ## Loading database data to an R data.frame
 
-
+Typical usage of data base packages is to pull data to the R  for subsequent processing. 
+Typical query are done :
 * Using `sqlQuery` from RODBC package 
 * Using `dbGetQuery` from rsqlserver package since it a DBI interafce.
 
 
-Comapring results:
 
-```{r bench.query,fig.align='center'}
-times <- c(1,5,10,50,100)
+Below the benchmarking code:
+
+```{r bench.query,fig.align='center',fig.cap='benchamrking',fig.width=8}
+coef <- 1
+times <- c(1,5,10,50,100,500)
 ll <- lapply(times,function(x){
-  nrows <- 1*x
+  nrows <- coef*x
   qselect <- paste0("SELECT TOP ", format(nrows, scientific=F), " * 
                     FROM ",TABLE_NAME)
   res <- microbenchmark(sqlQuery(conn1, qselect),
                         dbGetQuery(conn2,qselect),
                         times=1)
-  data.frame( x   = x, 
+  data.frame( x   = x*coef, 
              time = microbenchmark:::convert_to_unit(res$time,'s'),
              method = as.character(res$expr))
         
@@ -141,6 +144,16 @@ res <- do.call(rbind,ll)
 res$method <- gsub('dbGet.*','rsqlserver',res$method)
 res$method <- gsub('sqlQ.*','rodbc',res$method)
 dbDisconnect(conn2)
-ggplot(res) +geom_line(aes(x=x,y=time,color=method))
-res
+ggplot(res) +
+  geom_line(aes(x=x,y=time,color=method)) +
+  geom_point(aes(x=x,y=time,color=method),size=4) +
+  scale_x_continuous(breaks=times*coef, 
+                       labels=paste0(times,'K')) +
+  ylab(label='time(s)')
+
 ```
+
+
+In This test , we compare the execution time to pull Top `r paste0(times,'K')` rows of  100 columns of data from 1M rows for float data . 
+
+`rsqlserver` and `ROODBC` both scale to these volumes. But  `rsqlserver` is consistently faster than `ROODBC`  up to 1000 faster.
