@@ -12,10 +12,8 @@ namespace rsqlserver.net.Test
     public class TestSqlDataHelper
     {
 
-        static SqlConnection myConnection = new SqlConnection("user id=collateral;" +
-                                     "password=collat;server=localhost;" +
-                                     "Trusted_Connection=yes;" +
-                                     "connection timeout=30");
+        static SqlConnection myConnection = new SqlConnection(
+            "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;");
 
         private static SqlDataHelper helper;
 
@@ -118,16 +116,33 @@ namespace rsqlserver.net.Test
             Assert.Equal(helper.ResultSet["name"].Length, helper.Nrows);
             Assert.Equal(helper.ResultSet.Keys.Count, helper.Cnames.Length);
         }
-         
+
         [Fact]
-        public static void TestSqlBulkCopy(){
+        public static void TestSqlBulkCopy()
+        {
             var connectionString = "user id=collateral;" +
                                      "password=collat;server=localhost;" +
                                      "Trusted_Connection=yes;" +
                                      "connection timeout=30";
             misc.SqlBulkCopy(connectionString, "d:/temp/temp.csv", "T_BIG");
-    }
+        }
+        [Fact]
+        public static void TestFetch_BIG_DATE_TABLE()
+        {
+            using (myConnection)
+            {
+                myConnection.Open();
+                SqlDataReader myReader = null;
+                var query = "SELECT  * " +
+                             "FROM    T_BENCH_DATE_750_100000";
 
+                SqlCommand myCommand = new SqlCommand(query, myConnection);
+                myReader = myCommand.ExecuteReader();
+                helper = new SqlDataHelper(myReader);
+                var result = helper.Fetch(100000);
+                Assert.Equal(result, 100000);
+            }
+        }
 
 
 
@@ -137,9 +152,9 @@ namespace rsqlserver.net.Test
             
           //  System.IO.FileInfo configFileInfo = new System.IO.FileInfo(configuration.FilePath);
           // log4net.Config.XmlConfigurator.Configure();
-          
 
-            TestSqlBulkCopy();
+
+            TestFetch_BIG_DATE_TABLE();
             Console.ReadLine();
 
         }
