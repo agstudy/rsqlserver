@@ -1,29 +1,48 @@
+library(rsqlserver)
+library(microbenchmark)
+library(RODBC)
+
+LIST_DRIVERS <- c('rodbc','sqlserver')
+TABLE_NAME = "T_BENCH_"
+bench.cols <- c(10,50,100,750)
+bench.rows <- c(1,10,100)
+bench.types = c('NUM','CHAR','DATE')
+options(stringsAsFactors=FALSE)
+
+
+get.rsqlserver <- function(conn,n,name){
+  qselect <- paste0("SELECT * FROM ",name)
+  rs <- dbSendQuery(conn, qselect)
+  res <- fetch(rs, n)
+  dbClearResult(rs)
+  res
+}
+
+get.rodbc <- function(conn,n,name){
+  qselect <- paste0("SELECT * FROM ",name)
+  res <- sqlQuery(channel=conn, qselect,max=n)
+}
+
+
 gTable.character <- function(name='T_BENCH_CHAR',nrow,ncol,replic=1,nchar=10) {
-  
   cnames <- paste0('col',seq_len(ncol))
   name = paste(name,ncol,format(nrow*replic,scientific=FALSE),sep='_')
   url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
   conn <- dbConnect('SqlServer',url=url) 
   rsqlserver:::dropTable(conn,name)
-  
   rsqlserver:::dbCreateTable(conn,name,cnames,
                              rep(paste0('char(',nchar,')'),ncol))
-  
   dbDisconnect(conn)
   step =0
   replicate(replic,{
-    
     get.word <- function(nchar)
       paste0(sample(c(0:9, letters, LETTERS),nchar, replace=TRUE),collapse="")
     dat <- matrix(replicate(ncol*nrow,get.word(nchar)),ncol=ncol,nrow=nrow)
-
-    
     colnames(dat) <- cnames 
     id.file = "d:/temp/temp_char.csv"                      
     write.csv(dat,file=id.file,row.names=FALSE,quote=FALSE)
     dbBulkCopy(conn,name,value=id.file)
     step = step +1;message(step)
-    
     rm(dat)
   })
   
@@ -84,25 +103,100 @@ gTable.datetime <- function(name='T_BENCH_DATE',nrow,ncol,replic=1) {
     rm(dat)
   })
 }
-library(rsqlserver)
-library(microbenchmark)
-
-nrows = 100*10^(0:2)
-ncols = c(10,50,100,750)
 
 
-res <- list()
-for(rr in nrows)
-  for(cc in ncols){
-     
-     mb <- microbenchmark(
-              gTable.datetime(nrow=rr,ncol=cc,replic=10),
-              gTable.numeric(nrow=rr,ncol=cc,replic=10),
-              gTable.character(nrow=rr,ncol=cc,replic=10),
-           times=1)
-    bench = paste('T',cc,format(rr*10,scientific=FALSE),sep='_')
-    res <- c(res,setNames(list(mb),bench))
-    print(bench) 
+
+create.all <- function(){
+  nrows = 100*10^(0:2)
+  ncols = c(10,50,100,750)
+  res <- list()
+  for(rr in nrows)
+    for(cc in ncols){
+      
+      mb <- microbenchmark(
+        gTable.datetime(nrow=rr,ncol=cc,replic=10),
+        gTable.numeric(nrow=rr,ncol=cc,replic=10),
+        gTable.character(nrow=rr,ncol=cc,replic=10),
+        times=1)
+      bench = paste('T',cc,format(rr*10,scientific=FALSE),sep='_')
+      res <- c(res,setNames(list(mb),bench))
+      print(bench) 
+    }
 }
 
 
+init.bench <- function(){
+  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+  conn2 <- dbConnect('SqlServer',url=url)
+  conn1 <- odbcConnect(dsn = "my-dns", uid = "collateral", pwd = "collat")
+  
+  tt <- dbListTables(conn2)
+  tables.names <- grep('T_BENCH_.*',tt,value=TRUE)
+  tables = data.frame(
+    name   = tables.names,
+    rsize  = as.integer(gsub('.*BENCH_(.*)_(.*)_(.*)','\\3',tables.names)),
+    csize  = as.integer(gsub('.*BENCH_(.*)_(.*)_(.*)','\\2',tables.names)),
+    type   = gsub('.*BENCH_(.*)_(.*)_(.*)','\\1',tables.names))
+  
+  list(tables = tables,
+       crsqlserver = conn2,
+       crodbc = conn1)
+  
+}
+
+
+bench.small <- function(tables,crsqlserver,crodbc){
+  ll <- lapply(seq_len(nrow(tables)), function(i){
+    TABLE_NAME = tables[i,'name']
+    n = tables[i,'rsize']
+    tm <- microbenchmark( get.rsqlserver(crsqlserver,n,TABLE_NAME),
+                          get.rodbc(crodbc,n,TABLE_NAME),
+                          times=1L)
+    
+    tm.df <- sapply(LIST_DRIVERS,
+                    function(driver)
+                      microbenchmark:::convert_to_unit(tm[grep(driver,tm$expr),]$time,'s'))
+    data.frame(name=TABLE_NAME,
+               time= tm.df,
+               method=names(tm.df))
+    
+  })
+  
+  res <- do.call(rbind,ll)
+  res <- merge(tables ,res)
+}
+
+bench.big <- function( tables,crsqlserver,crodbc,
+                       points = seq(1,200,50)){
+  
+  res <- lapply(tables$name, function(name){
+    ll <- lapply(points, function(n){
+      
+      tm <- microbenchmark( get.rsqlserver(crsqlserver,n,name),
+                            get.rodbc(crodbc,n,name),
+                            times=1L)
+      
+      tm.df <- sapply(LIST_DRIVERS,
+                      function(driver)
+                        microbenchmark:::convert_to_unit(tm[grep(driver,tm$expr),]$time,'s'))
+      data.frame(rsize=n,
+                 time= tm.df,
+                 method=names(tm.df))
+    })
+    data.frame(name=name,do.call(rbind,ll))
+  })
+
+  do.call(rbind,res)
+}
+
+
+engine <- function(filter,bencher,...){
+  ini <- init.bench()
+  e <- substitute(filter)
+  r <- eval(e, ini$tables, parent.frame())
+    if (!is.logical(r)) 
+      stop("'subset' must be logical")
+  r <- r & !is.na(r)
+  tables <- ini$tables[r,]
+  bencher(tables,ini$crsqlserver,ini$crodbc,...)
+}
