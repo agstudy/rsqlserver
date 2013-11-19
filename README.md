@@ -44,7 +44,7 @@ install_github('rsqlserver', 'agstudy')
 
 ## Benchmarking
 
-TODO performance tests :Comparaison with `RODBC`.
+You can see `rsqlserver` [benchmarking](https://github.com/agstudy/rsqlserver/wiki/benchmarking) performance  versus  drivers :`RODBC` and `RJDBC.`
 
 ## Acknowledgements
 
