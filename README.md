@@ -15,7 +15,7 @@ The .NET Framework Data Provider for SQL Server (SqlClient) uses its own protoco
 
 The `rsqlserver` package uses the .NET framework SDK to build some a small C# project. Typically if you have on your machine the file "C:\Windows\Microsoft.NET\Framework\v4.0.30319\MSBuild.exe", you can skip this paragraph. Otherwise you need to install the [Microsoft Windows SDK for Windows 7 and .NET Framework 4](http://www.microsoft.com/en-us/download/details.aspx?id=8279). An overview of list of Microsoft SDKs is available [here](http://msdn.microsoft.com/en-us/vstudio/hh487283.aspx)
 
-The interoperability of R and .NET code relies on the [rClr](http://r2clr.codeplex.com/) R package. You can download an installable R package for windows (zip file). Make sure to at least skim through the [installation instructions](http://r2clr.codeplex.com/wikipage?title=Installing%20R%20packages&referringTitle=Documentation).
+The interoperability of R and .NET code relies on the [rClr](https://github.com/jmp75/rClr) R package. You can download an installable R package for windows (zip file). Make sure to at least skim through the [installation instructions](http://r2clr.codeplex.com/wikipage?title=Installing%20R%20packages&referringTitle=Documentation).
 
 
 ## Installation
@@ -26,6 +26,7 @@ You can install it from `github` using the `devtools` package
 
 ```coffee
 require(devtools)
+install_github("rClr", 'jmp75')
 install_github('rsqlserver', 'agstudy')
 ```
 
@@ -44,7 +45,7 @@ install_github('rsqlserver', 'agstudy')
 
 ## Benchmarking
 
-TODO performance tests :Comparaison with `RODBC`.
+You can see `rsqlserver` [benchmarking](https://github.com/agstudy/rsqlserver/wiki/benchmarking) performance  versus  drivers :`RODBC` and `RJDBC.`
 
 ## Acknowledgements
 
