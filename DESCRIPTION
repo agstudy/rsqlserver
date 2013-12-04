@@ -11,12 +11,4 @@ Depends: methods
 Imports: rClr, DBI
 Suggests: testthat,  knitr,  xtable
 License: GPL-2
-Collate:  
-"zzz.R" 
-"dbObjectId.R"  
-"DBIDriver.R" 
-"DBIConnection.R" 
-"DBIResult.R"  
-"DBIConvenience.R"
-"DBITransaction.R" 
-"rsqlImpl.R"
+Collate:"zzz.R" "dbObjectId.R"  "DBIDriver.R" "DBIConnection.R" "DBIResult.R"  "DBIConvenience.R" "DBITransaction.R" "rsqlImpl.R"
