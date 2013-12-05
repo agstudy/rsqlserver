@@ -27,7 +27,7 @@ You can install it from `github` using the `devtools` package
 ```coffee
 require(devtools)
 install_github("rClr", 'jmp75')
-install_github('rsqlserver', 'agstudy')
+install_github('rsqlserver', 'agstudy',args='--no-multiarch')
 ```
 
 ## Features
