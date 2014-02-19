@@ -126,3 +126,28 @@ test_that("dbWriteTable/BulCopy:save and read a hudge data frame",{
   
 })
 
+
+test_that("Misigns values :save  table with some missing values",{
+  drv  <- dbDriver("SqlServer")
+  start = Sys.time()
+  value = 1:10
+  value[5] <- NA_integer_
+  dat <- data.frame(value=value)
+  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+  conn <- dbConnect('SqlServer',url=url)
+  dbWriteTable(conn,name='T_TABLE_MISING',value=dat,overwrite=TRUE)
+  expect_true('T_TABLE_MISING' %in% dbListTables(conn))  
+  dbDisconnect(conn)
+  
+})
+
+test_that("read column with null values",{
+  drv  <- dbDriver("SqlServer")
+  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+  conn <- dbConnect('SqlServer',url=url)
+  res <- dbSendQuery(conn, "SELECT TOP 100 * FROM MY_TABLE_NULL")
+  df <- fetch(res, n = -1)
+  expect_true(!is.null(df)) 
+  dbDisconnect(conn)
+  
+})
