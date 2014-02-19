@@ -155,13 +155,13 @@ sqlServerNonQuery <-
 
 
 sqlExecuteProc <- 
-  function(con,name,...){
-    
-  }
+  function(con,name,...)
+    {.NotYetImplemented()}
 
 
 
-sqlException.Message <- function(exception){
+sqlException.Message <- 
+  function(exception){
   message <- 
   if(inherits(exception,'simpleError'))
     message(exception)
