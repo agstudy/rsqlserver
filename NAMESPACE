@@ -6,7 +6,7 @@ import(DBI)
 
 
 exportClasses(
-  SqlServerDriver,  SqlServerConnection, SqlServerResult,
+  SqlServerDriver,   SqlServerResult,
   SqlServerTransaction)
 
 exportMethods(
