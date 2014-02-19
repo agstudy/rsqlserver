@@ -178,7 +178,16 @@ insert.into <- function(con,name,cnames,value,row.names){
   if(nrow(value)<1000) {
     stmt <- sprintf('INSERT INTO %s (%s)', name, 
                     paste(cnames,collapse=','))
-    values <- paste0('VALUES (',do.call(paste, c(value, sep=",",collapse='),(')),')')
+    is.char <- sapply(value,is.character)
+    if(name=='T_NULL')browser()
+    replace.missings <- 
+      function(x)ifelse(is.na(x),'',x)
+    value[is.char] <- vapply(value[is.char],replace.missings,'character')
+    
+    values <- paste0('VALUES (',do.call(paste, 
+                    c(value, sep=",",collapse='),(')),')')
+    if(any(is.na(value)))
+      values <- gsub('NA',NULL,values)
     stmt = paste(stmt,values,sep='\n')
     dbNonQuery(con, stmt, data = value)
   }else{

@@ -113,7 +113,17 @@ namespace rsqlserver.net
                 // fetch rows and store data by column
                 for (int i = 0; i < _reader.FieldCount; i++)
                 {
-                    _resultSet[_cnames[i]].SetValue(_reader.GetValue(i), cnt);
+                    if (_reader.GetValue(i) == DBNull.Value)
+                    {
+                        if(_reader.GetFieldType(i)==typeof(String))
+                            _resultSet[_cnames[i]].SetValue(string.Empty, cnt);
+                        else
+                            _resultSet[_cnames[i]].SetValue(Single.NaN, cnt);
+                    }
+                    else
+                    {
+                        _resultSet[_cnames[i]].SetValue(_reader.GetValue(i), cnt);
+                    }
                 }
                 cnt += 1;
                 if (cnt >= capacity) return cnt;

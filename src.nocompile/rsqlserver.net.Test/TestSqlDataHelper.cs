@@ -18,30 +18,7 @@ namespace rsqlserver.net.Test
         private static SqlDataHelper helper;
 
 
-        //public static void TestGetItem()
-        //{
-        //    try
-        //    {
-        //        myConnection.Open();
-        //        SqlDataReader myReader = null;
-        //        SqlCommand myCommand = new SqlCommand("select * from sys.tables",
-        //            myConnection);
-        //        myReader = myCommand.ExecuteReader();
-        //        object val = 0;
-        //        while (myReader.Read())
-        //        {
-        //            for (int i = 0; i < myReader.FieldCount; i++)
-        //                val = (new SqlDataHelper()).GetItem(myReader, i);
 
-        //        }
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        Console.WriteLine(e.ToString());
-        //    }
-
-        //    Console.ReadLine();
-        //}
         public static void TestGetProperty()
         {
 
@@ -89,8 +66,6 @@ namespace rsqlserver.net.Test
             Console.ReadLine();
         }
 
-
-
         [Fact]
         public static void TestFetch()
         {
@@ -116,7 +91,6 @@ namespace rsqlserver.net.Test
             Assert.Equal(helper.ResultSet["name"].Length, helper.Nrows);
             Assert.Equal(helper.ResultSet.Keys.Count, helper.Cnames.Length);
         }
-
         [Fact]
         public static void TestSqlBulkCopy()
         {
@@ -143,9 +117,6 @@ namespace rsqlserver.net.Test
                 Assert.Equal(result, 100000);
             }
         }
-
-
-
         static void Main(string[] args)
         {
 

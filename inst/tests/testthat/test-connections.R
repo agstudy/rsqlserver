@@ -10,7 +10,7 @@ test_isConnected <- function(url){
 
 test_that("dbConnect : Standard Security",{
  url = "Server=localhost;Database=TEST_RSQLSERVER;User Id=collateral;
-  Password=collat;"
+  Password=Kollat;"
  test_isConnected(url)
 })
 

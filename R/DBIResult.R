@@ -86,7 +86,7 @@ setGeneric("dbCallProc",
 
 setMethod("dbCallProc",
           signature(conn="SqlServerConnection",name="character"),
-                    def =function(conn,name,...) sqlExecuteProc(conn,name,...)
+          def =function(conn,name,...) sqlExecuteProc(conn,name,...)
 )
 
 
@@ -121,12 +121,12 @@ get.command <- function(conn,stmt,...){
 sqlServerExecStatement <- 
   function(conn,statement,...)
   {
-   cmd <- get.command(conn,statement)
-   res <- try(clrCall(cmd,'ExecuteReader'),silent=TRUE)
-   if (inherits(res, "try-error")){
+    cmd <- get.command(conn,statement)
+    res <- try(clrCall(cmd,'ExecuteReader'),silent=TRUE)
+    if (inherits(res, "try-error")){
       stop(sqlException.Message(res))
-   }
-  new("SqlServerResult", Id = clrGetExtPtr(res))
+    }
+    new("SqlServerResult", Id = clrGetExtPtr(res))
   }
 
 sqlServerExecScalar <- 
@@ -134,10 +134,10 @@ sqlServerExecScalar <-
   {
     cmd <- get.command(conn,statement)
     res <- try(clrCall(cmd,'ExecuteScalar'),silent=TRUE)
-  
-      if (inherits(res, "try-error")){
-        stop(sqlException.Message(res))
-      }
+    
+    if (inherits(res, "try-error")){
+      stop(sqlException.Message(res))
+    }
     res
     
   }
@@ -156,18 +156,18 @@ sqlServerNonQuery <-
 
 sqlExecuteProc <- 
   function(con,name,...)
-    {.NotYetImplemented()}
+  {.NotYetImplemented()}
 
 
 
 sqlException.Message <- 
   function(exception){
-  message <- 
-  if(inherits(exception,'simpleError'))
-    message(exception)
-  else conditionMessage(attr(exception,"condition"))
-  readLines(textConnection(message),n=2)[2]
-}
+    message <- 
+      if(inherits(exception,'simpleError'))
+        message(exception)
+    else conditionMessage(attr(exception,"condition"))
+    readLines(textConnection(message),n=2)[2]
+  }
 
 
 sqlServerFetch <- 
@@ -179,7 +179,6 @@ sqlServerFetch <-
     sqlDataHelper <- clrNew("rsqlserver.net.SqlDataHelper",dataReader)
     
     Cnames <- clrGet(sqlDataHelper,'Cnames')
-    CDbtypes <- clrGet(sqlDataHelper,'CDbtypes')
     out <- vector('list',ncols)
     out <- if (n < 0L) { ## infinite pull
       stride <- 32768L  ## start fairly small to support tiny queries and increase later
@@ -187,21 +186,27 @@ sqlServerFetch <-
         res.Dict <- clrGet(sqlDataHelper,"ResultSet")
         for (i in seq.int(Cnames)){
           out[[i]] <- if(is.null(out[[i]]))
-                         clrCall(res.Dict,'get_Item',Cnames[i])
-                      else 
-                        c(out[[i]], clrCall(res.Dict,'get_Item',Cnames[i]))
+            clrCall(res.Dict,'get_Item',Cnames[i])
+          else 
+            c(out[[i]], clrCall(res.Dict,'get_Item',Cnames[i]))
         }
         if (nrec < stride) break
         stride <- 524288L # 512k
       }
       out
     } 
-           else { clrCall(sqlDataHelper,'Fetch',as.integer(n))
-                  res.Dict <- clrGet(sqlDataHelper,"ResultSet")
-                  for (i in seq.int(Cnames))
-                    out[[i]] <- clrCall(res.Dict,'get_Item',Cnames[i])    
-                 out
-           }
+    else { clrCall(sqlDataHelper,'Fetch',as.integer(n))
+           res.Dict <- clrGet(sqlDataHelper,"ResultSet")
+           for (i in seq.int(Cnames))
+             out[[i]] <- clrCall(res.Dict,'get_Item',Cnames[i])    
+           out
+    }
+    ## process missing values
+    CDbtypes <- clrGet(sqlDataHelper,'CDbtypes')
+    char.cols <- grep('char',CDbtypes)
+    
+    out[char.cols] <- lapply(out[char.cols],
+                             function(x) ifelse(nchar(x)==0,NA_character_,x))
     ## set names and convert list to a data.frame
     names(out) <- Cnames
     attr(out, "row.names") <- c(NA_integer_, length(out[[1]]))
@@ -259,14 +264,6 @@ sqlServerResultInfo <-
     else
       info
   }
-
-
-
-# setMethod("dbDataType", 
-#           signature(dbObj = "SqlServerObject", obj = "ANY"),
-#           def = function(dbObj, obj, ...) sqlServerDbType(obj, ...),
-#           valueClass = "character"
-# )
 
 
 netToRType <- function(obj,...)
@@ -380,7 +377,6 @@ R2DbType <- function(obj,...)
 
 sqlServer.data.frame <- function(obj,field.types)
 {
-  
   out <- lapply(seq_along(field.types),function(x){
      dbtype <- field.types[[x]]
      col <- obj[[x]]
