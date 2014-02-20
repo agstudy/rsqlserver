@@ -380,13 +380,14 @@ sqlServer.data.frame <- function(obj,field.types)
   out <- lapply(seq_along(field.types),function(x){
      dbtype <- field.types[[x]]
      col <- obj[[x]]
-     col <- if(dbtype %in% c("datetime","datetime2","datetimeoffset")){
-       paste0("'",col,"'")
-     }else if(grepl("char",dbtype)) { ## char , varchar
-       col <- paste0("'",gsub("'","''",col),"'")
-     }else 
-        col
-     col
+     DATE_TYPES <- c("datetime","datetime2","datetimeoffset")
+     col <- {
+       if(dbtype %in% DATE_TYPES) 
+         paste0("'",col,"'")
+       else if(grepl("char",dbtype))  
+         paste0("'",gsub("'","''",col),"'")
+       else col
+     }
   })
   
   attr(out, "row.names") <- c(NA_integer_, length(out[[1]]))
