@@ -372,9 +372,6 @@ R2DbType <- function(obj,...)
   
 }
 
-
-
-
 sqlServer.data.frame <- function(obj,field.types)
 {
   out <- lapply(seq_along(field.types),function(x){
@@ -384,8 +381,10 @@ sqlServer.data.frame <- function(obj,field.types)
      col <- {
        if(dbtype %in% DATE_TYPES) 
          paste0("'",col,"'")
-       else if(grepl("char",dbtype))  
+       else if(grepl("char",dbtype))  {
+         col[is.na(col)] <- ''
          paste0("'",gsub("'","''",col),"'")
+       }
        else col
      }
   })

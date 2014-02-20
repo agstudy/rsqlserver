@@ -118,8 +118,6 @@ sqlServerWriteTable <-
     name <- as.character(name)
     if (length(name) != 1L)
       stop("'name' must be a single string")
-    
-    
     if(row.names)
     {
       row_names = attr(value,"row.names")
@@ -176,19 +174,19 @@ sqlServerWriteTable <-
 insert.into <- function(con,name,cnames,value,row.names){
   
   if(nrow(value)<1000) {
-    stmt <- sprintf('INSERT INTO %s (%s)', name, 
+    stmt.header <- sprintf('INSERT INTO %s (%s)', name, 
                     paste(cnames,collapse=','))
     is.char <- sapply(value,is.character)
-    if(name=='T_NULL')browser()
     replace.missings <- 
       function(x)ifelse(is.na(x),'',x)
-    value[is.char] <- vapply(value[is.char],replace.missings,'character')
-    
-    values <- paste0('VALUES (',do.call(paste, 
-                    c(value, sep=",",collapse='),(')),')')
+    value[is.char] <- vapply(value[is.char],replace.missings,
+           rep('character',nrow(value)))
+    stmt.body <- paste0('VALUES (',do.call(paste, 
+                              c(value, sep=",",collapse='),(')),')')
+    ## numeric missing values replaced by NULL
     if(any(is.na(value)))
-      values <- gsub('NA',NULL,values)
-    stmt = paste(stmt,values,sep='\n')
+      stmt.body <- gsub('NA','NULL',stmt.body)
+    stmt = paste(stmt.header,stmt.body,sep='\n')
     dbNonQuery(con, stmt, data = value)
   }else{
     ##dbCommit(con)
