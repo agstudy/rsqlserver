@@ -37,7 +37,9 @@ dbHasCompleted,
 dbSetDataMappings,
 # 
 # ##  DBI extensions
-dbGetScalar,dbNonQuery,dbTransaction,dbBulkCopy)
+dbGetScalar,dbNonQuery,
+dbGetRowCount,
+dbTransaction,dbBulkCopy)
   
 
 export(SqlServer)
