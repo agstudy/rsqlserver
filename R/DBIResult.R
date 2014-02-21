@@ -80,25 +80,23 @@ setMethod("dbBulkCopy",
 )
 
 
-setGeneric("dbCallProc",
+setGeneric("dbCallProcedure",
            function(conn,name,...)
-             standardGeneric("dbCallProc"))
+             standardGeneric("dbCallProcedure"))
 
-setMethod("dbCallProc",
+setMethod("dbCallProcedure",
           signature(conn="SqlServerConnection",name="character"),
-          def =function(conn,name,...) sqlExecuteProc(conn,name,...)
+          def =function(conn,name,...) .sqlExecuteProc(conn,name,...)
 )
 
 
+.sqlExecuteProc <- 
+  function(con,name,...){
+    .NotYetImplemented()
+  }
 
-## TODO: 
-setMethod("dbHasCompleted", "SqlServerResult",
-          def = function(res, ...) {
-            nCols <- dbGetInfo(res, "FieldCount")[[1]] 
-            is.na(nCols) || (nCols == 0)
-          },
-          valueClass = "logical"
-)
+
+
 
 ### internal implementations
 ### helper functions
@@ -153,10 +151,6 @@ sqlServerNonQuery <-
   }
 
 
-
-sqlExecuteProc <- 
-  function(con,name,...)
-  {.NotYetImplemented()}
 
 
 
@@ -260,7 +254,7 @@ sqlServerResultInfo <-
                               prop)
     info <- as.list(unlist(info))
     if(!missing(what))
-      info[what]
+      info[[what]]
     else
       info
   }
