@@ -20,6 +20,16 @@ test_that("dbConnect : Trusted Connection",{
   test_isConnected(url)
   
 })
+
+test_that("dbConnect : Connectiing giving connection properties not complete url",{
+  host="localhost"
+  dbname="TEST_RSQLSERVER"
+  user="collateral"
+  password="Kollat"
+  conn <- dbConnect('SqlServer',host=host,dbname=dbname,user=user,password=password)
+  expect_equal(dbGetInfo(conn,"State")[[1]],"1")
+  dbDisconnect(conn)
+})
 # 
 # 
 # test_that("Connection to a SQL Server instance",{

@@ -124,32 +124,38 @@ setMethod("dbGetException", "SqlServerConnection",
 ## http://msdn.microsoft.com/en-us/library/system.data.sqlclient.sqlconnectionstringbuilder.aspx
 
 sqlServerNewConnection <-
-  function(drv, username=NULL,
+  function(drv, user=NULL,
            password=NULL, host=NULL,
            trusted=FALSE, 
-           database='TEST_RSQLSERVER',
+           dbname='TEST_RSQLSERVER',
            timeout=30)
   {
     if(!isIdCurrent(drv))
       stop("expired manager")
-    
-    if (!is.null(username) && !is.character(username))
+    if (!is.null(user) && !is.character(user))
       stop("Argument username must be a string or NULL")
-    if (!is.null(password) && !is.character(password))
-      stop("Argument password must be a string or NULL")
     if (!is.null(host) && !is.character(host))
       stop("Argument host must be a string or NULL")
     if (is.null(timeout) || !is.numeric(timeout))
       stop("Argument timeout must be an integer value")
     if (is.null(trusted) || !is.logical(trusted))
       stop("Argument trusted must be a boolean")
-    url <- paste(paste0("user id=",username),
-                 paste0("password=",password),paste0("server=",host),
-                 paste0("Trusted_Connection=",ifelse(trusted,"yes","false")),
-                 paste0("connection timeout=",timeout),
-                 sep=";")
-    if (!is.null(database) && is.character(database))
-      url <- paste(url,paste0("Database=",database),sep=";")
+    url <- {
+      url <- paste(paste0("user id=",user),
+                   paste0("server=",host),
+                   paste0("connection timeout=",timeout),
+                   sep=";")
+      
+      if(!trusted){
+        if (!is.null(password) && !is.character(password))
+          stop("Argument password must be a string or NULL")
+        url <- paste(url,paste0("password=",password),sep=';')    
+      }else
+        url <- paste(url , "Trusted_Connection=yes",sep=';')
+      if (!is.null(dbname) && is.character(dbname))
+        url <- paste(url,paste0("Database=",dbname),sep=";")
+      url
+    }
     sqlServerConnectionUrl(url)
   }
 
