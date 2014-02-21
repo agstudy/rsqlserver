@@ -41,15 +41,21 @@ test_that("dbGetRowCount : Get row count",{
   
 })
 
-## TODO: 
-setMethod("dbHasCompleted", 
-          "SqlServerResult",
-          def = function(res, ...) {
-            nCols <- dbGetInfo(res, "FieldCount")[[1]] 
-            is.na(nCols) || (nCols == 0)
-          }
-          ,
-          valueClass = "logical"
-)
 
+
+
+test_that("dbHasCompleted : check that query is completed",{
+  conn <- dbConnect('SqlServer',host='localhost',trusted=TRUE)
+  query <- "SELECT  *
+            FROM    T_MTCARS"
+  res <- dbSendQuery(conn, query)
+  df1 <- fetch(res,as.integer(floor(nrow(mtcars)/2)))
+  expect_false(dbHasCompleted(res))
+  df2 <- fetch(res,-1)
+  expect_false(dbHasCompleted(res))
+  expect_equivalent(rbind(df1,df2),mtcars)
+  dbClearResult(res)
+  dbDisconnect(conn)
+  
+})
 
