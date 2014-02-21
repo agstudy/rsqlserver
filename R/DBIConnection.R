@@ -141,15 +141,15 @@ sqlServerNewConnection <-
     if (is.null(trusted) || !is.logical(trusted))
       stop("Argument trusted must be a boolean")
     url <- {
-      url <- paste(paste0("user id=",user),
-                   paste0("server=",host),
+      url <- paste(paste0("server=",host),
                    paste0("connection timeout=",timeout),
                    sep=";")
       
       if(!trusted){
         if (!is.null(password) && !is.character(password))
           stop("Argument password must be a string or NULL")
-        url <- paste(url,paste0("password=",password),sep=';')    
+        url <- paste(url,paste0("user id=",user),
+                     paste0("password=",password),sep=';')    
       }else
         url <- paste(url , "Trusted_Connection=yes",sep=';')
       if (!is.null(dbname) && is.character(dbname))

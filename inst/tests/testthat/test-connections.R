@@ -21,7 +21,7 @@ test_that("dbConnect : Trusted Connection",{
   
 })
 
-test_that("dbConnect : Connectiing giving connection properties not complete url",{
+test_that("dbConnect : Connecting using with connection parameters",{
   host="localhost"
   dbname="TEST_RSQLSERVER"
   user="collateral"
@@ -30,55 +30,12 @@ test_that("dbConnect : Connectiing giving connection properties not complete url
   expect_equal(dbGetInfo(conn,"State")[[1]],"1")
   dbDisconnect(conn)
 })
-# 
-# 
-# test_that("Connection to a SQL Server instance",{
-#   url = "Server=myServerName/myInstanceName;Database=myDataBase;User Id=myUsername;
-#   Password=myPassword;"
-#   con <- dbConnect('SqlServer',url=url)
-#   expect_equal(dbGetInfo(conn,"State"),0)
-#   dbDisconnect(url)
-#   
-# })
-# 
-# test_that("Trusted Connection from a CE device",{
-#  url = "Data Source=myServerAddress;Initial Catalog=myDataBase;Integrated Security=SSPI;
-#   User ID=myDomain/myUsername;Password=myPassword;"
-#  con <- dbConnect('SqlServer',url=url)
-#  expect_equal(dbGetInfo(conn,"State"),0)
-#  dbDisconnect(url)
-# })
-# 
-# test_that("Connect via an IP address",{
-#   url = "Data Source=190.190.200.100,1433;Network Library=DBMSSOCN;
-#   Initial Catalog=myDataBase;User ID=myUsername;Password=myPassword;"
-#   con <- dbConnect('SqlServer',url=url)
-#   expect_equal(dbGetInfo(conn,"State"),0)
-#   dbDisconnect(url)
-#   
-#   
-# })
-# 
-# test_that("Enable MARS",{
-#   url = "Server=myServerAddress;Database=myDataBase;Trusted_Connection=True;
-#   MultipleActiveResultSets=true;"
-#   con <- dbConnect('SqlServer',url=url)
-#   expect_equal(dbGetInfo(conn,"State"),0)
-#   dbDisconnect(url)
-# })
-# 
-# 
-# test_that("Attach a database file on connect to a local SQL Server Express instance",{
-#   url = "Server=./SQLExpress;AttachDbFilename=C:/MyFolder/MyDataFile.mdf;Database=dbname;
-# Trusted_Connection=Yes;"
-#   con <- dbConnect('SqlServer',url=url)
-#   expect_equal(dbGetInfo(conn,"State"),0)
-#   dbDisconnect(url)
-# })
-# 
-# 
-# 
-# 
-# 
-#           
-#           
+
+
+test_that("dbConnect : TRUSTED Connection using with connection parameters ",{
+  host="localhost"
+  dbname="TEST_RSQLSERVER"
+  conn <- dbConnect('SqlServer',host=host,dbname=dbname,trusted=TRUE)
+  expect_equal(dbGetInfo(conn,"State")[[1]],"1")
+  dbDisconnect(conn)
+})
