@@ -132,8 +132,6 @@ sqlServerNewConnection <-
   {
     if(!isIdCurrent(drv))
       stop("expired manager")
-    if (!is.null(user) && !is.character(user))
-      stop("Argument username must be a string or NULL")
     if (!is.null(host) && !is.character(host))
       stop("Argument host must be a string or NULL")
     if (is.null(timeout) || !is.numeric(timeout))
@@ -148,6 +146,8 @@ sqlServerNewConnection <-
       if(!trusted){
         if (!is.null(password) && !is.character(password))
           stop("Argument password must be a string or NULL")
+        if (!is.null(user) && !is.character(user))
+          stop("Argument username must be a string or NULL")
         url <- paste(url,paste0("user id=",user),
                      paste0("password=",password),sep=';')    
       }else
