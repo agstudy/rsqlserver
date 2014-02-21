@@ -15,7 +15,7 @@ test_that("create and execute a stored procedure",{
  dat <- data.frame(value = sample(1:100,50,rep=TRUE))
  dbWriteTable(conn,'T_PRODUCT',dat,overwrite=TRUE)
  lapply(c('mean','sum','median'),function(x){
-   db.value = dbCallProc(conn,"spSummaryProduct",x)
+   db.value = dbCallProcedure(conn,"spSummaryProduct",x)
    r.value = do.call(x,list(dat$value))
    expect_equal (db.value,r.value)
  })
