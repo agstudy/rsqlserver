@@ -55,7 +55,25 @@ setMethod("dbRemoveTable",
           valueClass = "logical"
 )
 
-
+describe.query <- 
+   "SELECT 
+    c.name Column_Name,
+    t.Name Data_type,
+    c.max_length Max_Length,
+    CAST(c.precision as int) precision,
+    CAST(c.scale as int) scale,
+    CAST( c.is_nullable as int), 
+    CAST(ISNULL(i.is_primary_key, 0) as int)  isKey
+    FROM    
+    sys.columns c
+    INNER JOIN 
+    sys.types t ON c.system_type_id = t.system_type_id
+    LEFT OUTER JOIN 
+    sys.index_columns ic ON ic.object_id = c.object_id AND ic.column_id = c.column_id
+    LEFT OUTER JOIN 
+    sys.indexes i ON ic.object_id = i.object_id AND ic.index_id = i.index_id
+    WHERE
+    c.object_id = OBJECT_ID('%s')"
 
 
 
@@ -63,7 +81,8 @@ setMethod("dbRemoveTable",
 setMethod("dbListFields", 
           signature(conn="SqlServerConnection", name="character"),
           def = function(conn, name, ...){
-            flds <- dbGetQuery(conn, paste("describe", name))[,1]
+            flds <- dbGetQuery(conn, sprintf(describe.query, name))[,1]
+            browser()
             if(length(flds)==0)
               flds <- character()
             flds

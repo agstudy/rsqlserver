@@ -51,12 +51,3 @@ test_that("dbConnect : choose parameter if url is NULL ",{
   dbDisconnect(conn)
 })
 
-test_that("dbGetInfo : Get connection Info",{
-  con <- dbConnect('SqlServer',host='localhost',trusted=TRUE)
-  info <- dbGetInfo(con)
-  desc <- paste0("Sql server ", info$ServerVersion, " [", info$WorkstationId, "@", 
-                 info$DataSource, ":", info$Database, "/", 
-                 ifelse(info$State[[1]]=='1','open','closed'), "]")
-  dbDisconnect(con)
-  
-})
