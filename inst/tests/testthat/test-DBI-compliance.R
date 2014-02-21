@@ -28,3 +28,28 @@ test_that("dbListFields : Get connection Info",{
   dbDisconnect(con)
   
 })
+
+test_that("dbGetRowCount : Get row count",{
+  conn <- dbConnect('SqlServer',host='localhost',trusted=TRUE)
+  query <- "SELECT  *
+            FROM    T_MTCARS"
+  res <- dbSendQuery(conn, query)
+  df <- fetch(res,-1)
+  expect_equal(dbGetRowCount(res), nrow(mtcars))
+  dbClearResult(res)
+  dbDisconnect(conn)
+  
+})
+
+## TODO: 
+setMethod("dbHasCompleted", 
+          "SqlServerResult",
+          def = function(res, ...) {
+            nCols <- dbGetInfo(res, "FieldCount")[[1]] 
+            is.na(nCols) || (nCols == 0)
+          }
+          ,
+          valueClass = "logical"
+)
+
+
