@@ -82,7 +82,6 @@ setMethod("dbListFields",
           signature(conn="SqlServerConnection", name="character"),
           def = function(conn, name, ...){
             flds <- dbGetQuery(conn, sprintf(describe.query, name))[,1]
-            browser()
             if(length(flds)==0)
               flds <- character()
             flds
