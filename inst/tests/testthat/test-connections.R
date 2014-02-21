@@ -39,3 +39,11 @@ test_that("dbConnect : TRUSTED Connection using with connection parameters ",{
   expect_equal(dbGetInfo(conn,"State")[[1]],"1")
   dbDisconnect(conn)
 })
+
+test_that("dbConnect : choose parameter if url is NULL ",{
+  host="localhost"
+  dbname="TEST_RSQLSERVER"
+  conn <- dbConnect('SqlServer',host=host,dbname=dbname,trusted=TRUE,url=NULL)
+  expect_equal(dbGetInfo(conn,"State")[[1]],"1")
+  dbDisconnect(conn)
+})

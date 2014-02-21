@@ -59,7 +59,7 @@ setMethod("dbRollback",
 setMethod("dbConnect", "SqlServerDriver",
           def = function(drv, ...) {
             args <- list(...)
-            if ("url" %in% names(args))
+            if ("url" %in% names(args) && !is.null(args$url))
               sqlServerConnectionUrl(args$url)
             else
               sqlServerNewConnection(drv, ...)
@@ -128,7 +128,7 @@ sqlServerNewConnection <-
            password=NULL, host=NULL,
            trusted=FALSE, 
            dbname='TEST_RSQLSERVER',
-           timeout=30)
+           timeout=30,...)
   {
     if(!isIdCurrent(drv))
       stop("expired manager")
