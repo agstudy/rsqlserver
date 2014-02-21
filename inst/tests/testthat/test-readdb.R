@@ -150,7 +150,6 @@ test_that("read/write missing values",{
   dbWriteTable(conn,name='T_NULL',value=dat,overwrite=TRUE,row.names=FALSE)
   res <- dbSendQuery(conn, "SELECT * FROM T_NULL")
   df <- fetch(res, n = -1)
-  browser()
   expect_equal(df,dat) 
   dbDisconnect(conn)
   
