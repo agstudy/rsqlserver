@@ -5,7 +5,8 @@
 setClass("SqlServerTransaction", representation("SqlServerObject"))
 setClass("SqlServerConnection", 
          contains=c("DBIConnection", "SqlServerObject"),
-         slots=c(trans="externalptr"))
+         slots=c(trans="externalptr")
+)
 
 
 setGeneric("dbTransaction",
@@ -16,7 +17,7 @@ setGeneric("dbTransaction",
 setMethod("dbTransaction",
           signature(conn='SqlServerConnection',name='character'),
           def=function(conn,name="R.transaction",...){
-            if(dbGetInfo(conn,'State')[[1]] ==1){
+            if(dbGetInfo(conn,'State')$State ==1){
               clr.conn <- rClr:::createReturnedObject(conn@Id)
               trans <- clrCall(clr.conn,"BeginTransaction",name)
               Id = clrGetExtPtr(trans)
@@ -86,9 +87,6 @@ setMethod("dbDisconnect", "SqlServerConnection",
 
 
 
-setMethod("dbGetInfo", "SqlServerConnection",
-          def = function(dbObj, ...) sqlServerConnectionInfo(dbObj, ...)
-)
 
 # the sql server connection is managed by 
 # enum ConnectionState
@@ -100,7 +98,7 @@ setMethod("dbGetInfo", "SqlServerConnection",
 #   Broken = 16,
 setMethod("dbListResults", "SqlServerConnection",
           def = function(conn, ...) {
-            state = dbGetInfo(conn, "State")[[1]]
+            state = dbGetInfo(conn, "State")$State
             switch(state ,
                    "1"  = NULL,
                    "0"  = list(action='OpenMe'),
