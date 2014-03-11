@@ -53,7 +53,7 @@ namespace rsqlserver.net
         #endregion 
         #endregion
         #region props
-        public int Nrows
+        public int Fetched
         {
             get { return _nrows; }
         }
@@ -98,7 +98,9 @@ namespace rsqlserver.net
         public Object GetReaderProperty(string prop)
         {
            object val = null;
-           if(String.Compare(prop ,"Item")!=0){
+           if (String.Compare(prop ,"Fetched")==0)
+               val = _nrows;
+           else if(String.Compare(prop ,"Item")!=0){
                val =  _reader.GetType().GetProperty(prop).GetValue(_reader);
             }
             return val;
@@ -126,14 +128,15 @@ namespace rsqlserver.net
                     }
                 }
                 cnt += 1;
+                _nrows += 1;
                 if (cnt >= capacity) return cnt;
+
             }
             // trim array 
             if (cnt < capacity)
                 for (int i = 0; i < _reader.FieldCount; i++)
                     _resultSet[_cnames[i]] = TrimArray(_resultSet[_cnames[i]], cnt, i);
             // set nrows
-            _nrows = cnt;
             return cnt;
         }
         #endregion  

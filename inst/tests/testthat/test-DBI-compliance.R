@@ -32,11 +32,11 @@ test_that("dbListFields : Get connection Info",{
 test_that("dbGetRowCount : Get row count",{
   conn <- dbConnect('SqlServer',host='localhost',trusted=TRUE)
   query <- "SELECT  *
-            FROM    T_MTCARS"
-  res <- dbSendQuery(conn, query)
-  df <- fetch(res,-1)
-  expect_equal(dbGetRowCount(res), nrow(mtcars))
-  dbClearResult(res)
+            FROM    T_DATE"
+  rs <- dbSendQuery(conn, query)
+  df <- fetch(rs,-1)
+  expect_equal(dbGetRowCount(rs), nrow(df))
+  dbClearResult(rs)
   dbDisconnect(conn)
   
 })

@@ -146,7 +146,7 @@ test_that("read/write missing values",{
   url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
   conn <- dbConnect('SqlServer',url=url)
   dat <- data.frame(txt=c('a',NA,'b',NA),
-                    value =c(1L,NA,NA,2))
+                    value =c(1L,NA,NA,2),stringsAsFactors=FALSE)
   dbWriteTable(conn,name='T_NULL',value=dat,overwrite=TRUE,row.names=FALSE)
   res <- dbSendQuery(conn, "SELECT * FROM T_NULL")
   df <- fetch(res, n = -1)

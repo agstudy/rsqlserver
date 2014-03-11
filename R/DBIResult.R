@@ -1,4 +1,10 @@
-setClass("SqlServerResult", representation("DBIResult", "SqlServerObject"))
+setClass("SqlServerResult", 
+         contains=c("DBIResult", "SqlServerObject"),
+         slots=c(.fetched="numeric"))
+# setMethod("initialize", signature(.Object = "SqlServerResult"),
+#           function(.Object, ...){ 
+#             .Object@fetched = 0
+#           } 
 
 setMethod("dbClearResult", "SqlServerResult", 
           def = function(res, ...) sqlServerCloseResult(res, ...), 
@@ -7,7 +13,7 @@ setMethod("dbClearResult", "SqlServerResult",
 
 setMethod("fetch", signature(res="SqlServerResult", n="numeric"),
           def = function(res, n , ...){ 
-            out <- sqlServerFetch(res, n, ...)
+            out <- .sqlServerFetch(res, n, ...)
             if(is.null(out))
               out <- data.frame(out)
             out
@@ -19,7 +25,7 @@ setMethod("fetch", signature(res="SqlServerResult", n="numeric"),
 setMethod("fetch", 
           signature(res="SqlServerResult", n="missing"),
           def = function(res, ...){
-            out <-  sqlServerFetch(res, n =-1, ...)
+            out <-  .sqlServerFetch(res, n =-1, ...)
             if(is.null(out))
               out <- data.frame(out)
             out
@@ -124,7 +130,7 @@ sqlServerExecStatement <-
     if (inherits(res, "try-error")){
       stop(sqlException.Message(res))
     }
-    new("SqlServerResult", Id = clrGetExtPtr(res))
+    new("SqlServerResult", Id = clrGetExtPtr(res),.fetched=0)
   }
 
 sqlServerExecScalar <- 
@@ -164,14 +170,13 @@ sqlException.Message <-
   }
 
 
-sqlServerFetch <- 
+.sqlServerFetch <- 
   function(res,n){
     n <- as(n, "integer")
     dataReader <- rClr:::createReturnedObject(res@Id)
     ncols <- clrGet(dataReader,"FieldCount")
     if(ncols==0) return(NULL)
     sqlDataHelper <- clrNew("rsqlserver.net.SqlDataHelper",dataReader)
-    
     Cnames <- clrGet(sqlDataHelper,'Cnames')
     out <- vector('list',ncols)
     out <- if (n < 0L) { ## infinite pull
@@ -184,16 +189,19 @@ sqlServerFetch <-
           else 
             c(out[[i]], clrCall(res.Dict,'get_Item',Cnames[i]))
         }
+        res@.fetched <- res@.fetched + nrec
         if (nrec < stride) break
         stride <- 524288L # 512k
       }
       out
     } 
-    else { clrCall(sqlDataHelper,'Fetch',as.integer(n))
-           res.Dict <- clrGet(sqlDataHelper,"ResultSet")
-           for (i in seq.int(Cnames))
-             out[[i]] <- clrCall(res.Dict,'get_Item',Cnames[i])    
-           out
+    else { 
+      nrec <- clrCall(sqlDataHelper,'Fetch',as.integer(n))
+      res@.fetched <- res@.fetched +nrec
+      res.Dict <- clrGet(sqlDataHelper,"ResultSet")
+      for (i in seq.int(Cnames))
+        out[[i]] <- clrCall(res.Dict,'get_Item',Cnames[i])    
+      out
     }
     ## process missing values
     CDbtypes <- clrGet(sqlDataHelper,'CDbtypes')
@@ -249,7 +257,7 @@ sqlServerResultInfo <-
     res <- rClr:::createReturnedObject(dbObj@Id)
     info <- vector("list", length = length(clrGetProperties(res)))
     sqlDataHelper <- clrNew("rsqlserver.net.SqlDataHelper",res)
-    for (prop in clrGetProperties(res))
+    for (prop in c(clrGetProperties(res),'Fetched'))
       info[[prop]] <- clrCall(sqlDataHelper,"GetReaderProperty",
                               prop)
     info <- as.list(unlist(info))
@@ -369,18 +377,18 @@ R2DbType <- function(obj,...)
 sqlServer.data.frame <- function(obj,field.types)
 {
   out <- lapply(seq_along(field.types),function(x){
-     dbtype <- field.types[[x]]
-     col <- obj[[x]]
-     DATE_TYPES <- c("datetime","datetime2","datetimeoffset")
-     col <- {
-       if(dbtype %in% DATE_TYPES) 
-         paste0("'",col,"'")
-       else if(grepl("char",dbtype))  {
-         col[is.na(col)] <- ''
-         paste0("'",gsub("'","''",col),"'")
-       }
-       else col
-     }
+    dbtype <- field.types[[x]]
+    col <- obj[[x]]
+    DATE_TYPES <- c("datetime","datetime2","datetimeoffset")
+    col <- {
+      if(dbtype %in% DATE_TYPES) 
+        paste0("'",col,"'")
+      else if(grepl("char",dbtype))  {
+        col[is.na(col)] <- ''
+        paste0("'",gsub("'","''",col),"'")
+      }
+      else col
+    }
   })
   
   attr(out, "row.names") <- c(NA_integer_, length(out[[1]]))

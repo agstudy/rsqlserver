@@ -88,7 +88,7 @@ namespace rsqlserver.net.Test
                     Assert.Contains(key, cols);
             }
 
-            Assert.Equal(helper.ResultSet["name"].Length, helper.Nrows);
+            Assert.Equal(helper.ResultSet["name"].Length, helper.Fetched);
             Assert.Equal(helper.ResultSet.Keys.Count, helper.Cnames.Length);
         }
         [Fact]
@@ -108,24 +108,27 @@ namespace rsqlserver.net.Test
                 myConnection.Open();
                 SqlDataReader myReader = null;
                 var query = "SELECT  * " +
-                             "FROM    T_BENCH_DATE_750_100000";
+                             "FROM    T_DATE";
 
                 SqlCommand myCommand = new SqlCommand(query, myConnection);
                 myReader = myCommand.ExecuteReader();
                 helper = new SqlDataHelper(myReader);
-                var result = helper.Fetch(100000);
+                var result = helper.Fetch(20);
                 Assert.Equal(result, 100000);
             }
         }
         static void Main(string[] args)
         {
+            myConnection.Open();
+            SqlDataReader myReader = null;
+            var query = "SELECT  * " +
+                         "FROM    T_DATE";
 
-            
-          //  System.IO.FileInfo configFileInfo = new System.IO.FileInfo(configuration.FilePath);
-          // log4net.Config.XmlConfigurator.Configure();
-
-
-            TestFetch_BIG_DATE_TABLE();
+            SqlCommand myCommand = new SqlCommand(query, myConnection);
+            myReader = myCommand.ExecuteReader();
+            helper = new SqlDataHelper(myReader);
+            var result = helper.Fetch(20);
+            helper.GetReaderProperty("Fetched");
             Console.ReadLine();
 
         }
