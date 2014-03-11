@@ -2,7 +2,7 @@
 ## Class: DBITransaction
 ##
 
-setClass("SqlServerTransaction", representation("SqlServerObject"))
+setClass("SqlServerTransaction", contains=c("SqlServerObject"))
 setClass("SqlServerConnection", 
          contains=c("DBIConnection", "SqlServerObject"),
          slots=c(trans="externalptr")

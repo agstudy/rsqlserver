@@ -8,8 +8,8 @@ setOldClass("data.frame")      ## to appease setMethod's signature warnings...
 ##
 ## Class: DBIObject
 ##
-setClass("SqlServerObject", representation("DBIObject","dbObjectId", "VIRTUAL"))
-setClass("SqlServerDriver", representation("DBIDriver", "SqlServerObject"))
+setClass("SqlServerObject", contains=c("DBIObject","dbObjectId", "VIRTUAL"))
+setClass("SqlServerDriver", contains=c("DBIDriver", "SqlServerObject"))
 
 SqlServer <-
   function(max.con = 100L, fetch.default.rec = 500, force.reload = FALSE,
