@@ -154,3 +154,16 @@ test_that("read/write missing values",{
   dbDisconnect(conn)
   
 })
+
+
+test_that('read some data types: big/int bit',{
+  
+  drv  <- dbDriver("SqlServer")
+  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+  conn <- dbConnect('SqlServer',url=url)
+  
+  query <- "SELECT *  FROM [TABLE_BUG]"
+  df1 <- dbGetQuery(conn, query)
+  dbDisconnect(conn)
+  
+})
