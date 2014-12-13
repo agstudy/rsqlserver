@@ -72,16 +72,27 @@ namespace rsqlserver.net
         }
         #endregion 
         #region global methods 
-        //public Object GetItem(SqlDataReader _dataReader, int i){
-        //    object res = _dataReader[i];
-        //    if (res != null && res.GetType() == typeof(Byte))
-        //        return (int)(byte)res;
-        //    if (res != null && res.GetType() == typeof(DateTime))
-        //        return ((DateTime)res).ToString("yyyy-MM-dd HH:mm:ss");
+        public Object GetItem(SqlDataReader _reader, int i)
+        {
+            object value = _reader.GetValue(i);
+            var fieldType = _reader.GetFieldType(i);
+            //if (res != null && res.GetType() == typeof(DateTime))
+            //    return ((DateTime)res).ToString("yyyy-MM-dd HH:mm:ss");
+            if (value == DBNull.Value)
+            {
+                if (fieldType== typeof(String))
+                    return string.Empty;
+                else
+                    return Single.NaN;
+            }
+            else
+            {
+                if (fieldType == typeof(long))
+                    return Convert.ToInt32(value);
+            }
+            return value;
 
-
-        //    return res;
-        //}
+        }
         public Object GetConnectionProperty(SqlConnection _conn, string prop)
         {
             if (_conn.State == ConnectionState.Closed &
@@ -115,18 +126,10 @@ namespace rsqlserver.net
                 // fetch rows and store data by column
                 for (int i = 0; i < _reader.FieldCount; i++)
                 {
-                    if (_reader.GetValue(i) == DBNull.Value)
-                    {
-                        if(_reader.GetFieldType(i)==typeof(String))
-                            _resultSet[_cnames[i]].SetValue(string.Empty, cnt);
-                        else
-                            _resultSet[_cnames[i]].SetValue(Single.NaN, cnt);
-                    }
-                    else
-                    {
-                        _resultSet[_cnames[i]].SetValue(_reader.GetValue(i), cnt);
-                    }
+                    var value = GetItem(_reader, i);
+                    _resultSet[_cnames[i]].SetValue(value, cnt);
                 }
+             
                 cnt += 1;
                 _nrows += 1;
                 if (cnt >= capacity) return cnt;

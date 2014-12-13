@@ -30,7 +30,8 @@ test_that("dbListFields : Get connection Info",{
 })
 
 test_that("dbGetRowCount : Get row count",{
-  conn <- dbConnect('SqlServer',host='localhost',trusted=TRUE)
+  conn <- dbConnect('SqlServer',host='localhost',
+                    trusted=TRUE)
   query <- "SELECT  *
             FROM    T_DATE"
   rs <- dbSendQuery(conn, query)

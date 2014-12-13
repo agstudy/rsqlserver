@@ -114,6 +114,9 @@ get.command <- function(conn,stmt,...){
   }
   clr.conn <- .NetObjFromPtr(conn@Id)
   cmd <- clrNew("System.Data.SqlClient.SqlCommand",stmt,clr.conn)
+  ll <- as.list(match.call()[-1])
+  if(("timeout") %in% names(ll))
+    clrSeet(cmd,"CommandTimeout",as.integer(ll[["timeout"]]))
   if(isTransaction(conn)){
     trans <- .NetObjFromPtr(conn@trans)
     clrCall(cmd,'set_Transaction',trans)
@@ -125,7 +128,7 @@ get.command <- function(conn,stmt,...){
 sqlServerExecStatement <- 
   function(conn,statement,...)
   {
-    cmd <- get.command(conn,statement)
+    cmd <- get.command(conn,statement,...)
     res <- try(clrCall(cmd,'ExecuteReader'),silent=TRUE)
     if (inherits(res, "try-error")){
       stop(sqlException.Message(res))
@@ -136,7 +139,7 @@ sqlServerExecStatement <-
 sqlServerExecScalar <- 
   function(conn,statement,...)
   {
-    cmd <- get.command(conn,statement)
+    cmd <- get.command(conn,statement,...)
     res <- try(clrCall(cmd,'ExecuteScalar'),silent=TRUE)
     
     if (inherits(res, "try-error")){
@@ -149,7 +152,7 @@ sqlServerExecScalar <-
 sqlServerNonQuery <- 
   function(conn,statement,...)
   {
-    cmd <- get.command(conn,statement)
+    cmd <- get.command(conn,statement,...)
     res <- try(clrCall(cmd,'ExecuteNonQuery'),silent=TRUE)
     if (inherits(res, "try-error")){
       stop(sqlException.Message(res))
@@ -213,7 +216,7 @@ sqlException.Message <-
     rtypes <- tolower(sapply(CDbtypes,db2RType))
     ## POSIXct 
     date.cols <- grep('date',rtypes)
-    out[date.cols] <- lapply(out[date.cols],as.Date,,tz=Sys.timezone())
+    out[date.cols] <- lapply(out[date.cols],as.Date,tz=Sys.timezone())
     
     ## set names and convert list to a data.frame
     names(out) <- Cnames
@@ -239,14 +242,14 @@ sqlServerCloseResult <-
 ## helper function: it exec's *and* retrieves a statement. It should
 ## be named somehting else.
 sqlServerExecRetrieve <-
-  function(con, statement)
+  function(con, statement,...)
   {
     state <- dbGetInfo(con,"State")
     if(state==0){                   ## conn is closed
       new.con <- dbConnect(con)     ## yep, create a clone connection
       on.exit(dbDisconnect(new.con))
-      rs <- dbSendQuery(new.con, statement)
-    } else rs <- dbSendQuery(con, statement)
+      rs <- dbSendQuery(new.con, statement,...)
+    } else rs <- dbSendQuery(con, statement,...)
     res <- fetch(rs, n = -1)
     dbClearResult(rs)
     res

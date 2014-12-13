@@ -54,7 +54,7 @@ test_that("sqlServer.data.frame:data is well quoted before insert",{
                         b="'value '' alol'",
                         c="'aa jujs'",
                         d=1,
-                        e=as.Date("2013-11-07"))
+                        e="'2013-11-07'")
   field.types <- lapply(value, rsqlserver:::R2DbType)
   names(field.types) <- names(value)
   value.db <- rsqlserver:::sqlServer.data.frame(

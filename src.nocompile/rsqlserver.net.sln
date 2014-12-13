@@ -5,6 +5,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rsqlserver.net", "rsqlserve
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "rsqlserver.net.Test", "rsqlserver.net.Test\rsqlserver.net.Test.csproj", "{D5C16450-5892-44E3-85C9-B79F230EC5E7}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{36E138C8-1066-4D96-B91F-761136D5E978}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\packages.config = .nuget\packages.config
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug[+TEST]|Any CPU = Debug[+TEST]|Any CPU

@@ -2,6 +2,14 @@
 ## Class: DBITransaction
 ##
 
+
+.NetObjFromPtr <- 
+  function(obj, clrtype = NULL){
+    if(exists("createReturnedObject",asNamespace("rClr")))
+      rClr:::createReturnedObject(obj, clrtype)
+    else
+      rClr:::mkClrObjRef(obj, clrtype)
+  }
 setClass("SqlServerTransaction", contains=c("SqlServerObject"))
 setClass("SqlServerConnection", 
          contains=c("DBIConnection", "SqlServerObject"),
@@ -18,7 +26,7 @@ setMethod("dbTransaction",
           signature(conn='SqlServerConnection',name='character'),
           def=function(conn,name="R.transaction",...){
             if(dbGetInfo(conn,'State')$State ==1){
-              clr.conn <- rClr:::createReturnedObject(conn@Id)
+              clr.conn <- .NetObjFromPtr(conn@Id)
               trans <- clrCall(clr.conn,"BeginTransaction",name)
               Id = clrGetExtPtr(trans)
               return(new("SqlServerConnection", 
@@ -35,7 +43,7 @@ setMethod("dbTransaction",
 setMethod("dbCommit",
           signature(conn="SqlServerConnection"),
           function(conn, ...) {
-            transaction <- rClr:::createReturnedObject(conn@trans)
+            transaction <- .NetObjFromPtr(conn@trans)
             clrCall(transaction,'Commit')
             TRUE
           }
@@ -44,7 +52,7 @@ setMethod("dbCommit",
 setMethod("dbRollback",
           signature(conn = "SqlServerConnection"),
           function(conn, ...) {
-            transaction <- rClr:::createReturnedObject(conn@trans)
+            transaction <- .NetObjFromPtr(conn@trans)
             clrCall(transaction,'Rollback')
             TRUE
           }
@@ -178,7 +186,7 @@ sqlServerCloseConnection <-
       warning(paste("expired SqlServerConnection"))
       return(TRUE)
     }
-    obj <- rClr:::createReturnedObject(conn@Id)
+    obj <- .NetObjFromPtr(conn@Id)
     clrCall(obj,'Close')
     TRUE
   }
@@ -188,7 +196,7 @@ sqlServerConnectionInfo <-
   function(dbObj,what,...){
     if(!isIdCurrent(dbObj))
       stop(paste("expired", class(dbObj), deparse(substitute(dbObj))))
-    conn <- rClr:::createReturnedObject(dbObj@Id)
+    conn <- .NetObjFromPtr(dbObj@Id)
     info <- vector("list", length = length(clrGetProperties(conn)))
     sqlDataHelper <- clrNew("rsqlserver.net.SqlDataHelper")
     for (prop in clrGetProperties(conn))

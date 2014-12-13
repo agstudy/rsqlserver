@@ -121,9 +121,7 @@ namespace rsqlserver.net.Test
         {
             myConnection.Open();
             SqlDataReader myReader = null;
-            var query = "SELECT  * " +
-                         "FROM    T_DATE";
-
+            var query = "SELECT  * " + "FROM    TABLE_BUG";
             SqlCommand myCommand = new SqlCommand(query, myConnection);
             myReader = myCommand.ExecuteReader();
             helper = new SqlDataHelper(myReader);

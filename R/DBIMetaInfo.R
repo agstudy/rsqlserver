@@ -14,9 +14,9 @@ setMethod("dbGetInfo", "SqlServerConnection",
 ## return -1 since it is impossible to get the number of row
 ## number of rows fetched so far
 setMethod("dbGetRowCount", "SqlServerResult", 
-          def = function(res, ...) 
-            dbGetInfo(res, "Fetched"))
-
+          def = function(res, ...) {-1
+          })
+            
 
 
 ## TODO: 
@@ -33,12 +33,12 @@ setMethod("dbHasCompleted",
   function(dbObj,what,...){
     if(!isIdCurrent(dbObj))
       stop(paste("expired", class(dbObj), deparse(substitute(dbObj))))
-    conn <- rClr:::createReturnedObject(dbObj@Id)
+    conn <- .NetObjFromPtr(dbObj@Id)
+    
     info <- vector("list", length = length(clrGetProperties(conn)))
     sqlDataHelper <- clrNew("rsqlserver.net.SqlDataHelper")
     for (prop in clrGetProperties(conn))
-      info[[prop]] <- clrCall(sqlDataHelper,"GetConnectionProperty",conn,
-                              prop)
+      info[[prop]] <- clrCall(sqlDataHelper,"GetConnectionProperty",conn,prop)
     info <- as.list(unlist(info))
     if(!missing(what))
       info[what]
@@ -48,7 +48,7 @@ setMethod("dbHasCompleted",
 
 .sqlServerGetProperty <- 
   function(dbObj,prop,...){
-    dataReader <- rClr:::createReturnedObject(dbObj@Id)
+    dataReader <- .NetObjFromPtr(dbObj@Id)
     sqlDataHelper <- clrNew("rsqlserver.net.SqlDataHelper",dataReader)
     clrGet(sqlDataHelper,'Fetched')
   }

@@ -3,10 +3,8 @@ context("Reading/Writing tables")
 test_that("dbReadTable : return a significant message if table not found", {
   url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
   conn <- dbConnect('SqlServer',url=url)
-  
   expect_error(dbReadTable(conn,'NO_EXIST_TABLE'),"Invalid object name")
   dbDisconnect(conn)
-  
 })
 
 test_that("dbReadTable : reopen connection if connection is already closed", {
