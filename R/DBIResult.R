@@ -112,10 +112,10 @@ get.command <- function(conn,stmt,...){
     warning(paste("expired SqlServerConnection"))
     return(TRUE)
   }
-  clr.conn <- rClr:::createReturnedObject(conn@Id)
+  clr.conn <- .NetObjFromPtr(conn@Id)
   cmd <- clrNew("System.Data.SqlClient.SqlCommand",stmt,clr.conn)
   if(isTransaction(conn)){
-    trans <- rClr:::createReturnedObject(conn@trans)
+    trans <- .NetObjFromPtr(conn@trans)
     clrCall(cmd,'set_Transaction',trans)
   }
   cmd
@@ -173,7 +173,7 @@ sqlException.Message <-
 .sqlServerFetch <- 
   function(res,n){
     n <- as(n, "integer")
-    dataReader <- rClr:::createReturnedObject(res@Id)
+    dataReader <- .NetObjFromPtr(res@Id)
     ncols <- clrGet(dataReader,"FieldCount")
     if(ncols==0) return(NULL)
     sqlDataHelper <- clrNew("rsqlserver.net.SqlDataHelper",dataReader)
@@ -222,7 +222,7 @@ sqlException.Message <-
 
 sqlServerCloseResult <- 
   function(res,...){
-    dataReader <- rClr:::createReturnedObject(res@Id)
+    dataReader <- .NetObjFromPtr(res@Id)
     clrCall(dataReader,"Close")
     TRUE
   }
@@ -254,7 +254,7 @@ sqlServerResultInfo <-
   function(dbObj,what,...){
     if(!isIdCurrent(dbObj))
       stop(paste("expired", class(dbObj), deparse(substitute(dbObj))))
-    res <- rClr:::createReturnedObject(dbObj@Id)
+    res <- .NetObjFromPtr(dbObj@Id)
     info <- vector("list", length = length(clrGetProperties(res)))
     sqlDataHelper <- clrNew("rsqlserver.net.SqlDataHelper",res)
     for (prop in c(clrGetProperties(res),'Fetched'))
@@ -379,7 +379,7 @@ sqlServer.data.frame <- function(obj,field.types)
   out <- lapply(seq_along(field.types),function(x){
     dbtype <- field.types[[x]]
     col <- obj[[x]]
-    DATE_TYPES <- c("datetime","datetime2","datetimeoffset")
+    DATE_TYPES <- c("datetime","datetime2","datetimeoffset","date")
     col <- {
       if(dbtype %in% DATE_TYPES) 
         paste0("'",col,"'")
