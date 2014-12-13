@@ -209,6 +209,12 @@ sqlException.Message <-
     
     out[char.cols] <- lapply(out[char.cols],
                              function(x) ifelse(nchar(x)==0,NA_character_,x))
+    ## process date type 
+    rtypes <- tolower(sapply(CDbtypes,db2RType))
+    ## POSIXct 
+    date.cols <- grep('date',rtypes)
+    out[date.cols] <- lapply(out[date.cols],as.Date,,tz=Sys.timezone())
+    
     ## set names and convert list to a data.frame
     names(out) <- Cnames
     attr(out, "row.names") <- c(NA_integer_, length(out[[1]]))

@@ -127,4 +127,35 @@ test_that("dbBulkCopy :save POSIXct , read it again as POSIXct",{
 
 
 
+## see issue https://github.com/agstudy/rsqlserver/issues/11
+test_that("dbWriteTable/dbReadTable :save Date , read the same Date again",{
+  drv  <- dbDriver("SqlServer")
+  start = Sys.Date()
+  dat <- data.frame(cdate = seq.Date(from=start,by=1,length.out=5))
+  #dat$cdate <- as.Date(dat$cdate,tz=Sys.timezone())
+  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+  conn <- dbConnect('SqlServer',url=url)
+  dbWriteTable(conn,name='T_DATE',value=dat,overwrite=TRUE)
+  res <- dbReadTable(conn,'T_DATE')
+  expect_equal(res$cdate,dat$cdate)
+  dbDisconnect(conn)
+  
+})
+
+test_that("dbWriteTable/dbReadTable :save POSIXct , read the same POSIXct again",{
+  drv  <- dbDriver("SqlServer")
+  start = Sys.time()
+  dat <- data.frame(cdate = seq.POSIXt(from=start,by=1,length.out=5))
+  #dat$cdate <- as.Date(dat$cdate,tz=Sys.timezone())
+  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
+  conn <- dbConnect('SqlServer',url=url)
+  dbWriteTable(conn,name='T_DATE',value=dat,overwrite=TRUE)
+  res <- dbReadTable(conn,'T_DATE')
+  expect_equal(res$cdate,dat$cdate)
+  dbDisconnect(conn)
+  
+})
+
+
+
 
