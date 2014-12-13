@@ -7,8 +7,8 @@ Author: Amine Gassem (agstudy) <contact@ag-study.com>
 LazyLoad: true
 Maintainer: Amine Gassem (agstudy) <contact@ag-study.com>
 Description:Sql server database interface (DBI) driver for R. This is a DBI-compliant Sql server driver based on the System.Data.SqlClient. 
-Depends: methods
-Imports: rClr, DBI
+Depends: methods,rClr
+Imports: DBI
 Suggests: testthat,  knitr,  xtable
 License: GPL-2
 Collate:"zzz.R" 
