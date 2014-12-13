@@ -215,7 +215,8 @@ insert.into <- function(con,name,cnames,value,row.names){
 
 bulk.copy <- function(con,name,value,...){
   if(is.data.frame(value)){
-    id = "d:/temp/temp.csv"                       ## TODO use a tempfile or partial name
+    id = tempfile()                    
+    on.exit(unlink(id))
     write.csv(value,file=id,row.names=FALSE)
     bulk.copy.file(con,name,id)
   }
