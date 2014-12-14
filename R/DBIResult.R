@@ -116,7 +116,7 @@ get.command <- function(conn,stmt,...){
   cmd <- clrNew("System.Data.SqlClient.SqlCommand",stmt,clr.conn)
   ll <- as.list(match.call()[-1])
   if(("timeout") %in% names(ll))
-    clrSeet(cmd,"CommandTimeout",as.integer(ll[["timeout"]]))
+    clrSet(cmd,"CommandTimeout",as.integer(ll[["timeout"]]))
   if(isTransaction(conn)){
     trans <- .NetObjFromPtr(conn@trans)
     clrCall(cmd,'set_Transaction',trans)
@@ -266,9 +266,8 @@ sqlServerResultInfo <-
     res <- .NetObjFromPtr(dbObj@Id)
     info <- vector("list", length = length(clrGetProperties(res)))
     sqlDataHelper <- clrNew("rsqlserver.net.SqlDataHelper",res)
-    for (prop in c(clrGetProperties(res),'Fetched'))
-      info[[prop]] <- clrCall(sqlDataHelper,"GetReaderProperty",
-                              prop)
+    for (prop in c(clrGetProperties(sqlDataHelper),'Fetched'))
+      info[[prop]] <- clrCall(sqlDataHelper,paste0("get_",prop))
     info <- as.list(unlist(info))
     if(!missing(what))
       info[[what]]

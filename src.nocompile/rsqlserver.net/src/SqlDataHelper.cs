@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Data.SqlClient;
 using System.Data;
 using System.Collections;
+using System.Reflection;
 namespace rsqlserver.net
 {
     public class SqlDataHelper
@@ -69,6 +70,16 @@ namespace rsqlserver.net
         public Dictionary<string, Array> ResultSet
         {
             get { return _resultSet; }
+        }
+        public object TimeOut {
+            get
+            {
+                PropertyInfo prop = _reader.GetType().GetProperty("Command",
+                    BindingFlags.NonPublic | BindingFlags.Instance);
+
+                SqlCommand cmd = (SqlCommand)prop.GetValue(_reader);
+                return cmd.CommandTimeout;
+            }
         }
         #endregion 
         #region global methods 
