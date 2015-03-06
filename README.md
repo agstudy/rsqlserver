@@ -1,6 +1,8 @@
 # rsqlserver
 ==========
 
+<a href='https://pledgie.com/campaigns/28549'><img alt='Click here to lend your support to: rsqlserver and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/28549.png?skin_name=chrome' border='0' ></a>
+
 Sql Server driver  database interface **(DBI)** driver for R. 
 This is a DBI-compliant Sql Server driver based on the 
 The .NET Framework Data Provider for SQL Server (SqlClient) `System.Data.SqlClient`. 
