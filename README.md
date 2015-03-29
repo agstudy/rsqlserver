@@ -56,7 +56,6 @@ You can see `rsqlserver` [benchmarking](https://github.com/agstudy/rsqlserver/wi
 I want to thank Jean-Michel Perraud the author of [rClr](http://r2clr.codeplex.com/) package.
 
 
-[![githalytics.com alpha](https://cruel-carlota.pagodabox.com/02a6e8b8e984a8efdb565750d99a10cf "githalytics.com")](http://githalytics.com/agstudy/rsqlserver)
 
 
 ### if you like this project, give it a star :)
