@@ -1,7 +1,6 @@
 # rsqlserver
 ==========
 
-<a href='https://pledgie.com/campaigns/28549'><img alt='Click here to lend your support to: rsqlserver and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/28549.png?skin_name=chrome' border='0' ></a>
 
 Sql Server driver  database interface **(DBI)** driver for R. 
 This is a DBI-compliant Sql Server driver based on the 
@@ -58,4 +57,7 @@ I want to thank Jean-Michel Perraud the author of [rClr](http://r2clr.codeplex.c
 
 
 
-### if you like this project, give it a star :)
+### if you like this project, give it a star or a donation :)
+
+
+<a href='https://pledgie.com/campaigns/28549'><img alt='Click here to lend your support to: rsqlserver and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/28549.png?skin_name=chrome' border='0' ></a>
