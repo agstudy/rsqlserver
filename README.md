@@ -29,8 +29,7 @@ The `rsqlserver` package uses the .NET framework SDK to build a small C# project
 You can install it from `github` using the `devtools` package
 
 ```coffee
-require(devtools)
-install_github('rsqlserver', 'agstudy',args='--no-multiarch')
+devtools::install_github('agstudy/rsqlserver', args='--no-multiarch')
 ```
 
 ## Features
@@ -43,7 +42,7 @@ install_github('rsqlserver', 'agstudy',args='--no-multiarch')
 * `dbTransaction`, `dbCommit`, `dbRollback` for **Transaction** management
 * `dbCallProc` (in development)  for **Stored procedure** call.
 * `dbBulkCopy` using **Bulk Copy** for quickly bulk copying Big data.frame or large files into SQL server tables or views.
-* Many DBI extension like `dbGetScalar` , `dbGetNoQuery` , `dbBulkCopy`
+* Many DBI extensions like `dbGetScalar` , `dbGetNoQuery` , `dbBulkCopy`
 * `dbParameter`(coming soon) to handle Transact-SQL named parameters. This will provide better type checking and imporve performance. 
 
 ## Benchmarking
