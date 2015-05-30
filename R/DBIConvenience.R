@@ -217,7 +217,7 @@ bulk.copy <- function(con,name,value,...){
   if(is.data.frame(value)){
     id = tempfile()                    
     on.exit(unlink(id))
-    write.csv(value,file=id,row.names=FALSE)
+    write.csv(value,file=id,row.names=FALSE,...)
     bulk.copy.file(con,name,id)
   }
 }
