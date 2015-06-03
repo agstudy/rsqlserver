@@ -2,7 +2,7 @@ Package: rsqlserver
 Type: Package
 Title: SQL Server interface for R
 Version: 1.0
-Date: 2013-10-23
+Date: 2015-05-30
 Author: Amine Gassem (agstudy) <contact@ag-study.com>
 LazyLoad: true
 Maintainer: Amine Gassem (agstudy) <contact@ag-study.com>
