@@ -106,9 +106,9 @@ namespace rsqlserver.net
                                  destTableName,tableSource.Rows.Count);
                         bulkCopy.BulkCopyTimeout = 60;
                         bulkCopy.WriteToServer(tableSource);
-                        _Logger.InfoFormat("Succes to load table {0} in database", destTableName);
+                        _Logger.InfoFormat("Success to load table {0} in database", destTableName);
                         tableSource.Rows.Clear();
-                        _Logger.Info("Sucess copy");
+                        _Logger.Info("Success copy");
                     }
                 }
                 catch (Exception ex)
