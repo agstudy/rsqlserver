@@ -9,6 +9,31 @@ using System.Collections;
 using System.Reflection;
 namespace rsqlserver.net
 {
+
+    public static class SqlClientExtensions
+    {
+#if __MonoCS__
+		private static Dictionary<int, string> _connIds = new Dictionary<int, string>();
+#endif
+
+        public static string GetClientConnectionId(this SqlConnection conn)
+        {
+            if (conn == null)
+            {
+                return Guid.Empty.ToString();
+            }
+
+#if __MonoCS__
+			if(!connIds.ContainsKey(conn.GetHashCode())) {
+			connIds.Add(conn.GetHashCode(), Guid.NewGuid().ToString());
+			}
+
+			return connIds[conn.GetHashCode()];
+#else
+            return conn.ClientConnectionId.ToString();
+#endif
+        }
+    }
     public class SqlDataHelper
     {
         #region map types
@@ -112,8 +137,7 @@ namespace rsqlserver.net
 
             if (prop == "ClientConnectionId")
             {
-                Guid guid = _conn.ClientConnectionId;
-                return guid.ToString();
+                return _conn.GetClientConnectionId();
             }
             return _conn.GetType().GetProperty(prop).GetValue(_conn);
         }
