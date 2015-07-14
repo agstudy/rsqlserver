@@ -1,7 +1,6 @@
 
 
 .onLoad <- function(libname, pkgname){
-  if(.Platform$OS.type == "windows") {
     libLocation <- system.file(package=pkgname)
     libpath <- file.path(libLocation, 'libs')
     f <- file.path(libpath, 'rsqlserver.net.dll')
@@ -12,7 +11,6 @@
       clrLoadAssembly('System.Data') ## .net provider
       clrLoadAssembly(f)                       ## custom dll 
     }
-  }
 }
 
 

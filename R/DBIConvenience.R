@@ -59,7 +59,7 @@ describe.query <-
    "SELECT 
     c.name Column_Name,
     t.Name Data_type,
-    c.max_length Max_Length,
+    CAST(c.max_length as int)Max_Length,
     CAST(c.precision as int) precision,
     CAST(c.scale as int) scale,
     CAST( c.is_nullable as int), 
