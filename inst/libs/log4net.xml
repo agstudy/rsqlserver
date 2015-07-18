@@ -25941,6 +25941,11 @@
             </code>
             </example>
         </member>
+        <member name="F:log4net.Util.ILogExtensions.declaringType">
+            <summary>
+            The fully qualified type of the Logger class.
+            </summary>
+        </member>
         <member name="M:log4net.Util.ILogExtensions.DebugExt(log4net.ILog,System.Func{System.Object})">
             <summary>
             Log a message object with the <see cref="F:log4net.Core.Level.Debug"/> level.
