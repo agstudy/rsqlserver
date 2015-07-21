@@ -6,9 +6,10 @@ SERVER_ADDRESS <- "192.168.0.10"
 
 
 test_isConnected <- function(url){
+  on.exit(dbDisconnect(conn))
   conn <- dbConnect('SqlServer',url=url)
   expect_equal(dbGetInfo(conn,"State")$State,"Open")
-  dbDisconnect(conn)
+
 }
 
 test_that("dbConnect : Standard Security",{
