@@ -1,8 +1,15 @@
-﻿<Properties StartupItem="rsqlserver.net\rsqlserver.net.csproj">
+﻿<Properties StartupItem="rsqlserver.net.Test\rsqlserver.net.Test.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench />
+  <MonoDevelop.Ide.Workbench ActiveDocument="rsqlserver.net\src\SqlDataHelper.cs">
+    <Files>
+      <File FileName="rsqlserver.net.Test\TestSqlDataHelper.cs" Line="126" Column="4" />
+      <File FileName="rsqlserver.net\src\SqlDataHelper.cs" Line="10" Column="25" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore />
+    <BreakpointStore>
+      <Breakpoint enabled="false" file="C:\projects\R\rsqlserver\src.nocompile\rsqlserver.net.Test\TestSqlDataHelper.cs" line="128" column="1" />
+    </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
 </Properties>

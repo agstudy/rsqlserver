@@ -9,11 +9,12 @@ using Xunit;
 
 namespace rsqlserver.net.Test
 {
-    public class TestSqlDataHelper
+
+	public class TestSqlDataHelper
     {
 
         static SqlConnection myConnection = new SqlConnection(
-            "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;");
+			"Server=localhost;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;");
 
         private static SqlDataHelper helper;
 
@@ -121,6 +122,9 @@ namespace rsqlserver.net.Test
         {
             myConnection.Open();
             SqlDataReader myReader = null;
+			var helper = new SqlDataHelper();
+
+			var state = helper.GetConnectionProperty(myConnection, "State");
             var query = "SELECT  * " + "FROM    TABLE_BUG";
             SqlCommand myCommand = new SqlCommand(query, myConnection);
             myReader = myCommand.ExecuteReader();
