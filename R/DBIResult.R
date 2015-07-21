@@ -245,7 +245,7 @@ sqlServerExecRetrieve <-
   function(con, statement,...)
   {
     state <- dbGetInfo(con,"State")
-    if(state==0){                   ## conn is closed
+    if(state=="Closed"){                   ## conn is closed
       new.con <- dbConnect(con)     ## yep, create a clone connection
       on.exit(dbDisconnect(new.con))
       rs <- dbSendQuery(new.con, statement,...)
