@@ -30,7 +30,10 @@ test_that("dbConnect : we can set a timeout",{
   query <- "select name from sys.tables"
   rs <- dbSendQuery(conn, query,timeout=90)
   df <- fetch(rs,-1)
-  expect_equal(as.integer(dbGetInfo(rs,'TimeOut')),90)
+  if(.Platform$OS.type =="windows"){
+    expect_equal(as.integer(dbGetInfo(rs,'TimeOut')),90)
+  }
+  
   dbClearResult(rs)
 })
 

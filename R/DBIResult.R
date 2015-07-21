@@ -47,6 +47,10 @@ setMethod("dbGetQuery",
 
 setGeneric("dbGetScalar", function(conn, statement, ...){
   value <- standardGeneric("dbGetScalar")
+  if (isS4(value)){  ## mono version !!
+    vv <- clrCall(value,"ToString")
+    if(!nzchar(vv)) value <- NULL
+  }
   if (!is.atomic(value) || length(value) > 1L) ## valuecan be NULL 
     stop("not a scalar atomic vector")
   value
@@ -141,7 +145,6 @@ sqlServerExecScalar <-
   {
     cmd <- get.command(conn,statement,...)
     res <- try(clrCall(cmd,'ExecuteScalar'),silent=TRUE)
-    
     if (inherits(res, "try-error")){
       stop(sqlException.Message(res))
     }

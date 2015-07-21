@@ -3,14 +3,16 @@ SERVER_ADDRESS <- "192.168.0.10"
 test_that("dbReadTable : return a significant message if table not found", {
   on.exit(dbDisconnect(conn))
   
-   url = sprintf("Server=%s;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;" ,SERVER_ADDRESS)
+   url = sprintf("Server=%s;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;" ,
+                 SERVER_ADDRESS)
   conn <- dbConnect('SqlServer',url=url)
   expect_error(dbReadTable(conn,'NO_EXIST_TABLE'),"Invalid object name")
 })
 
 test_that("dbReadTable : reopen connection if connection is already closed", {
   on.exit(dbDisconnect(conn))
-  url = sprintf("Server=%s;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;" ,SERVER_ADDRESS)
+  url = sprintf("Server=%s;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;" ,
+                SERVER_ADDRESS)
   conn <- dbConnect('SqlServer',url=url)
   res <- dbReadTable(conn,'T_DATE')
   expect_is(res,class="data.frame")
@@ -26,7 +28,8 @@ test_that("dbGetScalar : query in a temporary table works fine ", {
           select 2
           select * from #tempTable
           drop table #tempTable"
-   url = sprintf("Server=%s;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;" ,SERVER_ADDRESS)
+   url = sprintf("Server=%s;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;" ,
+                 SERVER_ADDRESS)
   conn <- dbConnect('SqlServer',url=url)
   ress <- dbGetScalar(conn, req)
   expect_equal(ress,2)
@@ -35,7 +38,8 @@ test_that("dbGetScalar : query in a temporary table works fine ", {
 test_that("dbWriteTable/dbRemoveTable: Create a table and remove it using handy functions ", {
   
   on.exit(dbDisconnect(conn))
-  url = sprintf("Server=%s;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;" ,SERVER_ADDRESS)
+  url = sprintf("Server=%s;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;" ,
+                SERVER_ADDRESS)
   conn <- dbConnect('SqlServer',url=url)
   if(dbExistsTable(conn,'T_MTCARS'))
     dbRemoveTable(conn,'T_MTCARS')
@@ -160,7 +164,6 @@ test_that('read some data types: big/int bit',{
   drv  <- dbDriver("SqlServer")
    url = sprintf("Server=%s;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;" ,SERVER_ADDRESS)
   conn <- dbConnect('SqlServer',url=url)
-  
   query <- "SELECT *  FROM [TABLE_BUG]"
   df1 <- dbGetQuery(conn, query)
   
