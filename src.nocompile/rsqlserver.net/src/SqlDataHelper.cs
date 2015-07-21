@@ -33,6 +33,15 @@ namespace rsqlserver.net
             return conn.ClientConnectionId.ToString();
 #endif
         }
+
+        public static string GetClientConnectionState(this SqlConnection conn)
+        {
+            if (conn == null)
+            {
+                return Guid.Empty.ToString();
+            }
+            return conn.GetClientConnectionState();
+        }
     }
     public class SqlDataHelper
     {
@@ -139,8 +148,14 @@ namespace rsqlserver.net
             {
                 return _conn.GetClientConnectionId();
             }
+
+            if (prop == "State")
+            {
+                return _conn.GetClientConnectionState();
+            }
             return _conn.GetType().GetProperty(prop).GetValue(_conn);
         }
+
         public Object GetReaderProperty(string prop)
         {
            object val = null;
