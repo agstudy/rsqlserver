@@ -24,27 +24,28 @@ The `rsqlserver` package uses the .NET framework SDK to build a small C# project
 
 ## Installation
 
-`rsqlserver` is currently available only on github. It is also only available for windows user. A linux version using mono is planned.
+`rsqlserver` is currently available only on github. It is available for windows user and Linux user.
 
 You can install it from `github` using the `devtools` package
 
 ```coffee
 require(devtools)
-install_github('rsqlserver', 'agstudy',args='--no-multiarch')
+install_github('agstudy/rsqlserver')  ## assuming that you have already installed rClr
 ```
 
 ## Features
 
-`rsqlserver` presentes many features:
+`rsqlserver` presents many features:
 
-* fast and easy connection to Sql server.[see benchamrking]
+* Fast and Easy connection to Sql server.[see benchamrking]
+* Use Trusted connection with server. This functionality is only available for Windows users.
 * `dbSendQuery` Querying the data base : low levels functions using sql statement.
 * Full DBI compliant: for example Support of Higher level convenient functions :`dbReadTable`,`dbWriteTable`,`dbRemoveTable`,..)
 * `dbTransaction`, `dbCommit`, `dbRollback` for **Transaction** management
 * `dbCallProc` (in development)  for **Stored procedure** call.
 * `dbBulkCopy` using **Bulk Copy** for quickly bulk copying Big data.frame or large files into SQL server tables or views.
 * Many DBI extension like `dbGetScalar` , `dbGetNoQuery` , `dbBulkCopy`
-* `dbParameter`(coming soon) to handle Transact-SQL named parameters. This will provide better type checking and imporve performance. 
+* `dbParameter`(coming soon) to handle Transact-SQL named parameters. This will provide better type checking and improve performance. 
 
 ## Benchmarking
 
