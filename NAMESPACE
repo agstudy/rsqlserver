@@ -39,7 +39,10 @@ dbSetDataMappings,
 # ##  DBI extensions
 dbGetScalar,dbNonQuery,
 dbGetRowCount,
-dbTransaction,dbBulkCopy)
+dbTransaction,dbBulkCopy,
+## stored procedure
+dbCallProcedure)
+
   
 
 export(SqlServer)

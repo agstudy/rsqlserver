@@ -1,52 +1,61 @@
 context("Dbi compliance")
 
+SERVER_ADDRESS <- "192.168.0.10"
+
+
+ 
+
+get_connection <- 
+  function(){
+    url = "Server=%s;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;"   
+    url <- sprintf(url,SERVER_ADDRESS)
+    dbConnect('SqlServer',url=url)
+}
 
 test_that('dbListTable: get all tables',{
-  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
-  conn <- dbConnect('SqlServer',url=url)
+  on.exit(dbDisconnect(conn))
+  conn <- get_connection()
   res <- dbListTables(conn)
   expect_true(length(res)>0)
-  dbDisconnect(conn)
 })
 
 test_that("dbGetInfo : Get connection Info",{
-  con <- dbConnect('SqlServer',host='localhost',trusted=TRUE)
-  info <- dbGetInfo(con)
+  on.exit(dbDisconnect(conn))
+  conn <- get_connection()
+  info <- dbGetInfo(conn)
   desc <- paste0("Sql server ", info$ServerVersion, " [", info$WorkstationId, "@", 
                  info$DataSource, ":", info$Database, "/", 
                  ifelse(info$State[[1]]=='1','open','closed'), "]")
-  dbDisconnect(con)
-  
+
 })
 
 
 test_that("dbListFields : Get connection Info",{
-  con <- dbConnect('SqlServer',host='localhost',trusted=TRUE)
-  dbWriteTable(con,name='T_MTCARS',value=mtcars,
+  on.exit(dbDisconnect(conn))
+  conn <- get_connection()
+  dbWriteTable(conn,name='T_MTCARS',value=mtcars,
                row.names=FALSE,overwrite=TRUE)
-  expect_equal(dbListFields(con,'T_MTCARS'), names(mtcars))
-  dbDisconnect(con)
-  
+  expect_equal(dbListFields(conn,'T_MTCARS'), names(mtcars))
 })
 
 test_that("dbGetRowCount : Get row count",{
-  conn <- dbConnect('SqlServer',host='localhost',
-                    trusted=TRUE)
+  on.exit(dbDisconnect(conn))
+  conn <- get_connection()
   query <- "SELECT  *
             FROM    T_DATE"
   rs <- dbSendQuery(conn, query)
   df <- fetch(rs,-1)
   expect_equal(dbGetRowCount(rs), nrow(df))
   dbClearResult(rs)
-  dbDisconnect(conn)
-  
+
 })
 
 
 
 
 test_that("dbHasCompleted : check that query is completed",{
-  conn <- dbConnect('SqlServer',host='localhost',trusted=TRUE)
+  on.exit(dbDisconnect(conn))
+  conn <- get_connection()
   query <- "SELECT  *
             FROM    T_MTCARS"
   res <- dbSendQuery(conn, query)
@@ -56,7 +65,5 @@ test_that("dbHasCompleted : check that query is completed",{
   expect_false(dbHasCompleted(res))
   expect_equivalent(rbind(df1,df2),mtcars)
   dbClearResult(res)
-  dbDisconnect(conn)
-  
 })
 

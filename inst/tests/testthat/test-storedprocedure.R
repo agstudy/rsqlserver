@@ -1,14 +1,26 @@
 context("Stored procedure creation,exection,remove")
+SERVER_ADDRESS <- "192.168.0.10"
+
+
+
+
+get_connection <- 
+  function(){
+    url = "Server=%s;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;"   
+    url <- sprintf(url,SERVER_ADDRESS)
+    dbConnect('SqlServer',url=url)
+  }
 
 test_that("create and execute a stored procedure",{
+  on.exit(dbDisconnect(conn))
+  
  ## create proc
  lines = readLines('../resources/spSummaryProduct.sql')
  reqs <- split(lines,cumsum(lines =="GO"))
  stmt.remove <- paste(reqs[[1]],collapse='\n')
  stmt.create <- paste(reqs[[2]][-1],collapse='\n')
  ## create procedure
- url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
- conn <- dbConnect('SqlServer',url=url)
+ conn <- get_connection()
  dbNonQuery(conn,stmt.remove)
  dbNonQuery(conn,stmt.create)
  ## create data 
@@ -21,5 +33,4 @@ test_that("create and execute a stored procedure",{
  })
  dbRemoveTable(conn,'T_PRODUCT')
  rsqlserver:::dropProc(conn,'spSummaryProduct')
- dbDisconnect(conn)
 })
