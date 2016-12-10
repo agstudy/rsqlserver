@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Transactions;
+using LumenWorks.Framework.IO.Csv;
 
 namespace rsqlserver.net
 {
@@ -89,34 +90,32 @@ namespace rsqlserver.net
         public static void SqlBulkCopy(String connectionString,
                                        string sourcePath,string destTableName)
         {
-            var tableSource = fileToDataTable(sourcePath);
-            if (tableSource == null) return;
-
-            using (SqlConnection destConnection =
-                       new SqlConnection(connectionString))
+            using (var reader = new CsvReader(new StreamReader(sourcePath), true))
             {
-                destConnection.Open();
-                try
+
+                using (SqlConnection destConnection =
+                           new SqlConnection(connectionString))
                 {
-                    using (SqlBulkCopy bulkCopy =
-                               new SqlBulkCopy(destConnection))
+                    destConnection.Open();
+                    try
                     {
-                        bulkCopy.DestinationTableName = destTableName;
-                        _Logger.InfoFormat("copying table {0} having {1} rows ....", 
-                                 destTableName,tableSource.Rows.Count);
-                        bulkCopy.BulkCopyTimeout = 60;
-                        bulkCopy.WriteToServer(tableSource);
-                        _Logger.InfoFormat("Success to load table {0} in database", destTableName);
-                        tableSource.Rows.Clear();
-                        _Logger.Info("Success copy");
+                        using (SqlBulkCopy bulkCopy =
+                                   new SqlBulkCopy(destConnection))
+                        {
+                            bulkCopy.DestinationTableName = destTableName;
+                            _Logger.InfoFormat("copying table {0} ....", destTableName);
+                            bulkCopy.BulkCopyTimeout = 60;
+                            bulkCopy.WriteToServer(reader);
+                            _Logger.InfoFormat("Success loading table {0} having {1} rows in database", destTableName, reader.CurrentRecordIndex);
+                            _Logger.Info("Success copy");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _Logger.DebugFormat("Failure to copy : {0}", ex.Message);
+                        throw ex;
                     }
                 }
-                catch (Exception ex)
-                {
-                    _Logger.DebugFormat("Failure to copy : {0}", ex.Message);
-                    throw ex;
-                }
-
             }
         }
      }
