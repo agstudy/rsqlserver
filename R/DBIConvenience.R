@@ -222,12 +222,12 @@ bulk.copy <- function(con,name,value,...){
   }
 }
 
-bulk.copy.file <- function(con,name,value){
+bulk.copy.file <- function(con,name,value,headers=TRUE,delim=","){
   con.string = dbGetInfo(con)$ConnectionString
   if (!is.null(value) && file.exists(value))
-    clrCallStatic("rsqlserver.net.misc","SqlBulkCopy",con.string ,value,name)
+    clrCallStatic("rsqlserver.net.misc","SqlBulkCopy",con.string ,value,name,headers,delim)
   else
-    stop("file is null or not exist")
+    stop("one or more files are null or do not exist")
   
 }
 

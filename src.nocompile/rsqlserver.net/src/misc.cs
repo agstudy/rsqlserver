@@ -87,10 +87,9 @@ namespace rsqlserver.net
 
 
 
-        public static void SqlBulkCopy(String connectionString,
-                                       string sourcePath,string destTableName)
+        public static void SqlBulkCopy(String connectionString, string sourcePath, string destTableName, Boolean hasHeaders = true, String delimiter = ",")
         {
-            using (var reader = new CsvReader(new StreamReader(sourcePath), true))
+            using (var reader = new CsvReader(new StreamReader(sourcePath), hasHeaders, System.Convert.ToChar(delimiter)))
             {
 
                 using (SqlConnection destConnection =
