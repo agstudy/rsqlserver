@@ -217,17 +217,17 @@ bulk.copy <- function(con,name,value,...){
   if(is.data.frame(value)){
     id = tempfile()                    
     on.exit(unlink(id))
-    write.csv(value,file=id,row.names=FALSE,...)
+    write.csv(value,file=id,row.names=FALSE,na="",...)
     bulk.copy.file(con,name,id)
   }
 }
 
-bulk.copy.file <- function(con,name,value){
+bulk.copy.file <- function(con,name,value,headers=TRUE,delim=","){
   con.string = dbGetInfo(con)$ConnectionString
   if (!is.null(value) && file.exists(value))
-    clrCallStatic("rsqlserver.net.misc","SqlBulkCopy",con.string ,value,name)
+    lapply(value, function(x) clrCallStatic("rsqlserver.net.misc","SqlBulkCopy",con.string,x,name,headers,delim))
   else
-    stop("file is null or not exist")
+    stop("one or more files are null or do not exist")
   
 }
 
