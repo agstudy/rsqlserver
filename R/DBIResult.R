@@ -218,6 +218,8 @@ sqlException.Message <-
     ## process date type 
     rtypes <- tolower(sapply(CDbtypes,db2RType))
     ## POSIXct 
+    posix.cols <- grep('posixct',rtypes)
+    out[posix.cols] <- lapply(out[posix.cols], "attr<-", which="tzone", value=Sys.timezone())
     date.cols <- grep('date',rtypes)
     out[date.cols] <- lapply(out[date.cols],as.Date,tz=Sys.timezone())
     
