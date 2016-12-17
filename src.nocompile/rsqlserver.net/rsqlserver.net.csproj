@@ -43,6 +43,10 @@
     <Reference Include="log4net">
       <HintPath>..\packages\log4net.2.0.3\lib\net40-full\log4net.dll</HintPath>
     </Reference>
+    <Reference Include="LumenWorks.Framework.IO, Version=3.9.1.0, Culture=neutral, PublicKeyToken=5ad3ea2f85776344, processorArchitecture=MSIL">
+      <HintPath>..\packages\LumenWorksCsvReader.3.9.1\lib\net20\LumenWorks.Framework.IO.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
