@@ -1,17 +1,5 @@
 context("Dbi compliance")
 
-SERVER_ADDRESS <- "192.168.0.10"
-
-
- 
-
-get_connection <- 
-  function(){
-    url = "Server=%s;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;"   
-    url <- sprintf(url,SERVER_ADDRESS)
-    dbConnect('SqlServer',url=url)
-}
-
 test_that('dbListTable: get all tables',{
   on.exit(dbDisconnect(conn))
   conn <- get_connection()

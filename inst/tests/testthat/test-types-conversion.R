@@ -69,9 +69,7 @@ test_that("sqlServer.data.frame:data is well quoted before insert",{
 
 test_that("dbReadTable: read rownames in the exact type",
 {
-  drv  <- dbDriver("SqlServer")
-  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
-  conn <- dbConnect('SqlServer',url=url)
+  conn <- get_connection()
   dat_int  <- data.frame(x=1:10)
   dat_char <- data.frame(x=1:10)
   dat_date <- data.frame(x=1:10)
@@ -95,11 +93,9 @@ test_that("dbReadTable: read rownames in the exact type",
 
 test_that("dbWriteTable/dbReadTable :save POSIXct , read it again as POSIXct",{
   
-  drv  <- dbDriver("SqlServer")
   start = Sys.time()
   dat <- data.frame(cdate = as.POSIXct(seq.POSIXt(from=start,by=1,length.out=100)))
-  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
-  conn <- dbConnect('SqlServer',url=url)
+  conn <- get_connection()
   
   dbWriteTable(conn,name='T_DATE',value=dat,overwrite=TRUE)
   res <- dbReadTable(conn,'T_DATE')
@@ -110,12 +106,10 @@ test_that("dbWriteTable/dbReadTable :save POSIXct , read it again as POSIXct",{
 
 test_that("dbBulkCopy :save POSIXct , read it again as POSIXct",{
   
-  drv  <- dbDriver("SqlServer")
   N = 100000
   start = Sys.time()
   dat <- data.frame(cdate = as.POSIXct(seq.POSIXt(from=start,by=1,length.out=N)))
-  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
-  conn <- dbConnect('SqlServer',url=url)
+  conn <- get_connection()
   rsqlserver:::dbCreateTable(conn,'T_BULKCOPY', 
                              c('cdate'),'datetime2')
   dbBulkCopy(conn,name='T_BULKCOPY',value=dat,overwrite=TRUE)
@@ -129,12 +123,10 @@ test_that("dbBulkCopy :save POSIXct , read it again as POSIXct",{
 
 ## see issue https://github.com/agstudy/rsqlserver/issues/11
 test_that("dbWriteTable/dbReadTable :save Date , read the same Date again",{
-  drv  <- dbDriver("SqlServer")
   start = Sys.Date()
   dat <- data.frame(cdate = seq.Date(from=start,by=1,length.out=5))
   #dat$cdate <- as.Date(dat$cdate,tz=Sys.timezone())
-  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
-  conn <- dbConnect('SqlServer',url=url)
+  conn <- get_connection()
   dbWriteTable(conn,name='T_DATE',value=dat,overwrite=TRUE)
   res <- dbReadTable(conn,'T_DATE')
   expect_equal(res$cdate,dat$cdate)
@@ -143,12 +135,10 @@ test_that("dbWriteTable/dbReadTable :save Date , read the same Date again",{
 })
 
 test_that("dbWriteTable/dbReadTable :save POSIXct , read the same POSIXct again",{
-  drv  <- dbDriver("SqlServer")
   start = Sys.time()
   dat <- data.frame(cdate = seq.POSIXt(from=start,by=1,length.out=5))
   #dat$cdate <- as.Date(dat$cdate,tz=Sys.timezone())
-  url = "Server=localhost;Database=TEST_RSQLSERVER;Trusted_Connection=True;"
-  conn <- dbConnect('SqlServer',url=url)
+  conn <- get_connection()
   dbWriteTable(conn,name='T_DATE',value=dat,overwrite=TRUE)
   res <- dbReadTable(conn,'T_DATE')
   expect_equal(res$cdate,dat$cdate)

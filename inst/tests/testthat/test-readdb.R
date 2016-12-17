@@ -1,19 +1,14 @@
 context("Reading/Writing tables")
-SERVER_ADDRESS <- "192.168.0.10"
+
 test_that("dbReadTable : return a significant message if table not found", {
   on.exit(dbDisconnect(conn))
-  
-   url = sprintf("Server=%s;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;" ,
-                 SERVER_ADDRESS)
-  conn <- dbConnect('SqlServer',url=url)
+  conn <- get_connection()
   expect_error(dbReadTable(conn,'NO_EXIST_TABLE'),"Invalid object name")
 })
 
 test_that("dbReadTable : reopen connection if connection is already closed", {
   on.exit(dbDisconnect(conn))
-  url = sprintf("Server=%s;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;" ,
-                SERVER_ADDRESS)
-  conn <- dbConnect('SqlServer',url=url)
+  conn <- get_connection()
   res <- dbReadTable(conn,'T_DATE')
   expect_is(res,class="data.frame")
 })
@@ -28,9 +23,7 @@ test_that("dbGetScalar : query in a temporary table works fine ", {
           select 2
           select * from #tempTable
           drop table #tempTable"
-   url = sprintf("Server=%s;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;" ,
-                 SERVER_ADDRESS)
-  conn <- dbConnect('SqlServer',url=url)
+  conn <- get_connection()
   ress <- dbGetScalar(conn, req)
   expect_equal(ress,2)
 })
@@ -38,9 +31,7 @@ test_that("dbGetScalar : query in a temporary table works fine ", {
 test_that("dbWriteTable/dbRemoveTable: Create a table and remove it using handy functions ", {
   
   on.exit(dbDisconnect(conn))
-  url = sprintf("Server=%s;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;" ,
-                SERVER_ADDRESS)
-  conn <- dbConnect('SqlServer',url=url)
+  conn <- get_connection()
   if(dbExistsTable(conn,'T_MTCARS'))
     dbRemoveTable(conn,'T_MTCARS')
   dbWriteTable(conn,name='T_MTCARS',mtcars)
@@ -54,8 +45,7 @@ test_that("dbWriteTable/dbRemoveTable: Create a table and remove it using handy 
 test_that(":::dbCreateTable:Create a table having sql keywords as columns ", {
   
   on.exit(dbDisconnect(conn))
-  url = sprintf("Server=%s;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;" ,SERVER_ADDRESS)
-  conn <- dbConnect('SqlServer',url=url)
+  conn <- get_connection()
   cnames = c('key','create','table')
   cnames = make.db.names(conn,cnames,allow.keywords=FALSE)
   if(dbExistsTable(conn,'TABLE_KEYWORDS'))
@@ -68,8 +58,7 @@ test_that(":::dbCreateTable:Create a table having sql keywords as columns ", {
 
 test_that("fetch: get n rows from a table", {
   on.exit(dbDisconnect(conn))
-   url = sprintf("Server=%s;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;" ,SERVER_ADDRESS)
-  conn <- dbConnect('SqlServer',url=url)
+  conn <- get_connection()
   if(dbExistsTable(conn,'T_MTCARS'))
     dbRemoveTable(conn,'T_MTCARS')
   dbWriteTable(conn,name='T_MTCARS',mtcars)
@@ -90,8 +79,7 @@ test_that("fetch: get n rows from a table", {
 test_that("dbGetQuery: get some columns from a table without setting  ", {
   
   on.exit(dbDisconnect(conn))
-  url = sprintf("Server=%s;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;" ,SERVER_ADDRESS)
-  conn <- dbConnect('SqlServer',url=url)
+  conn <- get_connection()
   if(dbExistsTable(conn,'T_MTCARS'))
     dbRemoveTable(conn,'T_MTCARS')
   dbWriteTable(conn,name='T_MTCARS',mtcars)
@@ -118,8 +106,7 @@ test_that("dbWriteTable/BulCopy:save and read a hudge data frame",{
   dat <- data.frame(value=sample(1:100,N,rep=TRUE),
                     key  =sample(letters,N,rep=TRUE),
                     stringsAsFactors=FALSE)
-   url = sprintf("Server=%s;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;" ,SERVER_ADDRESS)
-  conn <- dbConnect('SqlServer',url=url)
+  conn <- get_connection()
   dbWriteTable(conn,name=table.name,dat,row.names=FALSE,overwrite=TRUE)
   expect_equal(dbExistsTable(conn,table.name),TRUE)
   res <- dbReadTable(conn,name=table.name)
@@ -136,8 +123,7 @@ test_that("Misigns values :save  table with some missing values",{
   value = 1:10
   value[5] <- NA_integer_
   dat <- data.frame(value=value)
-   url = sprintf("Server=%s;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;" ,SERVER_ADDRESS)
-  conn <- dbConnect('SqlServer',url=url)
+  conn <- get_connection()
   dbWriteTable(conn,name='T_TABLE_MISING',value=dat,overwrite=TRUE)
   expect_true('T_TABLE_MISING' %in% dbListTables(conn))  
   
@@ -145,9 +131,7 @@ test_that("Misigns values :save  table with some missing values",{
 
 test_that("read/write missing values",{
   on.exit(dbDisconnect(conn))
-  drv  <- dbDriver("SqlServer")
-   url = sprintf("Server=%s;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;" ,SERVER_ADDRESS)
-  conn <- dbConnect('SqlServer',url=url)
+  conn <- get_connection()
   dat <- data.frame(txt=c('a',NA,'b',NA),
                     value =c(1L,NA,NA,2),stringsAsFactors=FALSE)
   dbWriteTable(conn,name='T_NULL',value=dat,overwrite=TRUE,row.names=FALSE)
@@ -159,12 +143,10 @@ test_that("read/write missing values",{
 
 
 test_that('read some data types: big/int bit',{
-  
+
   on.exit(dbDisconnect(conn))
-  drv  <- dbDriver("SqlServer")
-   url = sprintf("Server=%s;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;" ,SERVER_ADDRESS)
-  conn <- dbConnect('SqlServer',url=url)
+  conn <- get_connection()
   query <- "SELECT *  FROM [TABLE_BUG]"
   df1 <- dbGetQuery(conn, query)
-  
+
 })

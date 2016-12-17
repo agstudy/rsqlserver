@@ -1,15 +1,4 @@
 context("Stored procedure creation,exection,remove")
-SERVER_ADDRESS <- "192.168.0.10"
-
-
-
-
-get_connection <- 
-  function(){
-    url = "Server=%s;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;"   
-    url <- sprintf(url,SERVER_ADDRESS)
-    dbConnect('SqlServer',url=url)
-  }
 
 test_that("create and execute a stored procedure",{
   on.exit(dbDisconnect(conn))
