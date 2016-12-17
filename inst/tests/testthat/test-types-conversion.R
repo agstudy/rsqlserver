@@ -112,7 +112,7 @@ test_that("dbBulkCopy :save POSIXct , read it again as POSIXct",{
   conn <- get_connection()
   rsqlserver:::dbCreateTable(conn,'T_BULKCOPY', 
                              c('cdate'),'datetime2')
-  dbBulkCopy(conn,name='T_BULKCOPY',value=dat,overwrite=TRUE)
+  dbBulkCopy(conn,name='T_BULKCOPY',value=dat)
   res <- dbReadTable(conn,'T_BULKCOPY')
   expect_is (res$cdate,'POSIXct')
   dbDisconnect(conn)
