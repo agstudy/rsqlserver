@@ -1,9 +1,9 @@
 context('Test Extra Functions')
 
-test_that("dbGetScalar:returns a a null",{
+test_that("dbGetScalar:returns a null",{
   on.exit(  dbDisconnect(conn))
-  req <- paste0("SELECT OBJECT_ID('","NO_TABLE","','U') AS 'Object ID';")
   conn <- get_connection()
+  req <- paste0("SELECT OBJECT_ID('NO_OBJECT','S') AS 'Object ID';")
   res <- dbGetScalar(conn,req)
   expect_true(is.null(res))
 })
@@ -11,8 +11,8 @@ test_that("dbGetScalar:returns a a null",{
 
 test_that("dbGetScalar:returns a scalar",{
   on.exit(  dbDisconnect(conn))
-  req <- paste0("SELECT OBJECT_ID('","sysdiagrams","','U') AS 'Object ID';")
   conn <- get_connection()
+  req <- paste0("SELECT OBJECT_ID('sys.sysprivs','S') AS 'Object ID';")
   res <- dbGetScalar(conn,req)
   expect_true(length(res)==1)
   
