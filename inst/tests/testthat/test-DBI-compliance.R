@@ -1,6 +1,6 @@
 context("Dbi compliance")
 
-test_that('dbListTable: get all tables',{
+test_that('dbListTable : Get list of all tables',{
   on.exit(dbDisconnect(conn))
   conn <- get_connection()
   res <- dbListTables(conn)
@@ -14,9 +14,7 @@ test_that("dbGetInfo : Get connection Info",{
   desc <- paste0("Sql server ", info$ServerVersion, " [", info$WorkstationId, "@", 
                  info$DataSource, ":", info$Database, "/", 
                  ifelse(info$State[[1]]=='1','open','closed'), "]")
-
 })
-
 
 test_that("dbListFields : Get connection Info",{
   on.exit(dbDisconnect(conn))
@@ -26,6 +24,7 @@ test_that("dbListFields : Get connection Info",{
   expect_equal(dbListFields(conn,'T_MTCARS'), names(mtcars))
 })
 
+#TODO
 test_that("dbGetRowCount : Get row count",{
   on.exit(dbDisconnect(conn))
   conn <- get_connection()
@@ -35,13 +34,10 @@ test_that("dbGetRowCount : Get row count",{
   df <- fetch(rs,-1)
   expect_equal(dbGetRowCount(rs), nrow(df))
   dbClearResult(rs)
-
 })
 
-
-
-
-test_that("dbHasCompleted : check that query is completed",{
+#TODO
+test_that("dbHasCompleted : Check that query is completed",{
   on.exit(dbDisconnect(conn))
   conn <- get_connection()
   query <- "SELECT  *
@@ -54,4 +50,3 @@ test_that("dbHasCompleted : check that query is completed",{
   expect_equivalent(rbind(df1,df2),mtcars)
   dbClearResult(res)
 })
-

@@ -1,5 +1,6 @@
 context("Stored procedure creation,exection,remove")
 
+#TODO
 test_that("create and execute a stored procedure",{
   on.exit(dbDisconnect(conn))
   
@@ -13,7 +14,7 @@ test_that("create and execute a stored procedure",{
  dbNonQuery(conn,stmt.remove)
  dbNonQuery(conn,stmt.create)
  ## create data 
- dat <- data.frame(value = sample(1:100,50,rep=TRUE))
+ dat <- data.frame(value = sample(1:100,50,replace=TRUE))
  dbWriteTable(conn,'T_PRODUCT',dat,overwrite=TRUE)
  lapply(c('mean','sum','median'),function(x){
    db.value = dbCallProcedure(conn,"spSummaryProduct",x)

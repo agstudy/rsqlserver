@@ -13,10 +13,7 @@ test_that("dbReadTable : reopen connection if connection is already closed", {
   expect_is(res,class="data.frame")
 })
 
-
-
-test_that("dbGetScalar : query in a temporary table works fine ", {
-
+test_that("dbGetScalar : query in a temporary table works fine", {
   on.exit(dbDisconnect(conn))
   req <- "create table #tempTable(Test int)
           insert into #tempTable
@@ -28,8 +25,7 @@ test_that("dbGetScalar : query in a temporary table works fine ", {
   expect_equal(ress,2)
 })
 
-test_that("dbWriteTable/dbRemoveTable: Create a table and remove it using handy functions ", {
-  
+test_that("dbWriteTable/dbRemoveTable : Create a table and remove it using handy functions", {
   on.exit(dbDisconnect(conn))
   conn <- get_connection()
   if(dbExistsTable(conn,'T_MTCARS'))
@@ -40,10 +36,7 @@ test_that("dbWriteTable/dbRemoveTable: Create a table and remove it using handy 
   expect_equal(!dbExistsTable(conn,'T_MTCARS'),TRUE)
 })
 
-
-
-test_that(":::dbCreateTable:Create a table having sql keywords as columns ", {
-  
+test_that("dbCreateTable : Create a table having SQL keywords as columns", {
   on.exit(dbDisconnect(conn))
   conn <- get_connection()
   cnames = c('key','create','table')
@@ -54,9 +47,7 @@ test_that(":::dbCreateTable:Create a table having sql keywords as columns ", {
                              ctypes=rep('varchar(3)',3))
 })
 
-
-
-test_that("fetch: get n rows from a table", {
+test_that("Fetch : get n rows from a table", {
   on.exit(dbDisconnect(conn))
   conn <- get_connection()
   if(dbExistsTable(conn,'T_MTCARS'))
@@ -76,8 +67,7 @@ test_that("fetch: get n rows from a table", {
   lapply(res.dat,function(x)expect_is(x,"numeric"))
 })
 
-test_that("dbGetQuery: get some columns from a table without setting  ", {
-  
+test_that("dbGetQuery : get some columns from a table", {
   on.exit(dbDisconnect(conn))
   conn <- get_connection()
   if(dbExistsTable(conn,'T_MTCARS'))
@@ -95,28 +85,22 @@ test_that("dbGetQuery: get some columns from a table without setting  ", {
   lapply(res,function(x)expect_is(x,"numeric"))
 })
 
-
-
-
-test_that("dbWriteTable/BulCopy:save and read a hudge data frame",{
+test_that("dbWriteTable/BulCopy : save and read a huge data frame",{
   on.exit(dbDisconnect(conn))
   set.seed(1)
   N=1000
   table.name = paste('T_BIG',sprintf("%.9g", N) ,sep='_')
-  dat <- data.frame(value=sample(1:100,N,rep=TRUE),
-                    key  =sample(letters,N,rep=TRUE),
+  dat <- data.frame(value=sample(1:100,N,replace=TRUE),
+                    key  =sample(letters,N,replace=TRUE),
                     stringsAsFactors=FALSE)
   conn <- get_connection()
   dbWriteTable(conn,name=table.name,dat,row.names=FALSE,overwrite=TRUE)
   expect_equal(dbExistsTable(conn,table.name),TRUE)
   res <- dbReadTable(conn,name=table.name)
   expect_equal(nrow(res),N)
-  
-  
 })
 
-
-test_that("Misigns values :save  table with some missing values",{
+test_that("Missing values : save table with some missing values",{
   on.exit(dbDisconnect(conn))
   drv  <- dbDriver("SqlServer")
   start = Sys.time()
@@ -126,10 +110,9 @@ test_that("Misigns values :save  table with some missing values",{
   conn <- get_connection()
   dbWriteTable(conn,name='T_TABLE_MISING',value=dat,overwrite=TRUE)
   expect_true('T_TABLE_MISING' %in% dbListTables(conn))  
-  
 })
 
-test_that("read/write missing values",{
+test_that("Missing values : Read/Write missing values",{
   on.exit(dbDisconnect(conn))
   conn <- get_connection()
   dat <- data.frame(txt=c('a',NA,'b',NA),
@@ -138,15 +121,12 @@ test_that("read/write missing values",{
   res <- dbSendQuery(conn, "SELECT * FROM T_NULL")
   df <- fetch(res, n = -1)
   expect_equivalent(df,dat)
-  
 })
 
-
-test_that('read some data types: big/int bit',{
-
+#TODO
+test_that("Bigint/bit : Read unusual data types",{
   on.exit(dbDisconnect(conn))
   conn <- get_connection()
   query <- "SELECT *  FROM [TABLE_BUG]"
   df1 <- dbGetQuery(conn, query)
-
 })
