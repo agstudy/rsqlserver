@@ -101,7 +101,7 @@ test_that("dbWriteTable/dbReadTable :save POSIXct , read it again as POSIXct",{
   res <- dbReadTable(conn,'T_DATE')
   expect_is (res$cdate,'POSIXct')
   dbDisconnect(conn)
-  
+  dbRemoveTable(conn,'T_DATE')
 })
 
 test_that("dbBulkCopy :save POSIXct , read it again as POSIXct",{
@@ -116,7 +116,7 @@ test_that("dbBulkCopy :save POSIXct , read it again as POSIXct",{
   res <- dbReadTable(conn,'T_BULKCOPY')
   expect_is (res$cdate,'POSIXct')
   dbDisconnect(conn)
-  
+  dbRemoveTable(conn,'T_BULKCOPY')
 })
 
 
@@ -131,7 +131,7 @@ test_that("dbWriteTable/dbReadTable :save Date , read the same Date again",{
   res <- dbReadTable(conn,'T_DATE')
   expect_equal(res$cdate,dat$cdate)
   dbDisconnect(conn)
-  
+  dbRemoveTable(conn,'T_DATE')
 })
 
 test_that("dbWriteTable/dbReadTable :save POSIXct , read the same POSIXct again",{
@@ -143,7 +143,7 @@ test_that("dbWriteTable/dbReadTable :save POSIXct , read the same POSIXct again"
   res <- dbReadTable(conn,'T_DATE')
   expect_equal(res$cdate,dat$cdate)
   dbDisconnect(conn)
-  
+  dbRemoveTable(conn,'T_DATE')
 })
 
 

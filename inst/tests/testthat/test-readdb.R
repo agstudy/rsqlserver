@@ -46,6 +46,7 @@ test_that("dbCreateTable : Create a table having SQL keywords as columns", {
   rsqlserver:::dbCreateTable(conn,'TABLE_KEYWORDS',cnames,
                              ctypes=rep('varchar(3)',3))
   expect_true(dbExistsTable(conn,'TABLE_KEYWORDS'))
+  dbRemoveTable(conn,'TABLE_KEYWORDS')
 })
 
 test_that("Fetch : get n rows from a table", {
@@ -98,6 +99,7 @@ test_that("dbWriteTable/BulCopy : save and read a huge data frame",{
   expect_equal(dbExistsTable(conn,table.name),TRUE)
   res <- dbReadTable(conn,name=table.name)
   expect_equal(nrow(res),N)
+  dbRemoveTable(conn,'T_BIG')
 })
 
 test_that("Missing values : save table with some missing values",{
@@ -110,6 +112,7 @@ test_that("Missing values : save table with some missing values",{
   conn <- get_connection()
   dbWriteTable(conn,name='T_TABLE_MISING',value=dat,overwrite=TRUE)
   expect_true('T_TABLE_MISING' %in% dbListTables(conn))
+  dbRemoveTable(conn,'T_TABLE_MISING')
 })
 
 test_that("Missing values : Read/Write missing values",{
@@ -121,6 +124,7 @@ test_that("Missing values : Read/Write missing values",{
   res <- dbSendQuery(conn, "SELECT * FROM T_NULL")
   df <- fetch(res, n = -1)
   expect_equivalent(df,dat)
+  dbRemoveTable(conn,'T_NULL')
 })
 
 #TODO

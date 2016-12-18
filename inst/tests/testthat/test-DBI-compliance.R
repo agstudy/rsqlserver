@@ -22,6 +22,7 @@ test_that("dbListFields : Get connection Info",{
   dbWriteTable(conn,name='T_MTCARS',value=mtcars,
                row.names=FALSE,overwrite=TRUE)
   expect_equal(dbListFields(conn,'T_MTCARS'), names(mtcars))
+  dbRemoveTable(conn,'T_MTCARS')
 })
 
 #TODO
@@ -49,4 +50,5 @@ test_that("dbHasCompleted : Check that query is completed",{
   expect_false(dbHasCompleted(res))
   expect_equivalent(rbind(df1,df2),mtcars)
   dbClearResult(res)
+  dbRemoveTable(conn,'T_MTCARS')
 })
