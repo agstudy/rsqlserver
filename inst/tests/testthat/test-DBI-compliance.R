@@ -10,10 +10,10 @@ test_that('dbListTable : Get list of all tables',{
 test_that("dbGetInfo : Get connection Info",{
   on.exit(dbDisconnect(conn))
   conn <- get_connection()
-  info <- dbGetInfo(conn)
-  desc <- paste0("Sql server ", info$ServerVersion, " [", info$WorkstationId, "@", 
-                 info$DataSource, ":", info$Database, "/", 
-                 ifelse(info$State[[1]]=='1','open','closed'), "]")
+  dbinfo <- dbGetInfo(conn)
+  desc <- paste0("Sql server ", dbinfo$ServerVersion, " [", dbinfo$WorkstationId, "@", 
+                 dbinfo$DataSource, ":", dbinfo$Database, "/", dbinfo$State, "]")
+  expect_named(dbinfo)
 })
 
 test_that("dbListFields : Get connection Info",{
