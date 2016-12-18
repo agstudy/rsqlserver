@@ -4,7 +4,7 @@ test_that('dbListTable : Get list of all tables',{
   on.exit(dbDisconnect(conn))
   conn <- get_connection()
   res <- dbListTables(conn)
-  expect_true(length(res)>0)
+  expect_gte(length(res),0)
 })
 
 test_that("dbGetInfo : Get connection Info",{

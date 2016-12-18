@@ -6,7 +6,7 @@
 setMethod("dbListTables", "SqlServerConnection",
           def = function(conn, ...){
             tbls <- dbGetQuery(conn, "select name from sys.tables")
-            if(length(tbls)>0) 
+            if(nrow(tbls)>0)
               tbls <- tbls[,1]
             else
               tbls <- character()
