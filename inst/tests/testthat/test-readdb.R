@@ -21,8 +21,8 @@ test_that("dbGetScalar : query in a temporary table works fine", {
           select * from #tempTable
           drop table #tempTable"
   conn <- get_connection()
-  ress <- dbGetScalar(conn, req)
-  expect_equal(ress,2)
+  res <- dbGetScalar(conn, req)
+  expect_equal(res,2)
 })
 
 test_that("dbWriteTable/dbRemoveTable : Create a table and remove it using handy functions", {
@@ -31,9 +31,9 @@ test_that("dbWriteTable/dbRemoveTable : Create a table and remove it using handy
   if(dbExistsTable(conn,'T_MTCARS'))
     dbRemoveTable(conn,'T_MTCARS')
   dbWriteTable(conn,name='T_MTCARS',mtcars)
-  expect_equal(dbExistsTable(conn,'T_MTCARS'),TRUE)
+  expect_true(dbExistsTable(conn,'T_MTCARS'))
   dbRemoveTable(conn,'T_MTCARS')
-  expect_equal(!dbExistsTable(conn,'T_MTCARS'),TRUE)
+  expect_false(dbExistsTable(conn,'T_MTCARS'))
 })
 
 test_that("dbCreateTable : Create a table having SQL keywords as columns", {
@@ -45,6 +45,7 @@ test_that("dbCreateTable : Create a table having SQL keywords as columns", {
     dbRemoveTable(conn,'TABLE_KEYWORDS')
   rsqlserver:::dbCreateTable(conn,'TABLE_KEYWORDS',cnames,
                              ctypes=rep('varchar(3)',3))
+  expect_true(dbExistsTable(conn,'TABLE_KEYWORDS'))
 })
 
 test_that("Fetch : get n rows from a table", {
@@ -53,7 +54,7 @@ test_that("Fetch : get n rows from a table", {
   if(dbExistsTable(conn,'T_MTCARS'))
     dbRemoveTable(conn,'T_MTCARS')
   dbWriteTable(conn,name='T_MTCARS',mtcars)
-  expect_equal(dbExistsTable(conn,'T_MTCARS'),TRUE)
+  expect_true(dbExistsTable(conn,'T_MTCARS'))
   
   query <- "SELECT  mpg,cyl,wt 
                FROM    T_MTCARS"
@@ -61,7 +62,7 @@ test_that("Fetch : get n rows from a table", {
   res.dat <- fetch(res,n=nrow(mtcars))
   invisible(dbClearResult(res))
   dbRemoveTable(conn,'T_MTCARS')
-  expect_equal(!dbExistsTable(conn,'T_MTCARS'),TRUE)
+  expect_false(dbExistsTable(conn,'T_MTCARS'))
   expect_is(res.dat,'data.frame')
   expect_equal(nrow(mtcars),nrow(res.dat))
   lapply(res.dat,function(x)expect_is(x,"numeric"))
@@ -73,13 +74,12 @@ test_that("dbGetQuery : get some columns from a table", {
   if(dbExistsTable(conn,'T_MTCARS'))
     dbRemoveTable(conn,'T_MTCARS')
   dbWriteTable(conn,name='T_MTCARS',mtcars)
-  expect_equal(dbExistsTable(conn,'T_MTCARS'),TRUE)
-  
+  expect_true(dbExistsTable(conn,'T_MTCARS'))
   query <- "SELECT  mpg,cyl,wt 
                FROM    T_MTCARS"
   res <- dbGetQuery(conn, query)
   dbRemoveTable(conn,'T_MTCARS')
-  expect_equal(!dbExistsTable(conn,'T_MTCARS'),TRUE)
+  expect_false(dbExistsTable(conn,'T_MTCARS'))
   expect_is(res,'data.frame')
   expect_equal(nrow(mtcars),nrow(res))
   lapply(res,function(x)expect_is(x,"numeric"))
@@ -109,7 +109,7 @@ test_that("Missing values : save table with some missing values",{
   dat <- data.frame(value=value)
   conn <- get_connection()
   dbWriteTable(conn,name='T_TABLE_MISING',value=dat,overwrite=TRUE)
-  expect_true('T_TABLE_MISING' %in% dbListTables(conn))  
+  expect_true('T_TABLE_MISING' %in% dbListTables(conn))
 })
 
 test_that("Missing values : Read/Write missing values",{
