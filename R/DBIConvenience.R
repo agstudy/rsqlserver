@@ -239,8 +239,7 @@ bulk.write.file <- function(con,name,value,headers=TRUE,delim=","){
     stop("table does not exist")
   else if (file.exists(value))
     file.remove(value)
-  else
-    clrCallStatic("rsqlserver.net.misc","SqlBulkWrite",con.string,value,name,headers,delim)
+  clrCallStatic("rsqlserver.net.misc","SqlBulkWrite",con.string,value,name,headers,delim)
   
 }
 
