@@ -97,12 +97,12 @@ setGeneric("dbBulkWrite", function(conn,name,value,headers,delim)
   standardGeneric("dbBulkWrite")
 )
 setMethod("dbBulkWrite",
-          signature(conn ="SqlServerConnection",value="character",name="character"),
-          definition = function(conn,name,value,headers=T,delim=",")   bulk.write.file(conn,name,value,headers,delim)
+          signature(conn ="SqlServerConnection",value="character",name="character",headers="missing",delim="missing"),
+          def = function(conn,name,value)   bulk.write.file(conn,name,value)
 )
 setMethod("dbBulkWrite",
           signature(conn ="SqlServerConnection",value="character",name="character",headers="logical",delim="character"),
-          definition = function(conn,name,value,headers,delim)   bulk.write.file(conn,name,value,headers,delim)
+          def = function(conn,name,value,headers,delim)   bulk.write.file(conn,name,value,headers,delim)
 )
 
 
