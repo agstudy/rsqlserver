@@ -233,6 +233,17 @@ bulk.copy.file <- function(con,name,value,headers=TRUE,delim=","){
   
 }
 
+bulk.write.file <- function(con,name,value,headers=TRUE,delim=","){
+  con.string = dbGetInfo(con)$ConnectionString
+  if (!dbExistsTable(con, name))
+    stop("table does not exist")
+  else if (file.exists(value))
+    file.remove(value)
+  else
+    clrCallStatic("rsqlserver.net.misc","SqlBulkWrite",con.string,value,name,headers,delim)
+  
+}
+
 
 
 
