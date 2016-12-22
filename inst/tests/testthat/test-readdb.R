@@ -128,6 +128,23 @@ test_that("dbWriteTable/BulCopy:save and read a hudge data frame",{
   
 })
 
+test_that("dbWriteTable/dbBulkWrite : Import a large data frame and unload to text",{
+  on.exit(dbDisconnect(conn))
+  set.seed(1)
+  N=1000
+  table.name = paste('T_BIG',sprintf("%.9g", N) ,sep='_')
+  dat <- data.frame(value=sample(1:100,N,replace=TRUE),
+                    key  =sample(letters,N,replace=TRUE),
+                    stringsAsFactors=FALSE)
+  conn <- get_connection()
+  dbWriteTable(conn,name=table.name,dat,row.names=FALSE,overwrite=TRUE)
+  expect_true(dbExistsTable(conn,table.name))
+  dbBulkWrite(conn,name=table.name,value="t_big.csv",headers = T,delim = "\t")
+  res <- read.csv("t_big.csv")
+  expect_equal(nrow(res),N)
+  file.remove("t_big.csv")
+})
+
 
 test_that("Misigns values :save  table with some missing values",{
   on.exit(dbDisconnect(conn))
