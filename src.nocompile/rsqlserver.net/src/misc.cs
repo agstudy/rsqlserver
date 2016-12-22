@@ -117,7 +117,50 @@ namespace rsqlserver.net
                 }
             }
         }
-     }
+
+        private static void writerHelper(StreamWriter writer, SqlDataReader reader, String delimiter, bool headerrow)
+        {
+            String row = "";
+            for (int i = 0; i < reader.FieldCount; i++)
+            {
+                if (headerrow)
+                {
+                    row += delimiter + "\"" + reader.GetName(i).ToString() + "\"";
+                }
+                else
+                {
+                    row += delimiter + "\"" + reader[i].ToString() + "\"";
+                }
+            }
+            writer.WriteLine(row.Substring(1));
+        }
+
+        public static void SqlBulkWrite(String connectionString, string destFilePath, string sourceTableName, Boolean withHeaders = true, String delimiter = ",")
+        {
+            using (SqlConnection destConnection = new SqlConnection(connectionString))
+            using (SqlCommand cmd = destConnection.CreateCommand())
+            {
+                destConnection.Open();
+
+                String sql = @"SELECT * FROM " + sourceTableName;
+                cmd.CommandText = sql;
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                using (StreamWriter writer = new StreamWriter(destFilePath))
+                {
+                    //TODO rewrite block below / writerHelper more effectively
+                    if (withHeaders)
+                    {
+                        writerHelper(writer, reader, delimiter, true);
+                    }
+
+                    while (reader.Read())
+                    {
+                        writerHelper(writer, reader, delimiter, false);
+                    }
+                }
+            }
+        }
+    }
 }
        
-
