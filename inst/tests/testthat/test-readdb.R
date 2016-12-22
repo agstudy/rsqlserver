@@ -145,6 +145,31 @@ test_that("dbWriteTable/dbBulkWrite : Import a large data frame and unload to te
   file.remove("t_big.csv")
 })
 
+test_that("dbBulkWrite : Read bit, bigint, decimal/numeric columns from SQL Server",{
+  on.exit(dbDisconnect(conn))
+  set.seed(1)
+  table.name <- "T_EXOTIC"
+  dat <- data.frame(
+    # Standard columns
+    col_varchar = sample(state.name, 100, replace=TRUE),
+    col_int = sample(1000,100,replace=T),
+    # Exotic columns
+    col_bigint = sample(2^50,100,replace=T),
+    col_bit = sample(c(NA,0,1),100,replace=T),
+    col_numeric = sample(10^7,100,replace=T)/10.0^6,
+    col_decimal = sample(10^8,100,replace=T)/10.0^6
+  )
+  conn <- get_connection()
+  field.types <- c("varchar(100)","int","bigint","bit","numeric(10,6)","decimal(10,6)")
+  names(field.types) <- names(dat)
+  dbWriteTable(conn,name=table.name,dat,field.types=field.types,row.names=FALSE,overwrite=TRUE)
+  expect_true(dbExistsTable(conn,table.name))
+  dbBulkWrite(conn,name=table.name,value="t_exotic.csv")
+  res <- read.csv("t_exotic.csv")
+  expect_equal(nrow(res),nrow(dat))
+  file.remove("t_exotic.csv")
+})
+
 
 test_that("Misigns values :save  table with some missing values",{
   on.exit(dbDisconnect(conn))
