@@ -224,10 +224,22 @@ bulk.copy <- function(con,name,value,...){
 
 bulk.copy.file <- function(con,name,value,headers=TRUE,delim=","){
   con.string = dbGetInfo(con)$ConnectionString
+  if (!dbExistsTable(con,name))
+    stop("bulk copy table does not exist")
   if (!is.null(value) && file.exists(value))
     lapply(value, function(x) clrCallStatic("rsqlserver.net.misc","SqlBulkCopy",con.string,x,name,headers,delim))
   else
     stop("one or more files are null or do not exist")
+  
+}
+
+bulk.write.file <- function(con,name,value,headers=TRUE,delim=","){
+  con.string = dbGetInfo(con)$ConnectionString
+  if (!dbExistsTable(con, name))
+    stop("table does not exist")
+  else if (file.exists(value))
+    file.remove(value)
+  clrCallStatic("rsqlserver.net.misc","SqlBulkWrite",con.string,value,name,headers,delim)
   
 }
 
