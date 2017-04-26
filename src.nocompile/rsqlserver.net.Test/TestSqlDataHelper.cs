@@ -114,8 +114,8 @@ namespace rsqlserver.net.Test
                 SqlCommand myCommand = new SqlCommand(query, myConnection);
                 myReader = myCommand.ExecuteReader();
                 helper = new SqlDataHelper(myReader);
-                var result = helper.Fetch(20);
-                Assert.Equal(result, 100000);
+                var result = helper.Fetch(5);
+                Assert.Equal(result, 5);
             }
         }
         static void Main(string[] args)
