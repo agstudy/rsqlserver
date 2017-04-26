@@ -24,11 +24,11 @@ namespace rsqlserver.net
             }
 
 #if __MonoCS__
-			if(!connIds.ContainsKey(conn.GetHashCode())) {
-			connIds.Add(conn.GetHashCode(), Guid.NewGuid().ToString());
+			if(!_connIds.ContainsKey(conn.GetHashCode())) {
+			_connIds.Add(conn.GetHashCode(), Guid.NewGuid().ToString());
 			}
 
-			return connIds[conn.GetHashCode()];
+			return _connIds[conn.GetHashCode()];
 #else
             return conn.ClientConnectionId.ToString();
 #endif
