@@ -13,8 +13,8 @@ namespace rsqlserver.net.Test
 	public class TestSqlDataHelper
     {
 
-        static SqlConnection myConnection = new SqlConnection(
-			"Server=localhost;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;");
+		private static string myConnectionString = @"Server=localhost;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;";
+		static SqlConnection myConnection = new SqlConnection(myConnectionString);
 
         private static SqlDataHelper helper;
 
@@ -70,7 +70,7 @@ namespace rsqlserver.net.Test
         [Fact]
         public static void TestFetch()
         {
-            using (myConnection)
+			using (SqlConnection myConnection = new SqlConnection(myConnectionString))
             {
                 myConnection.Open();
                 SqlDataReader myReader = null;
@@ -87,6 +87,7 @@ namespace rsqlserver.net.Test
                 string[] cols = new string[] { "name", "object_id", "create_date" };
                 foreach (string key in helper.ResultSet.Keys)
                     Assert.Contains(key, cols);
+				myConnection.Close();
             }
 
             Assert.Equal(helper.ResultSet["name"].Length, helper.Fetched);
@@ -95,16 +96,12 @@ namespace rsqlserver.net.Test
         [Fact]
         public static void TestSqlBulkCopy()
         {
-            var connectionString = "user id=collateral;" +
-                                     "password=collat;server=localhost;" +
-                                     "Trusted_Connection=yes;" +
-                                     "connection timeout=30";
-            misc.SqlBulkCopy(connectionString, "d:/temp/temp.csv", "T_BIG");
+            misc.SqlBulkCopy(myConnectionString, "d:/temp/temp.csv", "T_BIG");
         }
         [Fact]
         public static void TestFetch_BIG_DATE_TABLE()
         {
-            using (myConnection)
+			using (SqlConnection myConnection = new SqlConnection(myConnectionString))
             {
                 myConnection.Open();
                 SqlDataReader myReader = null;
@@ -116,6 +113,7 @@ namespace rsqlserver.net.Test
                 helper = new SqlDataHelper(myReader);
                 var result = helper.Fetch(5);
                 Assert.Equal(result, 5);
+				myConnection.Close();
             }
         }
         static void Main(string[] args)
