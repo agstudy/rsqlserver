@@ -16,7 +16,7 @@ Connectivity (ODBC) layer. For this reason, *rsqlserver* [outperforms](https://g
 
 *rsqlserver* is currently available on GitHub for Windows, Linux and macOS users. That said, Linux and macOS users are only able to make use of the package with some workarounds to the usual setup procedure.
 
-The package's interoperability of R and .NET code is provided by the [rClr](jmp75/rClr) package and unfortunately this package is currently only building on Windows and Mono 3.x (which is several years old) and therefore causing problems for macOS and Linux users.
+The package's interoperability of R and .NET code is provided by the [rClr](https://github.com/jmp75/rClr) package and unfortunately this package is currently only building on Windows and Mono 3.x (which is several years old) and therefore causing problems for macOS and Linux users.
 
 Due to the cross-platform functionality of Docker containers, it will soon be possible to install the package in a container on any system.
 
@@ -26,7 +26,7 @@ Due to the cross-platform functionality of Docker containers, it will soon be po
 
 **Windows** users can install a pre-compiled binary of *rClr* and **Linux** users will be able to install a patched source of *rClr* by using an out-dated version of Mono.
 
-1. Install *rClr* ([See below](###Installing-rClr))
+1. Install *rClr* ([See below](#installing-rclr))
 
 6. Install *rsqlserver* from GitHub
 
