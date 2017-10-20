@@ -18,7 +18,7 @@ Connectivity (ODBC) layer. For this reason, *rsqlserver* [outperforms](https://g
 
 The package's interoperability of R and .NET code is provided by the [rClr](https://github.com/jmp75/rClr) package and unfortunately this package is currently only building on Windows and Mono 3.x (which is several years old) and therefore causing problems for macOS and Linux users.
 
-Due to the cross-platform functionality of Docker containers, it will soon be possible to install the package in a container on any system.
+Due to the cross-platform functionality of Docker containers, it is now possible to install the package in a container on any system.
 
 ### Local Installation
 
@@ -40,9 +40,24 @@ For **macOS** users, Mono 3.12.1 is able to be installed on newer OS X releases 
 
 *Available for Windows, Linux and macOS*
 
-Docker instructions TBA.
-
 The package can be installed on Windows, Linux and macOS via a provided Docker container which also includes an installation of SQL Server 2017. This is the best option for creating a reproducible environment for using the package that is accessible on all platforms and functions the same way regardless of the underlying system.
+
+1. Install Docker for [Mac](https://docs.docker.com/docker-for-mac/install/) or [Windows](https://docs.docker.com/docker-for-windows/install/)
+
+2. Go to Docker > Preferences and increase the supplied memory to at least 4GB
+and "Apply & Restart". This is in order to run the SQL Server container
+otherwise it won't even start up.
+
+3. Open a Terminal and run [docker.sh](docker.sh)
+
+The **bcp** and **sqlcmd** tools are also [now available](https://docs.microsoft.com/en-us/sql/linux/sql-server-linux-setup-tools#macos)
+for macOS and Docker.
+
+If you just want to connect to a Docker instance of SQL Server from your local
+Mac without *rsqlserver* then follow [these instructions](https://medium.com/@reverentgeek/sql-server-running-on-a-mac-3efafda48861).
+
+To install the necessary ODBC drivers without *rsqlserver* and connect with the
+*RODBC* package then follow [this wiki](https://github.com/mkleehammer/pyodbc/wiki/Connecting-to-SQL-Server-from-Mac-OSX).
 
 ### Installing rClr
 
