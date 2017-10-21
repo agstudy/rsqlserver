@@ -1,0 +1,66 @@
+image: Visual Studio 2015
+
+services:
+  - mssql2014
+
+init:
+  ps: |
+        $ErrorActionPreference = "Stop"
+        Invoke-WebRequest http://raw.github.com/krlmlr/r-appveyor/master/scripts/appveyor-tool.ps1 -OutFile "..\appveyor-tool.ps1"
+        Import-Module '..\appveyor-tool.ps1'
+
+install:
+  ps: Bootstrap
+
+environment:
+  global:
+    WARNINGS_ARE_ERRORS: 0
+    USE_RTOOLS: true
+
+  matrix:
+  - R_VERSION: release
+    R_ARCH: x64
+
+  - R_VERSION: oldrel
+    RTOOLS_VERSION: 33
+    CRAN: http://cran.rstudio.com
+
+  - R_VERSION: devel
+    R_ARCH: x64
+    GCC_PATH: mingw_64
+
+  - R_VERSION: devel
+    GCC_PATH: mingw_32
+
+matrix:
+  fast_finish: true
+
+build_script:
+  - travis-tool.sh install_github jmp75/rClr
+  - travis-tool.sh install_deps
+
+test_script:
+  - travis-tool.sh run_tests
+
+on_failure:
+  - 7z a failure.zip *.Rcheck\*
+  - appveyor PushArtifact failure.zip
+
+artifacts:
+  - path: '*.Rcheck\**\*.log'
+    name: LogFiles
+
+  - path: '*.Rcheck\**\*.out'
+    name: LogFiles
+
+  - path: '*.Rcheck\**\*.fail'
+    name: LogFiles
+
+  - path: '*.Rcheck\**\*.Rout'
+    name: LogFiles
+
+  - path: '\*_*.tar.gz'
+    name: CheckArtifacts
+
+  - path: '\*_*.zip'
+    name: CheckArtifacts
