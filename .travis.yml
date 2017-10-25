@@ -1,0 +1,19 @@
+# R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
+
+language: R
+sudo: false
+cache: packages
+
+services:
+  - docker
+
+r:
+  - oldrel
+  - release
+
+before_install:
+  - docker pull microsoft/mssql-server-linux:latest
+  - docker run -e 'ACCEPT_EULA=Y' -e 'MSSQL_SA_PASSWORD=P@ssw0rd1' -h mydb -p 1433:1433 --name mssqldb -d microsoft/mssql-server-linux
+  - docker exec -t mssqldb /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'P@ssw0rd1' -Q "CREATE DATABASE rsqlserverdb; GO; USE rsqlserverdb;"
+
+warnings_are_errors: false
