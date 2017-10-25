@@ -1,7 +1,7 @@
 # R for travis: see documentation at https://docs.travis-ci.com/user/languages/r
 
 language: R
-sudo: false
+sudo: required
 cache: packages
 
 services:
@@ -11,9 +11,22 @@ r:
   - oldrel
   - release
 
+r_github_packages: serhatcevikel/rClr@03f65ef
+
 before_install:
-  - docker pull microsoft/mssql-server-linux:latest
-  - docker run -e 'ACCEPT_EULA=Y' -e 'MSSQL_SA_PASSWORD=P@ssw0rd1' -h mydb -p 1433:1433 --name mssqldb -d microsoft/mssql-server-linux
-  - docker exec -t mssqldb /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'P@ssw0rd1' -Q "CREATE DATABASE rsqlserverdb; GO; USE rsqlserverdb;"
+#  - docker pull microsoft/mssql-server-linux:latest
+#  - docker run -e 'ACCEPT_EULA=Y' -e 'MSSQL_SA_PASSWORD=P@ssw0rd1' -h mydb -p 1433:1433 --name mssqldb -d microsoft/mssql-server-linux
+#  - docker exec -t mssqldb /opt/mssql-tools/bin/sqlcmd -S mydb -U SA -P 'P@ssw0rd1' -Q "CREATE DATABASE rsqlserverdb;"
+  - curl -s https://gist.githubusercontent.com/ruaridhw/b00e75647c8e96c2f44044c970f19c7f/raw/3a047ec557b8d782eeb648e6a57d99683f946b0b/install-mono-3_12.sh | sudo bash /dev/stdin
 
 warnings_are_errors: false
+
+addons:
+  apt:
+    packages:
+      - gnupg
+      - curl
+    sources:
+      - ubuntu-toolchain-r-test
+      - sourceline: 'deb http://download.mono-project.com/repo/debian wheezy/snapshots/3.12.0 main'
+      - sourceline: 'deb http://download.mono-project.com/repo/debian 312-security main'
