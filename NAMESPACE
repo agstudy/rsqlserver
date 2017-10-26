@@ -39,7 +39,7 @@ dbSetDataMappings,
 # ##  DBI extensions
 dbGetScalar,dbNonQuery,
 dbGetRowCount,
-dbTransaction,dbBulkCopy,
+dbTransaction,dbBulkCopy,dbBulkWrite,
 ## stored procedure
 dbCallProcedure)
 

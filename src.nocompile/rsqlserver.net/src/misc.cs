@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Transactions;
+using LumenWorks.Framework.IO.Csv;
 
 namespace rsqlserver.net
 {
@@ -86,40 +87,80 @@ namespace rsqlserver.net
 
 
 
-        public static void SqlBulkCopy(String connectionString,
-                                       string sourcePath,string destTableName)
+        public static void SqlBulkCopy(String connectionString, string sourcePath, string destTableName, Boolean hasHeaders = true, String delimiter = ",")
         {
-            var tableSource = fileToDataTable(sourcePath);
-            if (tableSource == null) return;
-
-            using (SqlConnection destConnection =
-                       new SqlConnection(connectionString))
+            using (var reader = new CsvReader(new StreamReader(sourcePath), hasHeaders, System.Convert.ToChar(delimiter)))
             {
-                destConnection.Open();
-                try
+
+                using (SqlConnection destConnection =
+                           new SqlConnection(connectionString))
                 {
-                    using (SqlBulkCopy bulkCopy =
-                               new SqlBulkCopy(destConnection))
+                    destConnection.Open();
+                    try
                     {
-                        bulkCopy.DestinationTableName = destTableName;
-                        _Logger.InfoFormat("copying table {0} having {1} rows ....", 
-                                 destTableName,tableSource.Rows.Count);
-                        bulkCopy.BulkCopyTimeout = 60;
-                        bulkCopy.WriteToServer(tableSource);
-                        _Logger.InfoFormat("Success to load table {0} in database", destTableName);
-                        tableSource.Rows.Clear();
-                        _Logger.Info("Success copy");
+                        using (SqlBulkCopy bulkCopy =
+                                   new SqlBulkCopy(destConnection))
+                        {
+                            bulkCopy.DestinationTableName = destTableName;
+                            _Logger.InfoFormat("copying table {0} ....", destTableName);
+                            bulkCopy.BulkCopyTimeout = 60;
+                            bulkCopy.WriteToServer(reader);
+                            _Logger.InfoFormat("Success loading table {0} having {1} rows in database", destTableName, reader.CurrentRecordIndex);
+                            _Logger.Info("Success copy");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _Logger.DebugFormat("Failure to copy : {0}", ex.Message);
+                        throw ex;
                     }
                 }
-                catch (Exception ex)
-                {
-                    _Logger.DebugFormat("Failure to copy : {0}", ex.Message);
-                    throw ex;
-                }
-
             }
         }
-     }
+
+        private static void writerHelper(StreamWriter writer, SqlDataReader reader, String delimiter, bool headerrow)
+        {
+            String row = "";
+            for (int i = 0; i < reader.FieldCount; i++)
+            {
+                if (headerrow)
+                {
+                    row += delimiter + "\"" + reader.GetName(i).ToString() + "\"";
+                }
+                else
+                {
+                    row += delimiter + "\"" + reader[i].ToString() + "\"";
+                }
+            }
+            writer.WriteLine(row.Substring(1));
+        }
+
+        public static void SqlBulkWrite(String connectionString, string destFilePath, string sourceTableName, Boolean withHeaders = true, String delimiter = ",")
+        {
+            using (SqlConnection destConnection = new SqlConnection(connectionString))
+            using (SqlCommand cmd = destConnection.CreateCommand())
+            {
+                destConnection.Open();
+
+                String sql = @"SELECT * FROM " + sourceTableName;
+                cmd.CommandText = sql;
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                using (StreamWriter writer = new StreamWriter(destFilePath))
+                {
+                    //TODO rewrite block below / writerHelper more effectively
+                    if (withHeaders)
+                    {
+                        writerHelper(writer, reader, delimiter, true);
+                    }
+
+                    while (reader.Read())
+                    {
+                        writerHelper(writer, reader, delimiter, false);
+                    }
+                }
+            }
+        }
+    }
 }
        
-
