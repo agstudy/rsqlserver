@@ -11,4 +11,4 @@ install:
   - docker build -t rsqlserver .
 
 script:
-  - docker run --link=mssqldb rsqlserver Rscript -e 'devtools::install_github("serhatcevikel/rClr@03f65ef");devtools::check(document = FALSE, check_dir = ".", cleanup = FALSE)'
+  - docker run --link=mssqldb rsqlserver Rscript -e 'devtools::check(document = FALSE, check_dir = ".", cleanup = FALSE)'
