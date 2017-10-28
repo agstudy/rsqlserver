@@ -12,3 +12,5 @@ install:
 
 script:
   - docker run --link=mssqldb rsqlserver Rscript -e 'devtools::check(document = FALSE, check_dir = ".", cleanup = FALSE)'
+  - grep -q -R "ERROR" /usr/local/R/rsqlserver.Rcheck/00check.log
+  - exit $?
