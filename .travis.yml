@@ -8,7 +8,7 @@ before_install:
   - docker exec -t mssqldb /opt/mssql-tools/bin/sqlcmd -S mydb -U SA -P 'P@ssw0rd1' -Q "CREATE DATABASE rsqlserverdb;"
 
 install:
-  - docker build -t rsqlserver .
+  - docker build -t rsqlserver -f .ci/Dockerfile .
 
 script:
   - docker run -t --link=mssqldb --name pkgcheck rsqlserver Rscript -e 'devtools::install_dev_deps("."); devtools::check(document = FALSE, check_dir = ".")'
