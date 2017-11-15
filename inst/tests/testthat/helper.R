@@ -1,6 +1,21 @@
-# Edit as required to run tests locally
-userurl <- "Server=192.168.0.10;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;"
+# Edit as required to run tests on an accessible SQL Server
+# See docker.sh for instructions to setup a SQL Server Docker container
+server <- "mydockermsdb"
+dbname <- "rsqlserverdb"
+user <- "SA"
+password <- "Password12!"
 
-get_connection <- function(){
-  dbConnect("SqlServer",url=userurl)
+set_url <- function(){
+  if (identical(Sys.getenv("TRAVIS"), "true")) {
+    "Server=mydb;Database=rsqlserverdb;User ID=sa;Password=Password12!"
+  } else if (identical(Sys.getenv("APPVEYOR"), "True")) {
+    "Server=(local)\\SQL2014;Database=rsqlserverdb;User ID=sa;Password=Password12!"
+  } else {
+    sprintf("Server=%s;Database=%s;User Id=%s;Password=%s;",
+            server, dbname, user, password)
+  }
+}
+
+get_con <- function(){
+  dbConnect("SqlServer", url = set_url())
 }
