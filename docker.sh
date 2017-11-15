@@ -23,7 +23,7 @@ docker pull ruaridhw/rsqlserver:latest && docker pull microsoft/mssql-server-lin
 ##
 ## Your Docker instance will need to be allocated at least 3-4GB of memory in
 ## order for the database to successfully start up.
-docker run -e 'ACCEPT_EULA=Y' -e 'MSSQL_SA_PASSWORD=Password12!' -h mydb -p 1433:1433 --name mssqldb -d microsoft/mssql-server-linux
+docker run -e 'ACCEPT_EULA=Y' -e 'MSSQL_SA_PASSWORD=Password12!' -h mydockermsdb -p 1433:1433 --name mssqldb -d microsoft/mssql-server-linux
 
 # Run a query against the server
 docker exec -t mssqldb /opt/mssql-tools/bin/sqlcmd \
@@ -48,7 +48,7 @@ docker exec -t mssqldb /opt/mssql-tools/bin/sqlcmd \
 # Run a command in the rsqlserver R session container
 docker run --name testrsqlserver --link=mssqldb --rm ruaridhw/rsqlserver Rscript \
    -e "library(rsqlserver)" \
-   -e "con <- dbConnect('SqlServer', host = 'mydb', dbname = 'rsqlserverdb', user = 'SA', password = 'Password12!')" \
+   -e "con <- dbConnect('SqlServer', host = 'mydockermsdb', dbname = 'rsqlserverdb', user = 'SA', password = 'Password12!')" \
    -e "dbReadTable(con, 'Inventory')"
 #> Loading required package: methods
 #> Loading required package: rClr
