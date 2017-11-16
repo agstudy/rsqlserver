@@ -1,5 +1,8 @@
 # rsqlserver
 
+[![Build Status](https://travis-ci.org/agstudy/rsqlserver.svg?branch=master)](https://travis-ci.org/agstudy/rsqlserver)
+[![Build status](https://ci.appveyor.com/api/projects/status/g30c0roi0ywenvau/branch/master?svg=true)](https://ci.appveyor.com/project/agstudy/rsqlserver/branch/master)
+
 SQL Server database interface **(DBI)** driver for R.
 
 This is a DBI-compliant SQL Server driver based on the
