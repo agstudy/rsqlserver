@@ -3,10 +3,12 @@ services:
 
 before_install:
   - docker pull microsoft/mssql-server-linux:latest
-  - docker run -e 'ACCEPT_EULA=Y' -e 'MSSQL_SA_PASSWORD=Password12!' \
+  - |
+    docker run -e 'ACCEPT_EULA=Y' -e 'MSSQL_SA_PASSWORD=Password12!' \
       -h mydb -p 1433:1433 --name mssqldb -d microsoft/mssql-server-linux
   - sleep 90
-  - docker exec -t mssqldb /opt/mssql-tools/bin/sqlcmd \
+  - |
+    docker exec -t mssqldb /opt/mssql-tools/bin/sqlcmd \
       -S mydb -U SA -P 'Password12!' \
       -Q "CREATE DATABASE rsqlserverdb;"
 
@@ -14,7 +16,8 @@ install:
   - docker build -t rsqlserver -f .ci/Dockerfile .
 
 script:
-  - docker run -t --link=mssqldb --name pkgcheck rsqlserver Rscript \
+  - |
+    docker run -t --link=mssqldb --name pkgcheck rsqlserver Rscript \
       -e 'devtools::install_dev_deps()' \
       -e 'devtools::check(document = FALSE, check_dir = ".")'
   - docker cp pkgcheck:/usr/local/R/rsqlserver.Rcheck/00check.log .
