@@ -1,8 +1,3 @@
 ^.*\.Rproj$
 ^\.Rproj\.user$
 ^appveyor\.yml$
-^\.travis\.yml$
-\.ci/
-^.*/\.nuget$
-^docker\.sh$
-^Dockerfile$
