@@ -2,30 +2,22 @@ Package: rsqlserver
 Type: Package
 Title: SQL Server interface for R
 Version: 1.0
-Description: SQL Server database interface (DBI) driver for R.
-    This is a DBI-compliant SQL Server driver based on the
-    .NET Framework Data Provider for SQL Server; `System.Data.SqlClient`.
-Authors@R: c(
-    person("Amine", "Gassem", , "contact@ag-study.com", c("cre", "aut")),
-    person("Ruaridh", "Williamson", , "ruaridh.williamson@gmail.com", role = "aut")
-    )
-Depends:
-    rClr,
-    methods
-Imports: DBI
-Suggests:
-    testthat,
-    knitr,
-    xtable
-License: GPL-2
-Collate:
-    "zzz.R"
-    "dbObjectId.R"
-    "DBIDriver.R"
-    "DBIConnection.R"
-    "DBIResult.R"
-    "DBIConvenience.R"
-    "DBITransaction.R"
-    "DBIMetaInfo.R"
-    "rsqlImpl.R"
+Date: 2015-05-30
+Author: Amine Gassem (agstudy) <contact@ag-study.com>
 LazyLoad: true
+Maintainer: Amine Gassem (agstudy) <contact@ag-study.com>
+Description:Sql server database interface (DBI) driver for R. 
+ This is a DBI-compliant Sql server driver based on the System.Data.SqlClient. 
+Depends: methods,rClr
+Imports: DBI
+Suggests: testthat,  knitr,  xtable
+License: GPL-2
+Collate:"zzz.R" 
+        "dbObjectId.R"  
+        "DBIDriver.R" 
+        "DBIConnection.R" 
+        "DBIResult.R"  
+        "DBIConvenience.R" 
+        "DBITransaction.R" 
+        "DBIMetaInfo.R"
+        "rsqlImpl.R"
