@@ -31,6 +31,7 @@ build_script:
   - ps: Invoke-WebRequest https://github.com/ruaridhw/rClr/raw/windows-binary/rClr_0.7-4.zip -OutFile "..\rClr_0.7-4.zip"
   - Rscript -e "install.packages('../rClr_0.7-4.zip', repos = NULL, type = 'binary')"
   - travis-tool.sh install_deps
+  - sqlcmd -S "(local)\SQL2014" -U "sa" -P "Password12!" -Q "CREATE DATABASE rsqlserverdb;"
 
 test_script:
   - travis-tool.sh run_tests
