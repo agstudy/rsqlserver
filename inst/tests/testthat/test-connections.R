@@ -1,45 +1,40 @@
-context('Test connections')
+context("Test Connections")
 
-server <- "192.168.0.10"
-dbname <- "TEST_RSQLSERVER"
-user <- "collateral"
-password <- "Kollat"
-
-
-test_isConnected <- function(url){
-  on.exit(dbDisconnect(conn))
-  conn <- dbConnect('SqlServer',url=url)
-  expect_equal(dbGetInfo(conn,"State")$State,"Open")
+test_isconnected <- function(url){
+  on.exit(dbDisconnect(con))
+  con <- dbConnect("SqlServer", url = url)
+  expect_equal(dbGetInfo(con, "State")$State, "Open")
 }
 
-test_that("dbConnect : Standard Security",{
-  url <- "Server=%s;Database=%s;User Id=%s;Password=%s;"
-  url <- sprintf(url, server, dbname, user, password)
-  test_isConnected(url)
+test_that("dbConnect: Standard Security",{
+  url <- sprintf("Server=%s;Database=%s;User Id=%s;Password=%s;",
+                 server, dbname, user, password)
+  test_isconnected(url)
 })
 
-test_that("dbConnect : Trusted Connection",{
+test_that("dbConnect: Trusted conection",{
   skip_on_os(c("mac", "linux", "solaris"))
-  url <- "Server=localhost;Database=%s;Trusted_Connection=True;"
-  test_isConnected(url, dbname)
+  url <- sprintf("Server=%s;Database=%s;Trusted_connection=True;",
+                 server, dbname)
+  test_isconected(url)
 })
 
-test_that("dbConnect : Connecting using with connection parameters",{
-  conn <- dbConnect('SqlServer',host=server,dbname=dbname,user=user,password=password)
-  expect_equal(dbGetInfo(conn,"State")$State,"Open")
-  dbDisconnect(conn)
+test_that("dbConnect: conecting using conection parameters",{
+  on.exit(dbDisconnect(con))
+  con <- dbConnect("SqlServer", host = server, dbname = dbname, user = user, password = password)
+  expect_equal(dbGetInfo(con, "State")$State, "Open")
 })
 
-test_that("dbConnect : TRUSTED Connection using with connection parameters",{
+test_that("dbConnect: Trusted connection using with connection parameters",{
   skip_on_os(c("mac", "linux", "solaris"))
-  conn <- dbConnect('SqlServer',host="localhost",dbname=dbname,trusted=TRUE)
-  expect_equal(dbGetInfo(conn,"State")$State,"Open")
-  dbDisconnect(conn)
+  on.exit(dbDisconnect(con))
+  con <- dbConnect("SqlServer", host = server, dbname = dbname, trusted = TRUE)
+  expect_equal(dbGetInfo(con, "State")$State, "Open")
 })
 
-test_that("dbConnect : choose parameter if url is NULL",{
+test_that("dbConnect: Choose parameter if url is NULL",{
   skip_on_os(c("mac", "linux", "solaris"))
-  conn <- dbConnect('SqlServer',host="localhost",dbname=dbname,trusted=TRUE,url=NULL)
-  expect_equal(dbGetInfo(conn,"State")$State,"Open")
-  dbDisconnect(conn)
+  on.exit(dbDisconnect(con))
+  con <- dbConnect("SqlServer", host = server, dbname = dbname, trusted = TRUE, url = NULL)
+  expect_equal(dbGetInfo(con, "State")$State, "Open")
 })
