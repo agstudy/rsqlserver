@@ -124,6 +124,17 @@ sqlServerReadTable <-
     out
   } 
 
+dbCreateTable <- function(con, name, cnames, ctypes) {
+  stmt <- sprintf('CREATE TABLE [%s] (%s)', name,
+                  paste(cnames, ctypes, collapse = ","))
+  if (!dbExistsTable(con, name)) {
+    rc <- try(dbNonQuery(con, stmt))
+    !inherits(rc, "try-error")
+  } else {
+    FALSE
+  }
+}
+
 ## the following is almost exactly from the RMysql driver 
 
 sqlServerWriteTable <-
@@ -228,20 +239,6 @@ bulk.copy.file <- function(con,name,value){
     clrCallStatic("rsqlserver.net.misc","SqlBulkCopy",con.string ,value,name)
   else
     stop("file is null or not exist")
-  
-}
-
-
-
-
-dbCreateTable <- function(con, name, cnames, ctypes)
-{
-    stmt <- sprintf('CREATE TABLE "%s" (%s)', name,
-                    paste(cnames, ctypes, collapse = ","))
-    if(!dbExistsTable(con, name)){
-      rc <- try(dbNonQuery(con, stmt),silent=TRUE)
-      !inherits(rc, "try-error")
-    }else FALSE
 }
 
 dropTable <- function(con, name,...)
