@@ -81,6 +81,16 @@ docker run --name rsqlserver --link=mssqldb -i ruaridhw/rsqlserver
 # with
 # rsqlserver-rstudio
 
+# For the `run` command, it is possible to persist a local directory on your
+# host machine through to the container and have any updates to either directory
+# immediately reflected in the other instance:
+docker run -d -p 8787:8787 --name rsqlstudio \
+   --mount type=bind,source=/path/to/local/rsqlserver,destination=/home/rstudio/rsqlserver \
+   ruaridhw/rsqlserver-rstudio
+
+# In this example, /path/to/local/rsqlserver is a copy of the repository on the
+# host machine which is replicated at /home/rstudio/rsqlserver on the container
+
 # The RStudio server will run as a service on the container so simply open
 # a local browser window pointing to http://localhost:8787 and login using
 # the username and password "rstudio"
