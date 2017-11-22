@@ -51,7 +51,7 @@ The package can be installed on Windows, Linux and macOS via a provided Docker c
 and "Apply & Restart". This is in order to run the SQL Server container
 otherwise it won't even start up.
 
-3. Open a Terminal and run [docker.sh](docker.sh)
+3. Open a Terminal with the repository as the working directory and follow [the instructions](UsingDocker.md)
 
 The **bcp** and **sqlcmd** tools are also [now available](https://docs.microsoft.com/en-us/sql/linux/sql-server-linux-setup-tools#macos)
 for macOS and Docker.
@@ -133,4 +133,3 @@ See the *rsqlserver* wiki page on [benchmarking](https://github.com/agstudy/rsql
 ## Acknowledgements
 
 I want to thank Jean-Michel Perraud the author of [rClr](http://r2clr.codeplex.com/) package.
-
