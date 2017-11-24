@@ -74,23 +74,20 @@ namespace rsqlserver.net.Test
             {
                 myConnection.Open();
                 SqlDataReader myReader = null;
-                var query = "SELECT  name,object_id,create_date \n" +
-                             "FROM    sys.tables";
-
-                //var query = "SELECT  mpg,cyl,wt \n" +
-                //         "FROM    T_MTCARS     ";
+                var query = "SELECT mpg, cyl, wt FROM CS_MTCARS";
                 SqlCommand myCommand = new SqlCommand(query, myConnection);
                 myReader = myCommand.ExecuteReader();
                 helper = new SqlDataHelper(myReader);
                 var result = helper.Fetch(20);
+                Assert.Equal(20, result);
                 Assert.Equal(helper.ResultSet.Keys.Count, 3);
-                string[] cols = new string[] { "name", "object_id", "create_date" };
+                string[] cols = new string[] { "mpg", "cyl", "wt" };
                 foreach (string key in helper.ResultSet.Keys)
                     Assert.Contains(key, cols);
 				myConnection.Close();
             }
 
-            Assert.Equal(helper.ResultSet["name"].Length, helper.Fetched);
+            Assert.Equal(helper.ResultSet["mpg"].Length, helper.Fetched);
             Assert.Equal(helper.ResultSet.Keys.Count, helper.Cnames.Length);
         }
         [Fact]
@@ -105,14 +102,13 @@ namespace rsqlserver.net.Test
             {
                 myConnection.Open();
                 SqlDataReader myReader = null;
-                var query = "SELECT  * " +
-                             "FROM    T_DATE";
+                var query = "SELECT * FROM CS_DATE";
 
                 SqlCommand myCommand = new SqlCommand(query, myConnection);
                 myReader = myCommand.ExecuteReader();
                 helper = new SqlDataHelper(myReader);
                 var result = helper.Fetch(5);
-                Assert.Equal(result, 5);
+                Assert.Equal(5, result);
 				myConnection.Close();
             }
         }
