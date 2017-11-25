@@ -85,7 +85,75 @@ namespace rsqlserver.net
 
         }
 
+        private static Type DbToClrType(string sqlType)
+        {
+            switch (sqlType)
+            {
+                case "bigint":
+                    return typeof(Int64);
 
+                case "binary":
+                case "image":
+                case "timestamp":
+                case "varbinary":
+                    return typeof(Byte[]);
+
+                case "bit":
+                    return typeof(Boolean);
+
+                case "char":
+                case "nchar":
+                case "ntext":
+                case "nvarchar":
+                case "text":
+                case "varchar":
+                case "xml":
+                    return typeof(String);
+
+                case "datetime":
+                case "smalldatetime"
+                case "date":
+                case "time":
+                case "datetime2":
+                    return typeof(DateTime);
+
+                case "decimal":
+                case "money":
+                case "smallmoney":
+                    return typeof(Decimal);
+
+                case "float":
+                    return typeof(Double);
+
+                case "int":
+                    return typeof(Int32);
+
+                case "real":
+                    return typeof(Single);
+
+                case "uniqueidentifier":
+                    return typeof(Guid);
+
+                case "smallint":
+                    return typeof(Int16);
+
+                case "tinyint":
+                    return typeof(Byte);
+
+                case "variant":
+                case "udt":
+                    return typeof(object);
+
+                case "structured":
+                    return typeof(DataTable);
+
+                case "datetimeoffset":
+                return typeof(DateTimeOffset);
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(sqlType));
+            }
+        }
 
         public static void SqlBulkCopy(String connectionString, string sourcePath, string destTableName, Boolean hasHeaders = true, String delimiter = ",")
         {
@@ -96,6 +164,18 @@ namespace rsqlserver.net
                            new SqlConnection(connectionString))
                 {
                     destConnection.Open();
+
+                    SqlCommand dbTypes = new SqlCommand(
+                        "SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = @destTable;", destConnection);
+                    dbTypes.Parameters.AddWithValue("@destTable", destTableName);
+                    SqlDataReader tabledata = dbTypes.ExecuteReader();
+
+                    while (tabledata.Read())
+                    {
+                        reader.Columns.Add(new Column { Name = tabledata["COLUMN_NAME"].ToString(), Type = DbToClrType(tabledata["DATA_TYPE"].ToString()) });
+                    }
+                    tabledata.Close();
+
                     try
                     {
                         using (SqlBulkCopy bulkCopy =
