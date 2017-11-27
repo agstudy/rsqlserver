@@ -111,7 +111,7 @@ namespace rsqlserver.net
                     return typeof(String);
 
                 case "datetime":
-                case "smalldatetime"
+                case "smalldatetime":
                 case "date":
                 case "time":
                 case "datetime2":
@@ -166,7 +166,12 @@ namespace rsqlserver.net
                     destConnection.Open();
 
                     SqlCommand dbTypes = new SqlCommand(
-                        "SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = @destTable;", destConnection);
+                        "SELECT c.Name AS COLUMN_NAME, t.Name AS DATA_TYPE " +
+                        "FROM sys.columns c " +
+                        "INNER JOIN sys.objects o ON o.object_id = c.object_id " +
+                        "LEFT JOIN sys.types t on t.user_type_id = c.user_type_id " +
+                        "WHERE o.type = 'U' AND o.object_id = OBJECT_ID(@destTable);", destConnection);
+
                     dbTypes.Parameters.AddWithValue("@destTable", destTableName);
                     SqlDataReader tabledata = dbTypes.ExecuteReader();
 
