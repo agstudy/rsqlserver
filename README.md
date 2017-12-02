@@ -73,7 +73,7 @@ Typically if your machine has the program "C:\Windows\Microsoft.NET\Framework\v4
 
 2. Install [Visual C++ Redistributable Packages for Visual Studio](https://go.microsoft.com/fwlink/?LinkId=746572).
 
-3. Download [rClr 0.7-4](https://rclr.codeplex.com/downloads/get/1441301).
+3. Download [rClr 0.7-4](https://github.com/jmp75/rClr/archive/0.7-4.zip).  (New binary versions will appear in the [GitHub releases](https://github.com/jmp75/rClr/releases).   Although CodePlex is being decommissioned, the [rClr 0.7-4](https://rclr.codeplex.com/downloads/get/1441301) binary may still be available).
 
 
 ```r
