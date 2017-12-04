@@ -10,11 +10,11 @@ using Xunit;
 namespace rsqlserver.net.Test
 {
 
-	public class TestSqlDataHelper
+    public class TestSqlDataHelper
     {
 
 		private static string myConnectionString = @"Server=localhost;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;";
-		static SqlConnection myConnection = new SqlConnection(myConnectionString);
+        static SqlConnection myConnection = new SqlConnection(myConnectionString);
 
         private static SqlDataHelper helper;
 
@@ -52,9 +52,9 @@ namespace rsqlserver.net.Test
                 cmd.Connection = myConnection;
                 var reader = cmd.ExecuteReader();
                 var helper = new SqlDataHelper(reader);
-             
+
                 foreach (var prop in myConnection.GetType().GetProperties())
-                    Console.WriteLine(helper.GetReaderProperty( prop.Name));
+                    Console.WriteLine(helper.GetReaderProperty(prop.Name));
             }
             catch (Exception e)
             {
@@ -70,7 +70,7 @@ namespace rsqlserver.net.Test
         [Fact]
         public static void TestFetch()
         {
-			using (SqlConnection myConnection = new SqlConnection(myConnectionString))
+            using (SqlConnection myConnection = new SqlConnection(myConnectionString))
             {
                 myConnection.Open();
                 SqlDataReader myReader = null;
@@ -84,7 +84,7 @@ namespace rsqlserver.net.Test
                 string[] cols = new string[] { "mpg", "cyl", "wt" };
                 foreach (string key in helper.ResultSet.Keys)
                     Assert.Contains(key, cols);
-				myConnection.Close();
+                myConnection.Close();
             }
 
             Assert.Equal(helper.ResultSet["mpg"].Length, helper.Fetched);
@@ -98,7 +98,7 @@ namespace rsqlserver.net.Test
         [Fact]
         public static void TestFetch_BIG_DATE_TABLE()
         {
-			using (SqlConnection myConnection = new SqlConnection(myConnectionString))
+            using (SqlConnection myConnection = new SqlConnection(myConnectionString))
             {
                 myConnection.Open();
                 SqlDataReader myReader = null;
@@ -109,16 +109,16 @@ namespace rsqlserver.net.Test
                 helper = new SqlDataHelper(myReader);
                 var result = helper.Fetch(5);
                 Assert.Equal(5, result);
-				myConnection.Close();
+                myConnection.Close();
             }
         }
         static void Main(string[] args)
         {
             myConnection.Open();
             SqlDataReader myReader = null;
-			var helper = new SqlDataHelper();
+            var helper = new SqlDataHelper();
 
-			var state = helper.GetConnectionProperty(myConnection, "State");
+            var state = helper.GetConnectionProperty(myConnection, "State");
             var query = "SELECT  * " + "FROM    TABLE_BUG";
             SqlCommand myCommand = new SqlCommand(query, myConnection);
             myReader = myCommand.ExecuteReader();
