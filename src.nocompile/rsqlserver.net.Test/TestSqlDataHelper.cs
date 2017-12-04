@@ -13,7 +13,7 @@ namespace rsqlserver.net.Test
     public class TestSqlDataHelper
     {
 
-		private static string myConnectionString = @"Server=localhost;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;";
+        private static string myConnectionString = "Server=localhost;Database=rsqlserverdb;User Id=sa;Password=Password12!;";
         static SqlConnection myConnection = new SqlConnection(myConnectionString);
 
         private static SqlDataHelper helper;
@@ -93,7 +93,7 @@ namespace rsqlserver.net.Test
         [Fact]
         public static void TestSqlBulkCopy()
         {
-            misc.SqlBulkCopy(myConnectionString, "d:/temp/temp.csv", "T_BIG");
+            misc.SqlBulkCopy(myConnectionString, "../../../../inst/data/CS_BIG.csv", "dbo.CS_BIG", true);
         }
         [Fact]
         public static void TestFetch_BIG_DATE_TABLE()
