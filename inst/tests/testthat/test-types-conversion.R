@@ -1,151 +1,154 @@
+context("Conversion of types and DB naming conventions")
 
-context("conversion of types and db naming conventions")
-
-test_that("db2RType: mapping fom sql server types to R types works",
-{
-  
-  expect_equal(rsqlserver:::db2RType("char"),"factor")
-  expect_equal(rsqlserver:::db2RType("varchar"),"character")
-  expect_equal(rsqlserver:::db2RType("int"),"integer")
-  
+test_that("db2RType: Mapping fom SQL Server types to R types",{
+  expect_equal(rsqlserver:::db2RType("char"), "factor")
+  expect_equal(rsqlserver:::db2RType("varchar"), "character")
+  expect_equal(rsqlserver:::db2RType("int"), "integer")
+  expect_equal(rsqlserver:::db2RType("datetime"), "POSIXct")
+  expect_equal(rsqlserver:::db2RType("float"), "numeric")
+  expect_equal(rsqlserver:::db2RType("decimal"), "numeric")
 })
 
-test_that("make.db.names:the names are valid db names",{
-  
+test_that("make.db.names: Names are valid DB names",{
   drv <- dbDriver("SqlServer")
-  expect_equal(make.db.names(drv,"a mine"),"a_mine") ## space 
-  ## keywords 
-  expect_equal(make.db.names(drv,"create",allow.keywords=TRUE),"create")     
-  expect_equal(make.db.names(drv,"create",allow.keywords=FALSE),"[create]")  
-  
+  expect_equal(make.db.names(drv, "a mine"), "a_mine") ## space
+  ## keywords
+  expect_equal(make.db.names(drv, "create", allow.keywords = TRUE), "create")
+  expect_equal(make.db.names(drv, "create", allow.keywords = FALSE), "[create]")
 })
 
-
-test_that("R2DbType:Automatic Conversion from R to data base",{
-  
-  value <- list(x.int=1L,
-                x.num=1,
-                x.fact=factor(1),
-                x.char="x",
-                x.list=list(1),
-                x.date= Sys.Date(),
-                x.posixct= Sys.time())
-  expected <- list("int","float","char(12)","varchar(128)",
-                   "varbinary(2000)","date","datetime2")
+test_that("R2DbType: Automatic Conversion from R to DB",{
+  value <- list(x.int     = 1L,
+                x.num     = 1,
+                x.fact    = factor(1),
+                x.char    = "x",
+                x.list    = list(1),
+                x.date    = Sys.Date(),
+                x.posixct = Sys.time())
+  expected <- list(x.int     = "int",
+                   x.num     = "float",
+                   x.fact    = "char(12)",
+                   x.char    = "varchar(128)",
+                   x.list    = "varbinary(2000)",
+                   x.date    = "date",
+                   x.posixct = "datetime2")
   effective <- lapply(value, rsqlserver:::R2DbType)
-  names(expected) <- names(value)
-  expect_identical(expected,effective)
-  
+  expect_identical(expected, effective)
 })
 
-
-
-test_that("sqlServer.data.frame:data is well quoted before insert",{
-  
+test_that("sqlServer.data.frame: Data is well quoted before insert",{
   options(stringsAsFactors = FALSE) 
-  
-  value <- data.frame(a=as.POSIXct("2013-11-07 01:47:33"),
-                      b="value ' alol",
-                      c="aa jujs",
-                      d=1,
-                      e=as.Date("2013-11-07"))
-  
-  expected = data.frame(a="'2013-11-07 01:47:33'",  ## tz=""
-                        b="'value '' alol'",
-                        c="'aa jujs'",
-                        d=1,
-                        e="'2013-11-07'")
+  value <- data.frame(a = as.POSIXct("2013-11-07 01:47:33"),
+                      b = "value ' alol",
+                      c = "aa jujs",
+                      d = 1,
+                      e = as.Date("2013-11-07"))
+  expected = data.frame(a = "'2013-11-07 01:47:33'",
+                        b = "'value '' alol'",
+                        c = "'aa jujs'",
+                        d = 1,
+                        e = "'2013-11-07'")
   field.types <- lapply(value, rsqlserver:::R2DbType)
-  names(field.types) <- names(value)
-  value.db <- rsqlserver:::sqlServer.data.frame(
-    value,field.types)
-  expect_equal(expected,value.db)
-  
-  
+  value.db <- rsqlserver:::sqlServer.data.frame(value, field.types)
+  expect_equal(expected, value.db)
 })
 
-
-
-
-test_that("dbReadTable: read rownames in the exact type",
-{
-  conn <- get_connection()
-  dat_int  <- data.frame(x=1:10)
-  dat_char <- data.frame(x=1:10)
-  dat_date <- data.frame(x=1:10)
-  rownames(dat_char) <- paste0("row",seq(nrow(dat_char)))
-  start = Sys.time()
-  rownames(dat_date) <- as.POSIXct(seq.POSIXt(from=start,by=1,
-                                              length.out=nrow(dat_date)))
-  invisible(lapply(ls(pattern="dat_"),
+test_that("dbReadTable: Read rownames in the exact type",{
+  on.exit(dbDisconnect(conn))
+  conn <- get_con()
+  dat_int  <- data.frame(x = 1:10)
+  dat_char <- data.frame(x = 1:10)
+  dat_date <- data.frame(x = 1:10)
+  rownames(dat_char) <- paste0("row", seq(nrow(dat_char)))
+  rownames(dat_date) <- seq.POSIXt(from = Sys.time(),
+                                   by=1,
+                                   length.out = nrow(dat_date))
+  invisible(lapply(ls(pattern = "dat_"),
                    function(x){
-                     dbWriteTable(conn,name=x,value=get(x),overwrite=TRUE)
-                     res <- dbReadTable(conn,name=x)
+                     dbWriteTable(conn, name = x, value = get(x), overwrite=TRUE)
+                     res <- dbReadTable(conn, name = x)
+                     dbRemoveTable(conn, name = x)
                      expect_identical(rownames(get(x)),
                                       rownames(res))
                    }))
-  
-  dbDisconnect(conn)
-  
-  
-  
 })
 
-test_that("dbWriteTable/dbReadTable :save POSIXct , read it again as POSIXct",{
-  
-  start = Sys.time()
-  dat <- data.frame(cdate = as.POSIXct(seq.POSIXt(from=start,by=1,length.out=100)))
-  conn <- get_connection()
-  
-  dbWriteTable(conn,name='T_DATE',value=dat,overwrite=TRUE)
-  res <- dbReadTable(conn,'T_DATE')
-  expect_is (res$cdate,'POSIXct')
-  dbDisconnect(conn)
-  dbRemoveTable(conn,'T_DATE')
+test_that("dbWriteTable: Save POSIXct as DATETIME",{
+  on.exit(dbDisconnect(conn))
+  dat <- data.frame(cdate = seq.POSIXt(from = Sys.time(),
+                                       by = 1,
+                                       length.out = 100)
+  )
+  conn <- get_con()
+  dbWriteTable(conn, name = "T_DATE", value = dat, overwrite = TRUE)
+  res <- dbGetScalar(conn,
+                     "SELECT DATA_TYPE
+                      FROM INFORMATION_SCHEMA.COLUMNS
+                      WHERE TABLE_NAME = 'T_DATE' AND COLUMN_NAME = 'cdate'")
+  expect_identical(res, "datetime2")
+  dbRemoveTable(conn, "T_DATE")
 })
 
-test_that("dbBulkCopy :save POSIXct , read it again as POSIXct",{
-  
-  N = 100000
-  start = Sys.time()
-  dat <- data.frame(cdate = as.POSIXct(seq.POSIXt(from=start,by=1,length.out=N)))
-  conn <- get_connection()
-  rsqlserver:::dbCreateTable(conn,'T_BULKCOPY', 
-                             c('cdate'),'datetime2')
-  dbBulkCopy(conn,name='T_BULKCOPY',value=dat)
-  res <- dbReadTable(conn,'T_BULKCOPY')
-  expect_is (res$cdate,'POSIXct')
-  dbDisconnect(conn)
-  dbRemoveTable(conn,'T_BULKCOPY')
+#TODO
+test_that("dbReadTable: Read DATETIME as POSIXct",{
+  skip("Not yet implemented")
+  on.exit(dbDisconnect(conn))
+  dat <- data.frame(cdate = seq.POSIXt(from = Sys.time(),
+                                       by = 1,
+                                       length.out = 100)
+                    )
+  conn <- get_con()
+  dbWriteTable(conn, name = "T_DATE", value = dat, overwrite = TRUE)
+  res <- dbReadTable(conn, "T_DATE")
+  expect_is(res$cdate, "POSIXct")
+  dbRemoveTable(conn, "T_DATE")
 })
 
-
-
-## see issue https://github.com/agstudy/rsqlserver/issues/11
-test_that("dbWriteTable/dbReadTable :save Date , read the same Date again",{
-  start = Sys.Date()
-  dat <- data.frame(cdate = seq.Date(from=start,by=1,length.out=5))
-  #dat$cdate <- as.Date(dat$cdate,tz=Sys.timezone())
-  conn <- get_connection()
-  dbWriteTable(conn,name='T_DATE',value=dat,overwrite=TRUE)
-  res <- dbReadTable(conn,'T_DATE')
-  expect_equal(res$cdate,dat$cdate)
-  dbDisconnect(conn)
-  dbRemoveTable(conn,'T_DATE')
+#TODO
+test_that("dbBulkCopy: Insert POSIXct into DATETIME",{
+  skip("Not yet implemented")
+  on.exit(dbDisconnect(conn))
+  N <- 100000
+  dat <- data.frame(cdate = seq.POSIXt(from = Sys.time(),
+                                       by = 1,
+                                       length.out = N))
+  conn <- get_con()
+  rsqlserver:::dbCreateTable(conn, "T_BULKCOPY",
+                             "cdate", "datetime2")
+  dbBulkCopy(conn, value = dat, name = "T_BULKCOPY")
+  res <- dbGetScalar(conn,
+                     "SELECT DATA_TYPE
+                      FROM INFORMATION_SCHEMA.COLUMNS
+                      WHERE TABLE_NAME = 'T_BULKCOPY' AND COLUMN_NAME = 'cdate'")
+  expect_identical(res, "datetime2")
+  dbRemoveTable(conn, "T_BULKCOPY")
 })
 
-test_that("dbWriteTable/dbReadTable :save POSIXct , read the same POSIXct again",{
-  start = Sys.time()
-  dat <- data.frame(cdate = seq.POSIXt(from=start,by=1,length.out=5))
-  #dat$cdate <- as.Date(dat$cdate,tz=Sys.timezone())
-  conn <- get_connection()
-  dbWriteTable(conn,name='T_DATE',value=dat,overwrite=TRUE)
-  res <- dbReadTable(conn,'T_DATE')
-  expect_equal(res$cdate,dat$cdate)
-  dbDisconnect(conn)
-  dbRemoveTable(conn,'T_DATE')
+test_that("dbWriteTable: Save Date as DATE (#11)",{
+  on.exit(dbDisconnect(conn))
+  dat <- data.frame(cdate = seq.Date(from = Sys.Date(),
+                                     by = 1,
+                                     length.out = 5))
+  conn <- get_con()
+  dbWriteTable(conn, name = "T_DATE", value = dat, overwrite = TRUE)
+  res <- dbGetScalar(conn,
+                     "SELECT DATA_TYPE
+                     FROM INFORMATION_SCHEMA.COLUMNS
+                     WHERE TABLE_NAME = 'T_DATE' AND COLUMN_NAME = 'cdate'")
+  expect_identical(res, "date")
+  dbRemoveTable(conn, "T_DATE")
 })
 
-
-
-
+#TODO
+test_that("dbReadTable: Read DATE as Date (#11)",{
+  skip("Not yet implemented")
+  on.exit(dbDisconnect(conn))
+  dat <- data.frame(cdate = seq.Date(from = Sys.Date(),
+                                     by = 1,
+                                     length.out = 5))
+  conn <- get_con()
+  dbWriteTable(conn, name = "T_DATE", value = dat, overwrite = TRUE)
+  res <- dbReadTable(conn, "T_DATE")
+  expect_is(res$cdate, "Date")
+  dbRemoveTable(conn, "T_DATE")
+})
