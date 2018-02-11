@@ -7,10 +7,11 @@ before_install:
     docker run -e 'ACCEPT_EULA=Y' -e 'MSSQL_SA_PASSWORD=Password12!' \
       -h mydb -p 1433:1433 --name mssqldb -d microsoft/mssql-server-linux
   - sleep 90
+  - docker cp inst/setup.sql mssqldb:.
   - |
     docker exec -t mssqldb /opt/mssql-tools/bin/sqlcmd \
       -S mydb -U SA -P 'Password12!' \
-      -Q "CREATE DATABASE rsqlserverdb;"
+      -i setup.sql
 
 install:
   - docker build -t rsqlserver -f .ci/Dockerfile .
