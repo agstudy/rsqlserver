@@ -111,6 +111,48 @@ test_that("dbWriteTable: Use BULK COPY on a large data.frame",{
   dbRemoveTable(conn, "T_BIG")
 })
 
+test_that("dbWriteTable/dbBulkWrite : Import a large data frame and unload to text",{
+  on.exit(dbDisconnect(conn))
+  set.seed(1)
+  N=1000
+  table.name = paste('T_BIG',sprintf("%.9g", N) ,sep='_')
+  dat <- data.frame(value=sample(1:100,N,replace=TRUE),
+                    key  =sample(letters,N,replace=TRUE),
+                    stringsAsFactors=FALSE)
+  conn <- get_connection()
+  dbWriteTable(conn,name=table.name,dat,row.names=FALSE,overwrite=TRUE)
+  expect_true(dbExistsTable(conn,table.name))
+  dbBulkWrite(conn,name=table.name,value="t_big.csv",headers = T,delim = "\t")
+  res <- read.csv("t_big.csv")
+  expect_equal(nrow(res),N)
+  file.remove("t_big.csv")
+})
+
+test_that("dbBulkWrite : Read bit, bigint, decimal/numeric columns from SQL Server",{
+  on.exit(dbDisconnect(conn))
+  set.seed(1)
+  table.name <- "T_EXOTIC"
+  dat <- data.frame(
+    # Standard columns
+    col_varchar = sample(state.name, 100, replace=TRUE),
+    col_int = sample(1000,100,replace=T),
+    # Exotic columns
+    col_bigint = sample(2^50,100,replace=T),
+    col_bit = sample(c(NA,0,1),100,replace=T),
+    col_numeric = sample(10^7,100,replace=T)/10.0^6,
+    col_decimal = sample(10^8,100,replace=T)/10.0^6
+  )
+  conn <- get_connection()
+  field.types <- c("varchar(100)","int","bigint","bit","numeric(10,6)","decimal(10,6)")
+  names(field.types) <- names(dat)
+  dbWriteTable(conn,name=table.name,dat,field.types=field.types,row.names=FALSE,overwrite=TRUE)
+  expect_true(dbExistsTable(conn,table.name))
+  dbBulkWrite(conn,name=table.name,value="t_exotic.csv")
+  res <- read.csv("t_exotic.csv")
+  expect_equal(nrow(res),nrow(dat))
+  file.remove("t_exotic.csv")
+})
+
 #TODO
 # Currently not writing text missing values correctly.
 test_that("Missing values: Write missing values",{

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Transactions;
+using LumenWorks.Framework.IO.Csv;
 
 namespace rsqlserver.net
 {
@@ -84,42 +85,167 @@ namespace rsqlserver.net
 
         }
 
-
-
-        public static void SqlBulkCopy(String connectionString,
-                                       string sourcePath,string destTableName)
+        private static Type DbToClrType(string sqlType)
         {
-            var tableSource = fileToDataTable(sourcePath);
-            if (tableSource == null) return;
-
-            using (SqlConnection destConnection =
-                       new SqlConnection(connectionString))
+            switch (sqlType)
             {
-                destConnection.Open();
-                try
-                {
-                    using (SqlBulkCopy bulkCopy =
-                               new SqlBulkCopy(destConnection))
-                    {
-                        bulkCopy.DestinationTableName = destTableName;
-                        _Logger.InfoFormat("copying table {0} having {1} rows ....", 
-                                 destTableName,tableSource.Rows.Count);
-                        bulkCopy.BulkCopyTimeout = 60;
-                        bulkCopy.WriteToServer(tableSource);
-                        _Logger.InfoFormat("Success to load table {0} in database", destTableName);
-                        tableSource.Rows.Clear();
-                        _Logger.Info("Success copy");
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _Logger.DebugFormat("Failure to copy : {0}", ex.Message);
-                    throw ex;
-                }
+                case "bigint":
+                    return typeof(Int64);
 
+                case "binary":
+                case "image":
+                case "timestamp":
+                case "varbinary":
+                    return typeof(Byte[]);
+
+                case "bit":
+                    return typeof(Boolean);
+
+                case "char":
+                case "nchar":
+                case "ntext":
+                case "nvarchar":
+                case "text":
+                case "varchar":
+                case "xml":
+                    return typeof(String);
+
+                case "datetime":
+                case "smalldatetime":
+                case "date":
+                case "time":
+                case "datetime2":
+                    return typeof(DateTime);
+
+                case "decimal":
+                case "money":
+                case "smallmoney":
+                    return typeof(Decimal);
+
+                case "float":
+                    return typeof(Double);
+
+                case "int":
+                    return typeof(Int32);
+
+                case "real":
+                    return typeof(Single);
+
+                case "uniqueidentifier":
+                    return typeof(Guid);
+
+                case "smallint":
+                    return typeof(Int16);
+
+                case "tinyint":
+                    return typeof(Byte);
+
+                case "variant":
+                case "udt":
+                    return typeof(object);
+
+                case "structured":
+                    return typeof(DataTable);
+
+                case "datetimeoffset":
+                return typeof(DateTimeOffset);
+
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(sqlType));
             }
         }
-     }
+
+        public static void SqlBulkCopy(String connectionString, string sourcePath, string destTableName, Boolean hasHeaders = true, String delimiter = ",")
+        {
+            using (var reader = new CsvReader(new StreamReader(sourcePath), hasHeaders, System.Convert.ToChar(delimiter)))
+            {
+
+                using (SqlConnection destConnection =
+                           new SqlConnection(connectionString))
+                {
+                    destConnection.Open();
+
+                    SqlCommand dbTypes = new SqlCommand(
+                        "SELECT c.Name AS COLUMN_NAME, t.Name AS DATA_TYPE " +
+                        "FROM sys.columns c " +
+                        "INNER JOIN sys.objects o ON o.object_id = c.object_id " +
+                        "LEFT JOIN sys.types t on t.user_type_id = c.user_type_id " +
+                        "WHERE o.type = 'U' AND o.object_id = OBJECT_ID(@destTable);", destConnection);
+
+                    dbTypes.Parameters.AddWithValue("@destTable", destTableName);
+                    SqlDataReader tabledata = dbTypes.ExecuteReader();
+
+                    while (tabledata.Read())
+                    {
+                        reader.Columns.Add(new Column { Name = tabledata["COLUMN_NAME"].ToString(), Type = DbToClrType(tabledata["DATA_TYPE"].ToString()) });
+                    }
+                    tabledata.Close();
+
+                    try
+                    {
+                        using (SqlBulkCopy bulkCopy =
+                                   new SqlBulkCopy(destConnection))
+                        {
+                            bulkCopy.DestinationTableName = destTableName;
+                            _Logger.InfoFormat("copying table {0} ....", destTableName);
+                            bulkCopy.BulkCopyTimeout = 60;
+                            bulkCopy.WriteToServer(reader);
+                            _Logger.InfoFormat("Success loading table {0} having {1} rows in database", destTableName, reader.CurrentRecordIndex);
+                            _Logger.Info("Success copy");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _Logger.DebugFormat("Failure to copy : {0}", ex.Message);
+                        throw ex;
+                    }
+                }
+            }
+        }
+
+        private static void writerHelper(StreamWriter writer, SqlDataReader reader, String delimiter, bool headerrow)
+        {
+            String row = "";
+            for (int i = 0; i < reader.FieldCount; i++)
+            {
+                if (headerrow)
+                {
+                    row += delimiter + "\"" + reader.GetName(i).ToString() + "\"";
+                }
+                else
+                {
+                    row += delimiter + "\"" + reader[i].ToString() + "\"";
+                }
+            }
+            writer.WriteLine(row.Substring(1));
+        }
+
+        public static void SqlBulkWrite(String connectionString, string destFilePath, string sourceTableName, Boolean withHeaders = true, String delimiter = ",")
+        {
+            using (SqlConnection destConnection = new SqlConnection(connectionString))
+            using (SqlCommand cmd = destConnection.CreateCommand())
+            {
+                destConnection.Open();
+
+                String sql = @"SELECT * FROM " + sourceTableName;
+                cmd.CommandText = sql;
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                using (StreamWriter writer = new StreamWriter(destFilePath))
+                {
+                    //TODO rewrite block below / writerHelper more effectively
+                    if (withHeaders)
+                    {
+                        writerHelper(writer, reader, delimiter, true);
+                    }
+
+                    while (reader.Read())
+                    {
+                        writerHelper(writer, reader, delimiter, false);
+                    }
+                }
+            }
+        }
+    }
 }
        
-

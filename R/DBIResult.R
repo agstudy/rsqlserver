@@ -76,7 +76,7 @@ setMethod("dbGetInfo", "SqlServerResult",
           valueClass = "list"
 )
 
-setGeneric("dbBulkCopy", function(conn,name,value,...) 
+setGeneric("dbBulkCopy", function(conn,name,value,headers,delim,...) 
   standardGeneric("dbBulkCopy")
 )
 
@@ -87,6 +87,22 @@ setMethod("dbBulkCopy",
 setMethod("dbBulkCopy",
           signature(conn ="SqlServerConnection",value="character",name="character"),
           def = function(conn,name,value,...)   bulk.copy.file(conn,name,value,...)
+)
+setMethod("dbBulkCopy",
+          signature(conn ="SqlServerConnection",value="character",name="character",headers="logical",delim="character"),
+          def = function(conn,name,value,headers,delim)   bulk.copy.file(conn,name,value,headers,delim)
+)
+
+setGeneric("dbBulkWrite", function(conn,name,value,headers,delim) 
+  standardGeneric("dbBulkWrite")
+)
+setMethod("dbBulkWrite",
+          signature(conn ="SqlServerConnection",value="character",name="character",headers="missing",delim="missing"),
+          def = function(conn,name,value)   bulk.write.file(conn,name,value)
+)
+setMethod("dbBulkWrite",
+          signature(conn ="SqlServerConnection",value="character",name="character",headers="logical",delim="character"),
+          def = function(conn,name,value,headers,delim)   bulk.write.file(conn,name,value,headers,delim)
 )
 
 
