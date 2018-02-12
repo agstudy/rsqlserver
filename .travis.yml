@@ -3,14 +3,15 @@ services:
 
 before_install:
   - docker pull microsoft/mssql-server-linux:latest
+  - docker network create sqlserver_net
   - |
     docker run -e 'ACCEPT_EULA=Y' -e 'MSSQL_SA_PASSWORD=Password12!' \
-      -h mydb -p 1433:1433 --name mssqldb -d microsoft/mssql-server-linux
+      --network sqlserver_net -p 1433:1433 --name mssqldb -d microsoft/mssql-server-linux
   - sleep 90
   - docker cp inst/setup.sql mssqldb:.
   - |
     docker exec -t mssqldb /opt/mssql-tools/bin/sqlcmd \
-      -S mydb -U SA -P 'Password12!' \
+      -S localhost -U SA -P 'Password12!' \
       -i setup.sql
 
 install:
@@ -18,7 +19,7 @@ install:
 
 script:
   - |
-    docker run -t --link=mssqldb --name pkgcheck rsqlserver Rscript \
+    docker run -t --network sqlserver_net --name pkgcheck rsqlserver Rscript \
       -e 'devtools::install_dev_deps()' \
       -e 'devtools::check(document = FALSE, check_dir = ".")'
   - docker cp pkgcheck:/usr/local/R/rsqlserver.Rcheck/00check.log .
