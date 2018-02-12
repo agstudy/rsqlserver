@@ -16,10 +16,10 @@ test_that("dbConnect: Trusted conection",{
   skip_on_os(c("mac", "linux", "solaris"))
   url <- sprintf("Server=%s;Database=%s;Trusted_connection=True;",
                  server, dbname)
-  test_isconected(url)
+  test_isconnected(url)
 })
 
-test_that("dbConnect: conecting using conection parameters",{
+test_that("dbConnect: Connecting using connection parameters",{
   on.exit(dbDisconnect(con))
   con <- dbConnect("SqlServer", host = server, dbname = dbname, user = user, password = password)
   expect_equal(dbGetInfo(con, "State")$State, "Open")

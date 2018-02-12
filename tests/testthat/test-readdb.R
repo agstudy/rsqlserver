@@ -60,14 +60,16 @@ test_that("Fetch: Get n rows from a table", {
   on.exit(dbDisconnect(conn))
   conn <- get_con()
   dbWriteTable(conn, name = "T_MTCARS", mtcars, overwrite = TRUE)
-  
+
   res <- dbSendQuery(conn, "SELECT mpg, cyl, wt FROM T_MTCARS")
   res.dat <- fetch(res, n = nrow(mtcars))
   invisible(dbClearResult(res))
   expect_is(res.dat, "data.frame")
   expect_equal(nrow(res.dat), nrow(mtcars))
-  lapply(res.dat, expect_is, "numeric")
-  
+  expect_is(res.dat$mpg, "numeric")
+  expect_is(res.dat$cyl, "numeric")
+  expect_is(res.dat$wt, "numeric")
+
   dbRemoveTable(conn, "T_MTCARS")
 })
 
@@ -75,12 +77,14 @@ test_that("dbGetQuery: Get some data from a table", {
   on.exit(dbDisconnect(conn))
   conn <- get_con()
   dbWriteTable(conn, name = "T_MTCARS", mtcars, overwrite = TRUE)
-  
+
   res <- dbGetQuery(conn, "SELECT mpg, cyl, wt FROM T_MTCARS")
   expect_is(res, "data.frame")
   expect_equal(nrow(mtcars), nrow(res))
-  lapply(res, expect_is, "numeric")
-  
+  expect_is(res$mpg, "numeric")
+  expect_is(res$cyl, "numeric")
+  expect_is(res$wt, "numeric")
+
   dbRemoveTable(conn, "T_MTCARS")
 })
 
@@ -119,7 +123,7 @@ test_that("dbWriteTable/dbBulkWrite : Import a large data frame and unload to te
   dat <- data.frame(value=sample(1:100,N,replace=TRUE),
                     key  =sample(letters,N,replace=TRUE),
                     stringsAsFactors=FALSE)
-  conn <- get_connection()
+  conn <- get_con()
   dbWriteTable(conn,name=table.name,dat,row.names=FALSE,overwrite=TRUE)
   expect_true(dbExistsTable(conn,table.name))
   dbBulkWrite(conn,name=table.name,value="t_big.csv",headers = T,delim = "\t")
@@ -142,7 +146,7 @@ test_that("dbBulkWrite : Read bit, bigint, decimal/numeric columns from SQL Serv
     col_numeric = sample(10^7,100,replace=T)/10.0^6,
     col_decimal = sample(10^8,100,replace=T)/10.0^6
   )
-  conn <- get_connection()
+  conn <- get_con()
   field.types <- c("varchar(100)","int","bigint","bit","numeric(10,6)","decimal(10,6)")
   names(field.types) <- names(dat)
   dbWriteTable(conn,name=table.name,dat,field.types=field.types,row.names=FALSE,overwrite=TRUE)
