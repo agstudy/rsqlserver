@@ -10,11 +10,11 @@ using Xunit;
 namespace rsqlserver.net.Test
 {
 
-	public class TestSqlDataHelper
+    public class TestSqlDataHelper
     {
 
-        static SqlConnection myConnection = new SqlConnection(
-			"Server=localhost;Database=TEST_RSQLSERVER;User Id=collateral;Password=Kollat;");
+        private static string myConnectionString = "Server=localhost;Database=rsqlserverdb;User Id=sa;Password=Password12!;";
+        static SqlConnection myConnection = new SqlConnection(myConnectionString);
 
         private static SqlDataHelper helper;
 
@@ -52,9 +52,9 @@ namespace rsqlserver.net.Test
                 cmd.Connection = myConnection;
                 var reader = cmd.ExecuteReader();
                 var helper = new SqlDataHelper(reader);
-             
+
                 foreach (var prop in myConnection.GetType().GetProperties())
-                    Console.WriteLine(helper.GetReaderProperty( prop.Name));
+                    Console.WriteLine(helper.GetReaderProperty(prop.Name));
             }
             catch (Exception e)
             {
@@ -70,61 +70,55 @@ namespace rsqlserver.net.Test
         [Fact]
         public static void TestFetch()
         {
-            using (myConnection)
+            using (SqlConnection myConnection = new SqlConnection(myConnectionString))
             {
                 myConnection.Open();
                 SqlDataReader myReader = null;
-                var query = "SELECT  name,object_id,create_date \n" +
-                             "FROM    sys.tables";
-
-                //var query = "SELECT  mpg,cyl,wt \n" +
-                //         "FROM    T_MTCARS     ";
+                var query = "SELECT mpg, cyl, wt FROM CS_MTCARS";
                 SqlCommand myCommand = new SqlCommand(query, myConnection);
                 myReader = myCommand.ExecuteReader();
                 helper = new SqlDataHelper(myReader);
                 var result = helper.Fetch(20);
+                Assert.Equal(20, result);
                 Assert.Equal(helper.ResultSet.Keys.Count, 3);
-                string[] cols = new string[] { "name", "object_id", "create_date" };
+                string[] cols = new string[] { "mpg", "cyl", "wt" };
                 foreach (string key in helper.ResultSet.Keys)
                     Assert.Contains(key, cols);
+                myConnection.Close();
             }
 
-            Assert.Equal(helper.ResultSet["name"].Length, helper.Fetched);
+            Assert.Equal(helper.ResultSet["mpg"].Length, helper.Fetched);
             Assert.Equal(helper.ResultSet.Keys.Count, helper.Cnames.Length);
         }
         [Fact]
         public static void TestSqlBulkCopy()
         {
-            var connectionString = "user id=collateral;" +
-                                     "password=collat;server=localhost;" +
-                                     "Trusted_Connection=yes;" +
-                                     "connection timeout=30";
-            misc.SqlBulkCopy(connectionString, "d:/temp/temp.csv", "T_BIG");
+            misc.SqlBulkCopy(myConnectionString, "../../../../inst/data/CS_BIG.csv", "dbo.CS_BIG", true);
         }
         [Fact]
         public static void TestFetch_BIG_DATE_TABLE()
         {
-            using (myConnection)
+            using (SqlConnection myConnection = new SqlConnection(myConnectionString))
             {
                 myConnection.Open();
                 SqlDataReader myReader = null;
-                var query = "SELECT  * " +
-                             "FROM    T_DATE";
+                var query = "SELECT * FROM CS_DATE";
 
                 SqlCommand myCommand = new SqlCommand(query, myConnection);
                 myReader = myCommand.ExecuteReader();
                 helper = new SqlDataHelper(myReader);
-                var result = helper.Fetch(20);
-                Assert.Equal(result, 100000);
+                var result = helper.Fetch(5);
+                Assert.Equal(5, result);
+                myConnection.Close();
             }
         }
         static void Main(string[] args)
         {
             myConnection.Open();
             SqlDataReader myReader = null;
-			var helper = new SqlDataHelper();
+            var helper = new SqlDataHelper();
 
-			var state = helper.GetConnectionProperty(myConnection, "State");
+            var state = helper.GetConnectionProperty(myConnection, "State");
             var query = "SELECT  * " + "FROM    TABLE_BUG";
             SqlCommand myCommand = new SqlCommand(query, myConnection);
             myReader = myCommand.ExecuteReader();

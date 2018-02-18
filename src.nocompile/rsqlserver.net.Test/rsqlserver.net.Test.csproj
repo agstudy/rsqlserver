@@ -5,12 +5,13 @@
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{D5C16450-5892-44E3-85C9-B79F230EC5E7}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>rsqlserver.net.Test</RootNamespace>
     <AssemblyName>rsqlserver.net.Test</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -42,17 +43,14 @@
     <Optimize>false</Optimize>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
     <Reference Include="xunit">
-      <HintPath>..\..\..\..\..\D_\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
+      <HintPath>..\packages\xunit.1.9.2\lib\net20\xunit.dll</HintPath>
     </Reference>
+    <Reference Include="log4net">
+      <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="TestSqlDataHelper.cs" />
@@ -69,7 +67,7 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
@@ -77,7 +75,8 @@
   <PropertyGroup>
     <RsqlserverTestProject>$(SolutionDir)runner\rsqlserver.Test.runner.csproj</RsqlserverTestProject>
   </PropertyGroup>
-  <Target Name="AfterBuild">
-    <Exec Condition="'$(Configuration)' == 'Debug[+TEST]' Or '$(Configuration)' == 'Release[+TEST]'" Command="C:\Windows\Microsoft.NET\Framework\v4.0.30319\msbuild.exe /property:OutputPath=$(OutputPath) &quot;$(RsqlserverTestProject)&quot;" />
+  <Target Name="AfterBuild" Condition="'$(Configuration)' == 'Debug[+TEST]' Or '$(Configuration)' == 'Release[+TEST]'">
+    <Exec Condition="'$(OS)' == 'Windows_NT'" Command="C:\Windows\Microsoft.NET\Framework\v4.0.30319\msbuild.exe /property:OutputPath=$(OutputPath) &quot;$(RsqlserverTestProject)&quot;" />
+    <Exec Condition="'$(OS)' != 'Windows_NT'" Command="msbuild /property:OutputPath=$(OutputPath) &quot;$(RsqlserverTestProject)&quot;" />
   </Target>
 </Project>

@@ -6,7 +6,7 @@
 setMethod("dbListTables", "SqlServerConnection",
           def = function(conn, ...){
             tbls <- dbGetQuery(conn, "select name from sys.tables")
-            if(length(tbls)>0) 
+            if(nrow(tbls)>0)
               tbls <- tbls[,1]
             else
               tbls <- character()
@@ -123,6 +123,17 @@ sqlServerReadTable <-
     } else warning("row.names not set on output (duplicate elements in field)")
     out
   } 
+
+dbCreateTable <- function(con, name, cnames, ctypes) {
+  stmt <- sprintf('CREATE TABLE [%s] (%s)', name,
+                  paste(cnames, ctypes, collapse = ","))
+  if (!dbExistsTable(con, name)) {
+    rc <- try(dbNonQuery(con, stmt))
+    !inherits(rc, "try-error")
+  } else {
+    FALSE
+  }
+}
 
 ## the following is almost exactly from the RMysql driver 
 
